@@ -80,6 +80,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/scopycat/Documents/webserv/webserv/Answer.cpp">
+			<Option target="webserv"/>
+		</Unit>
+		<Unit filename="/Users/scopycat/Documents/webserv/webserv/Answer.hpp">
+			<Option target="webserv"/>
+		</Unit>
 		<Unit filename="/Users/scopycat/Documents/webserv/webserv/Client.cpp">
 			<Option target="webserv"/>
 		</Unit>

@@ -1,5 +1,37 @@
 #include "webserv.hpp"
 
+void	check_readable_message_body(Message *message)
+{
+	// !!! нужно учесть!!!
+	// Пользовательский агент ДОЛЖЕН отправить Content-Length в сообщении запроса, когда не передано
+	// Transfer-Encoding и метод запроса определяет значение для вложенного тела полезной нагрузки.
+	// Например, поле заголовка Content-Length обычно отправляется в запросе POST, даже если значение
+	// равно 0 (указывает на пустое тело полезной нагрузки). Пользовательский агент НЕ ДОЛЖЕН отправлять
+	// поле заголовка Content-Length, если сообщение запроса не содержит тела полезной нагрузки,
+	// а семантика метода не ожидает такого тела.
+
+	if (message->fields.find("Content-Length") != message->fields.end() ||
+		message->fields.find("Transfer-Encoding") != message->fields.end())
+		message->readable_body = true;
+	else
+		message->readable_body = false;
+}
+
+void	check_http_version(Message *message)
+{
+	if (message->http_version > 1.1)
+		message->wrong_version = true;
+	else
+		message->wrong_version = false;
+}
+
+void	interpret_message(Message *message)
+{
+	check_http_version(message);
+	check_readable_message_body(message);
+
+}
+
 /*
 * начинаем работу с сокетом
 */
@@ -43,16 +75,25 @@ void	work_with_socket(sockaddr_in *addr, int *socket_fd, Config *config)
 		{
 			exit(getdate_err); // тут нужно выходить с кодом последней ошибки, например
 		}
+
+		// Обычная процедура синтаксического анализа HTTP-сообщения заключается в считывании начальной строки в
+		// структуру, считывании каждого поля заголовка в хеш-таблицу по имени поля до пустой строки, а затем с
+		// использованием проанализированных данных, чтобы определить, ожидается ли тело сообщения. Если тело сообщения
+		// было указано, то оно читается как поток, пока не будет прочитано количество октетов, равное длине тела
+		// сообщения, или пока соединение не будет закрыто.
 		if ((fd_read = FD_ISSET(*socket_fd, &fd)))
 		{
-			size_t ret = read(fd_read, (void*)message.input.c_str(), 1024);
-			while (ret)
+			size_t ret = read(fd_read, (void*)message.input.c_str(), 2);
+			while (ret && !message.input.find("\n\n"))
 			{
-				ret = read(fd_read, (void*)message.buf.c_str(), 1024);
+				ret = read(fd_read, (void*)message.buf.c_str(), 1);
 				message.input = message.input + message.buf;
+				message.buf.clear();
 			}
-			parse_message(&message); // отправила Яне в парсер данные, считанные из сокета
-			interpret_message(&message);
+			parse_message(&message); // отправила Яне в парсер данные, считанные из сокета - в виде строке string
+			interpret_message(&message); // в этой функции интерпретируем данные заголовка сообщения
+			read_message_body(&message, fd_read); // в зависимости от анализа заголовка сообщения, происходит чтение
+													// тела сообщения из потока
 			send_response(fd_read, &message);
 		}
 		close(connect_fd);

@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/Users/scopycat/Documents/webserv/webserv/Answer.cpp" "/Users/scopycat/Documents/webserv/webserv/cmake-build-debug/CMakeFiles/webserv.dir/Answer.cpp.o"
   "/Users/scopycat/Documents/webserv/webserv/Client.cpp" "/Users/scopycat/Documents/webserv/webserv/cmake-build-debug/CMakeFiles/webserv.dir/Client.cpp.o"
   "/Users/scopycat/Documents/webserv/webserv/Message.cpp" "/Users/scopycat/Documents/webserv/webserv/cmake-build-debug/CMakeFiles/webserv.dir/Message.cpp.o"
   "/Users/scopycat/Documents/webserv/webserv/main.cpp" "/Users/scopycat/Documents/webserv/webserv/cmake-build-debug/CMakeFiles/webserv.dir/main.cpp.o"

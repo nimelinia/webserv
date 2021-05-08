@@ -142,6 +142,33 @@ webserv/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/build
 .PHONY : webserv/fast
 
+Answer.o: Answer.cpp.o
+
+.PHONY : Answer.o
+
+# target to build an object file
+Answer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/Answer.cpp.o
+.PHONY : Answer.cpp.o
+
+Answer.i: Answer.cpp.i
+
+.PHONY : Answer.i
+
+# target to preprocess a source file
+Answer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/Answer.cpp.i
+.PHONY : Answer.cpp.i
+
+Answer.s: Answer.cpp.s
+
+.PHONY : Answer.s
+
+# target to generate assembly for a file
+Answer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/webserv.dir/build.make CMakeFiles/webserv.dir/Answer.cpp.s
+.PHONY : Answer.cpp.s
+
 Client.o: Client.cpp.o
 
 .PHONY : Client.o
@@ -232,6 +259,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... webserv"
+	@echo "... Answer.o"
+	@echo "... Answer.i"
+	@echo "... Answer.s"
 	@echo "... Client.o"
 	@echo "... Client.i"
 	@echo "... Client.s"

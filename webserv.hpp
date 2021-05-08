@@ -31,8 +31,9 @@
 #include <sys/types.h>
 #include "Client.hpp"
 #include "Message.hpp"
+#include "Answer.hpp"
 
-struct Config // нужно наполнить структуры необходимыми данными из конфиг файла
+struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
 	size_t		http;
 	size_t		port;

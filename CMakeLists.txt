@@ -3,4 +3,4 @@ project(webserv)
 
 set(CMAKE_CXX_STANDARD 98)
 
-add_executable(webserv main.cpp webserv.hpp Client.cpp Client.hpp Message.cpp Message.hpp)
+add_executable(webserv main.cpp webserv.hpp Client.cpp Client.hpp Message.cpp Message.hpp Answer.cpp Answer.hpp)
