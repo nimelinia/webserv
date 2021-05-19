@@ -42,7 +42,7 @@ void	work_with_socket(sockaddr_in *addr, int *socket_fd, Config *config)
 	int		fd_read;
 	int		fd_write;
 
-	if (listen(*socket_fd, -1) == -1)
+	if (listen(*socket_fd, -1) == -1) // устанавливаю сокет сервера в слушающий режим - второй аргумент - размер очереди (-1 значит, что по максимуму, предусмотренному для системы - цифра меняется на максимально поддерживаемое системой)
 	{
 		std::cout << "Ошибка: прослушивания" << std::endl;
 		close(*socket_fd);
@@ -50,15 +50,17 @@ void	work_with_socket(sockaddr_in *addr, int *socket_fd, Config *config)
 	}
 	for (;;)
 	{
-		int connect_fd = accept(*socket_fd, 0, 0);
-		fd_set fd;
-		FD_ZERO(&fd); // снимаю все флаги в массиве файловых дескрипторов
+		struct sockaddr	*addr_client;
+		socklen_t		addrlen = sizeof(*addr_client);
+		int connect_fd = accept(*socket_fd, addr_client, &addrlen);
 		if (connect_fd < 0)
 		{
 			std::cout << "Ошибка: принятия" << std::endl;
 			close(*socket_fd);
 			exit(EXIT_FAILURE);
 		}
+		fd_set fd;
+		FD_ZERO(&fd); // снимаю все флаги в массиве файловых дескрипторов
 		struct timeval tv;
 		tv.tv_sec = 0;
 		tv.tv_usec = 0;
@@ -106,7 +108,7 @@ void	work_with_socket(sockaddr_in *addr, int *socket_fd, Config *config)
 
 void	connect_to_socket(sockaddr_in *addr, int *socket_fd)
 {
-	if (bind(*socket_fd, (struct sockaddr*) addr, sizeof (*addr)) == -1)
+	if (bind(*socket_fd, (struct sockaddr*) addr, sizeof (*addr)) == -1) // снабжаем сокет адресом
 	{
 		std::cout << "Ошибка: связывания" << std:: endl;
 		close(*socket_fd);
@@ -114,16 +116,17 @@ void	connect_to_socket(sockaddr_in *addr, int *socket_fd)
 	}
 }
 
-void	fill_addr(sockaddr_in *addr, Config config)
+void	fill_addr(sockaddr_in *addr, Config &config)
 {
 	(*addr).sin_family = PF_INET;
-	(*addr).sin_port = htons(config.port);
-	(*addr).sin_addr.s_addr = inet_addr(config.localhost);
+	(*addr).sin_port = htons(config.port); // преобразую в архитектуру сервера
+	(*addr).sin_addr.s_addr = inet_addr(config.localhost); // заносит четырехбайтное целое число, отображающее корректный адрес, представленный в виде строки, в структуру. возвращает адрес в сетевом порядке байтов
+//	(*addr).sin_addr.s_addr = htonl(INADDR_ANY); позволяет принимать соединения на заданный порт на любой ip, имеющийся в системе. вопрос - нужно ли нам это?
 }
 
 void	create_socket(int *socket_fd)
 {
-	*socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	*socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP); // первый параметр - это семейство адресации - у нас TCP/IP, второй - тип взаимодействия (у нас потоковое, для дейтаграммного нужно SOCK_DGRAM) и указываем тип протокола - у нас TCP
 	if (*socket_fd == -1)
 	{
 		std::cout << "ошибка при создании сокета" << std::endl;
@@ -143,7 +146,7 @@ void	check_count_arguments(int argc)
 int main(int argc, char **argv)
 {
 	struct sockaddr_in	addr;
-	int					socket_fd;
+	int					socket_fd; // слушающий сокет
 	Config				config;
 
 	check_count_arguments(argc);
@@ -155,3 +158,11 @@ int main(int argc, char **argv)
 
 	return (0);
 }
+
+
+/*
+ * сетевой адрес сокета - это ip-адрес + номер порта
+ * октет - это 8 бит
+ * при передаче применяется big endian (старший байт передается первым)
+ * htons, htonl, ntohl, ntohs используются для преобразования архитектур сети и машины (из little endian в big и наоборот)
+ */
