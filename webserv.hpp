@@ -32,12 +32,16 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "Answer.hpp"
+#include "Select.hpp"
+#include "Server.hpp"
+#include "AllServers.hpp"
 
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
+	size_t		count_servers;
 	size_t		http;
-	size_t		port;
-	char 		*localhost;
+	size_t		port[1000];
+	char 		*hostaddress[1000];
 	std::string	server_names;
 	size_t		limit_body_size;
 
