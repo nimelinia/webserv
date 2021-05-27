@@ -14,6 +14,7 @@ public:
 	size_t	id;
 	bool	sending;
 	bool	receiving;
+
 };
 
 

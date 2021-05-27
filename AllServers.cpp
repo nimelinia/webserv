@@ -67,10 +67,15 @@ bool ft::AllServers::start_all_servers()
 		std::cout << "Socket loop" << std::endl;
 		for (int i = 0; i < m_open_sockets.size(); ++i) {
 			if (FD_ISSET(m_open_sockets[i], &readfds))
-				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения"
-						  << std::endl; 																					// функция чтения из сокета
+			{
+				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения" << std::endl; 							// функция чтения из сокета
+				this->read_from_socket(m_open_sockets[i]);
+			}
 			if (FD_ISSET(m_open_sockets[i], &writefds))
+			{
 				std::cout << "сокет " << m_open_sockets[i] << " открыт для записи" << std::endl;
+				this->write_to_socket(m_open_sockets[i]);
+			}
 			if (FD_ISSET(m_open_sockets[i], &exfds)) 																	// функция записи в сокет
 				std::cout << "сокет " << m_open_sockets[i] << " содержит исключение" << std::endl;							// обработчик ошибок
 		}
@@ -98,6 +103,26 @@ bool ft::AllServers::start_all_servers()
 		usleep(1000);
 	}
 	return (true);
+}
+
+ssize_t	ft::AllServers::read_from_socket(int fd)
+{
+	char	buff[1567415];
+	ssize_t	ret;
+
+	ret = read(fd, buff, sizeof(buff));
+	if (ret == 0)
+		return (0);
+	if (ret == -1)
+		return (-1);
+
+
+	return 0;
+}
+
+ssize_t ft::AllServers::write_to_socket(int fd)
+{
+	return 0;
 }
 
 
