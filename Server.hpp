@@ -9,6 +9,8 @@
 #include <vector>
 #include "webserv.hpp"
 
+#define	MAXBODYSIZE		10240;
+
 struct Config;
 
 namespace ft
@@ -20,8 +22,10 @@ namespace ft
 		virtual ~Server();
 
 		bool			create_server();
-		virtual bool	start_server();																						// или это перенести это в класс AllServers
+//		virtual bool	start_server();																						// или это перенести это в класс AllServers
 		int				getMSocketFd() const;
+
+		size_t			getMLimitBodySize() const;
 
 	private:
 		Config				&m_config;
@@ -31,6 +35,7 @@ namespace ft
 		int					m_socket_fd;
 		bool				m_error_fatal;
 		std::vector<int>	m_open_sockets;
+		size_t				m_limit_body_size;
 
 		Server();
 

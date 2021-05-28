@@ -29,12 +29,12 @@
 #include <ctime>
 #include <sys/select.h>
 #include <sys/types.h>
-#include "Client.hpp"
-#include "Message.hpp"
-#include "Answer.hpp"
-#include "Select.hpp"
-#include "Server.hpp"
-#include "AllServers.hpp"
+//#include "Client.hpp"
+//#include "Message.hpp"
+//#include "Answer.hpp"
+//#include "Select.hpp"
+//#include "Server.hpp"
+//#include "AllServers.hpp"
 
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {

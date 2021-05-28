@@ -1,4 +1,8 @@
-#include "webserv.hpp"
+//#include "webserv.hpp"
+//#include "Client.hpp"
+//#include "Server.hpp"
+//#include "Message.hpp"
+#include "AllServers.hpp"
 
 int	check_count_arguments(int argc)
 {
@@ -18,8 +22,8 @@ int main(int argc, char **argv) 																							// переписать, 
 //	ft::Server	server_1(config, 8080, "127.0.0.1", 1);
 //	server_1.create_server();
 //	server_1.start_server();
-	config.hostaddress[0] = "127.0.0.1";
-	config.hostaddress[1] = "127.0.0.1";
+	config.hostaddress[0] = (char*)"127.0.0.1";
+	config.hostaddress[1] = (char*)"127.0.0.1";
 	config.port[0] = 8080;
 	config.port[1] = 9090;
 	config.count_servers = 2;

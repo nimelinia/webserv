@@ -8,13 +8,16 @@
 #include <iostream>
 #include <vector>
 #include "webserv.hpp"
-
+#include "Message.hpp"
+#include "Server.hpp"
+#include "Client.hpp"
 struct	Config;
-class	Server;
 class	Client;
+class	Message;
 
 namespace ft
 {
+	class	Server;
 	class AllServers
 	{
 	public:
@@ -26,9 +29,9 @@ namespace ft
 
 	private:
 		Config					&m_config;
-		std::vector<&Server>		m_servers;
+		std::vector<Server>		m_servers;
 		std::vector<int>		m_open_sockets;
-		std::vector<&Client>	m_clients_data;
+		std::vector<Client>		m_clients_data;
 
 		AllServers();
 	};

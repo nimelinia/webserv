@@ -6,14 +6,24 @@
 #define CLIENT_HPP
 
 #include <iostream>
+#include "Server.hpp"
+
+class	Message;
+
 
 class Client
 {
 public:
-	int		*socket_cl;
-	size_t	id;
-	bool	sending;
-	bool	receiving;
+	Client(int socketCl, ft::Server &server);
+
+	void	fill_data(Message &msg);
+
+	int		m_socket_cl;
+	int		m_socket_serv;
+	ft::Server	&m_server;
+	size_t	m_id;
+//	bool	sending;
+//	bool	receiving;
 
 };
 

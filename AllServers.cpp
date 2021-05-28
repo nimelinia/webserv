@@ -5,11 +5,12 @@
 #include "AllServers.hpp"
 
 
+
 ft::AllServers::AllServers(Config &config) : m_config(config)
 {
 	for (int i = 0; i < m_config.count_servers; ++i)
 	{
-		Server _server(m_config, config.port[i], config.hostaddress[i], i);
+		ft::Server _server(m_config, config.port[i], config.hostaddress[i], i);
 		m_servers.push_back(_server);
 	}
 }
@@ -69,7 +70,8 @@ bool ft::AllServers::start_all_servers()
 			if (FD_ISSET(m_open_sockets[i], &readfds))
 			{
 				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения" << std::endl; 							// функция чтения из сокета
-				this->read_from_socket(m_open_sockets[i]);
+				if (this->read_from_socket(i) == -1 && max_fd == m_open_sockets[i])											// если функция вернула -1, значит во время чтения произошла ошибка и сокет был закрыт, то есть возможно,
+					max_fd--;																								// нужно уменьшить max_fd, по крайней мере, если это был максимальный размер сокета
 			}
 			if (FD_ISSET(m_open_sockets[i], &writefds))
 			{
@@ -96,6 +98,9 @@ bool ft::AllServers::start_all_servers()
 					m_open_sockets.push_back(connect_fd);
 					FD_SET(connect_fd, &clients);
 					fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
+					Client	new_client(connect_fd, m_servers[i]);
+					new_client.m_socket_serv = m_servers[i].getMSocketFd();
+					m_clients_data.push_back(new_client);
 					max_fd = connect_fd;
 				}
 			}
@@ -105,18 +110,33 @@ bool ft::AllServers::start_all_servers()
 	return (true);
 }
 
-ssize_t	ft::AllServers::read_from_socket(int fd)
+ssize_t	ft::AllServers::read_from_socket(int index)
 {
 	char	buff[1567415];
 	ssize_t	ret;
 
-	ret = read(fd, buff, sizeof(buff));
-	if (ret == 0)
-		return (0);
-	if (ret == -1)
+	ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
+	if (ret == 0 || ret == -1)
+	{
+		close(m_open_sockets[index]);																						// закрываю сокет
+		m_open_sockets.erase(m_open_sockets.cbegin() + index);														// удаляю фд сокета из вектора
 		return (-1);
+	}
 
-
+	Message	msg;
+	size_t	readed = ret;
+	while (ret && !msg.m_bad_request && readed <= m_servers[index].getMLimitBodySize())										// откуда мне взять понимание, к какому серверу обращается клиент?
+	{
+		msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
+		msg.parse();																										// отправила сообщение в парсер
+		msg.clean();
+		buff[0] = '\0';
+		ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
+		readed += ret;
+	}
+	if (readed > m_clients_data[index].m_server.getMLimitBodySize() && !msg.m_error_num)													// тут надо понять, какую из ошибок отправлять (если кривой запрос и большого веса, какая приоритетнее)
+		msg.m_error_num = 413;
+	m_clients_data[index].fill_data(msg);
 	return 0;
 }
 
