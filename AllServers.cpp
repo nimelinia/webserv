@@ -42,8 +42,8 @@ bool ft::AllServers::start_all_servers()
 
 	for (;;)
 	{
-		struct sockaddr *addr_client;
-		socklen_t addrlen = sizeof(*addr_client);
+		struct sockaddr_t *addr_client;
+		socklen_t addrlen = sizeof(addr_client);
 		int fd;																												// дескриптор клиента
 		fd_set readfds;
 		fd_set writefds;
@@ -76,7 +76,7 @@ bool ft::AllServers::start_all_servers()
 			if (FD_ISSET(m_open_sockets[i], &writefds))
 			{
 				std::cout << "сокет " << m_open_sockets[i] << " открыт для записи" << std::endl;
-				this->write_to_socket(m_open_sockets[i]);
+//				this->write_to_socket(m_open_sockets[i]);
 			}
 			if (FD_ISSET(m_open_sockets[i], &exfds)) 																	// функция записи в сокет
 				std::cout << "сокет " << m_open_sockets[i] << " содержит исключение" << std::endl;							// обработчик ошибок
@@ -86,7 +86,7 @@ bool ft::AllServers::start_all_servers()
 			if (FD_ISSET(m_servers[i].getMSocketFd(), &readfds))
 			{
 				std::cout << "Server socket" << std::endl;
-				int connect_fd = accept(m_servers[i].getMSocketFd(), addr_client, &addrlen);
+				int connect_fd = accept(m_servers[i].getMSocketFd(), (struct sockaddr*) &addr_client, &addrlen);
 				if (connect_fd < 0)
 				{
 					std::cout << "Ошибка: принятия" << std::endl;
@@ -125,14 +125,15 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 
 	Message	msg;
 	size_t	readed = ret;
-	while (ret && !msg.m_bad_request && readed <= m_servers[index].getMLimitBodySize())										// откуда мне взять понимание, к какому серверу обращается клиент?
+	while (ret > 0 && !msg.m_bad_request && readed <= m_servers[index].getMLimitBodySize())										// откуда мне взять понимание, к какому серверу обращается клиент?
 	{
 		msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
 		msg.parse();																										// отправила сообщение в парсер
 		msg.clean();
 		buff[0] = '\0';
 		ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
-		readed += ret;
+		if (ret > 0)
+			readed += ret;
 	}
 	if (readed > m_clients_data[index].m_server.getMLimitBodySize() && !msg.m_error_num)													// тут надо понять, какую из ошибок отправлять (если кривой запрос и большого веса, какая приоритетнее)
 		msg.m_error_num = 413;
