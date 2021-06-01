@@ -6,9 +6,17 @@
 std::string ft::log::TextOnlyFormatter(const detail::Message & msg)
 {
     std::string res;
+    res += msg.text();
+    return res;
+}
+
+std::string ft::log::TextWithLevelFormatter(const detail::Message & msg)
+{
+    std::string res;
     res += ft::log::LevelToString(msg.level());
     if (res.size() < 5)
         res.append(5 - res.size(), ' ');
+    res += " | ";
     res += msg.text();
     return res;
 }

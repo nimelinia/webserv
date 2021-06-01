@@ -27,7 +27,8 @@ set(HEADER_FILES
         log/handlers/AHandler.h
         log/handlers/ConsoleHandler.h
         log/handlers/ColorConsoleHandler.h
-        log/handlers/FileHandler.h)
+        log/handlers/FileHandler.h
+        http/RequestParser.h)
 
 set(SOURCE_FILES
         config/Config.cpp
@@ -45,6 +46,7 @@ set(SOURCE_FILES
         log/detail/Message.cpp
         log/handlers/ConsoleHandler.cpp
         log/handlers/ColorConsoleHandler.cpp
-        log/handlers/FileHandler.cpp )
+        log/handlers/FileHandler.cpp
+        http/RequestParser.cpp)
 
 add_executable(ConfigParser main.cpp ${HEADER_FILES} ${SOURCE_FILES})
