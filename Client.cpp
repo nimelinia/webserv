@@ -6,12 +6,12 @@
 //#include "Server.hpp"
 
 
-Client::Client(int socketCl, ft::Server &server) : m_socket_cl(socketCl), m_server(server)
+ft::Client::Client(int socketCl, Server &server) : m_socket_cl(socketCl), m_server(server)
 {
 
 }
 
-void Client::fill_data(Message &msg)
+void ft::Client::fill_data(Message &msg)
 {
 
 }

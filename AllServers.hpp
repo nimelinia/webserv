@@ -11,6 +11,7 @@
 #include "Message.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
+
 struct	Config;
 class	Client;
 class	Message;

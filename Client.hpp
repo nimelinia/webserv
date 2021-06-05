@@ -7,25 +7,25 @@
 
 #include <iostream>
 #include "Server.hpp"
+#include "Message.hpp"
 
 class	Message;
 
+namespace ft {
+	class Client {
+	public:
+		Client(int socketCl, Server &server);
 
-class Client
-{
-public:
-	Client(int socketCl, ft::Server &server);
+		void fill_data(Message &msg);
 
-	void	fill_data(Message &msg);
-
-	int		m_socket_cl;
-	int		m_socket_serv;
-	ft::Server	&m_server;
-	size_t	m_id;
+		int m_socket_cl;
+		int m_socket_serv;
+		Server &m_server;
+		size_t m_id;
 //	bool	sending;
 //	bool	receiving;
 
-};
-
+	};
+}
 
 #endif //CLIENT_HPP

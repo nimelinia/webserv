@@ -18,11 +18,15 @@
  * хотя тело может иметь нулевую длину.
  */
 
-class Answer
+namespace ft
 {
-	bool			body_exist;
-	std::string		answer_body;
-};
+	class Answer
+	{
+		bool			body_exist;
+		std::string		answer_body;
+	};
+}
+
 
 
 #endif //WEBSERV_ANSWER_HPP

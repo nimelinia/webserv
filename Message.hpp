@@ -7,19 +7,27 @@
 
 #include <iostream>
 #include <map>
+#include "http/RequestParser.h"
 
-class Message
-{
-public:
-	Message();
+namespace ft {
+	class Message {
+	public:
+		Message();
 
-	void	copy_buff(char *buf);
-	void	parse();
-	void	clean();
+		void copy_buff(char *buf);
 
-	char	m_buff[1567415];
-	bool	m_bad_request;																									// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true
-	int		m_error_num;																									// код ошибки, которую отправить клиенту
+		void parse();
+		void read_body();
+
+		void clean();
+
+		char						m_buff[1567415];
+		bool						m_bad_request;																			// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true
+		int							m_error_num;																			// код ошибки, которую отправить клиенту
+		size_t						m_readed;
+		size_t						m_parsed;
+		std::vector<http::Header>	m_headers;
+		char 						m_body[1567415];
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;
@@ -34,7 +42,7 @@ public:
 //	bool								long_url; // 414
 //	bool								non_realized; // 501
 //	bool								bad_gateway; // 502
-};
-
+	};
+}
 
 #endif //MESSAGE_HPP

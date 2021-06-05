@@ -21,11 +21,10 @@ namespace ft
 		Server(Config &config, size_t port, char *host_address, size_t id);
 		virtual ~Server();
 
-		bool			create_server();
-//		virtual bool	start_server();																						// или это перенести это в класс AllServers
-		int				getMSocketFd() const;
+		bool				create_server();
+		int					getMSocketFd() const;
 
-		size_t			getMLimitBodySize() const;
+		size_t				getMLimitBodySize() const;
 
 	private:
 		Config				&m_config;

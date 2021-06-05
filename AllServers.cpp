@@ -4,8 +4,6 @@
 
 #include "AllServers.hpp"
 
-
-
 ft::AllServers::AllServers(Config &config) : m_config(config)
 {
 	for (int i = 0; i < m_config.count_servers; ++i)
@@ -105,7 +103,7 @@ bool ft::AllServers::start_all_servers()
 				}
 			}
 		}
-		usleep(1000);
+		usleep(1000000);																									// так долго, чтобы тестить
 	}
 	return (true);
 }
@@ -113,6 +111,7 @@ bool ft::AllServers::start_all_servers()
 ssize_t	ft::AllServers::read_from_socket(int index)
 {
 	char	buff[1567415];
+//	char	buff[2];																										// для теста
 	ssize_t	ret;
 
 	ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
@@ -120,22 +119,19 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 	{
 		close(m_open_sockets[index]);																						// закрываю сокет
 		m_open_sockets.erase(m_open_sockets.cbegin() + index);														// удаляю фд сокета из вектора
+		m_clients_data.erase(m_clients_data.cbegin() + index);
 		return (-1);
 	}
-
 	Message	msg;
-	size_t	readed = ret;
-	while (ret > 0 && !msg.m_bad_request && readed <= m_servers[index].getMLimitBodySize())										// откуда мне взять понимание, к какому серверу обращается клиент?
+	msg.m_readed += ret;
+	if (!msg.m_bad_request && msg.m_readed <= m_clients_data[index].m_server.getMLimitBodySize())
 	{
 		msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
 		msg.parse();																										// отправила сообщение в парсер
 		msg.clean();
-		buff[0] = '\0';
-		ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
-		if (ret > 0)
-			readed += ret;
 	}
-	if (readed > m_clients_data[index].m_server.getMLimitBodySize() && !msg.m_error_num)													// тут надо понять, какую из ошибок отправлять (если кривой запрос и большого веса, какая приоритетнее)
+	buff[0] = '\0';																											// чищу буфер
+	if (msg.m_readed > m_clients_data[index].m_server.getMLimitBodySize() && !msg.m_error_num)
 		msg.m_error_num = 413;
 	m_clients_data[index].fill_data(msg);
 	return 0;
