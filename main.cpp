@@ -19,16 +19,13 @@ int main(int argc, char **argv) 																							// переписать, 
 	if (check_count_arguments(argc))
 		return (errno);																										// тут нужно прописать код ошибки
 	Config		config;
-//	ft::Server	server_1(config, 8080, "127.0.0.1", 1);
-//	server_1.create_server();
-//	server_1.start_server();
 	config.hostaddress[0] = (char*)"127.0.0.1";
 	config.hostaddress[1] = (char*)"127.0.0.1";
 	config.port[0] = 8080;
 	config.port[1] = 9090;
 	config.count_servers = 2;
 	ft::AllServers servers(config);
-	servers.start_all_servers();
+	servers.start_all_servers();																							// нужно внутри сделать класс селект, который сделать синглтоном
 
 	return (0);
 }

@@ -9,6 +9,8 @@
 #include <map>
 #include "http/RequestParser.h"
 
+#define BUFFER_SIZE	1567415
+
 namespace ft {
 	class Message {
 	public:
@@ -21,13 +23,17 @@ namespace ft {
 
 		void clean();
 
-		char						m_buff[1567415];
+		char						m_buff[BUFFER_SIZE];
 		bool						m_bad_request;																			// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true
 		int							m_error_num;																			// код ошибки, которую отправить клиенту
 		size_t						m_readed;
 		size_t						m_parsed;
 		std::vector<http::Header>	m_headers;
-		char 						m_body[1567415];
+		char 						m_body[BUFFER_SIZE];
+		std::string					m_method;
+		std::string					m_uri;
+		int 						m_ver_major;
+		int							m_ver_minor;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;

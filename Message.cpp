@@ -23,22 +23,25 @@ void ft::Message::parse()
 	std::pair<http::RequestParser::EResult, size_t>		pair;
 	pair = parser.parse(m_buff, m_readed - m_parsed);
 	m_parsed += pair.second;
-	if (pair.second == http::RequestParser::EOk) 																			// если парсер закончил свою работу
+	if (pair.first == http::RequestParser::EOk) 																			// если парсер закончил свою работу
 	{
 		m_headers = parser.m_headers;
-		read_body();
+		m_method = parser.m_method;
+		m_uri = parser.m_uri;
+		m_ver_major = parser.m_ver_major;
+		m_ver_minor = parser.m_ver_minor;
+		read_body();																										// что, если chunked
 	}
-	else if (pair.second == http::RequestParser::EParse)																	// если парсеру еще есть что читать
-	{
-
-	}
+	else if (pair.first == http::RequestParser::EParse)																	// если парсеру еще есть что читать
+		return;
 	else
 		m_bad_request = true;
 }
 
 void ft::Message::clean()
 {
-	m_buff[0] = '\0';
+	for (int i = 0; i < BUFFER_SIZE; ++i)
+		m_buff[i] = '\0';
 }
 
 void ft::Message::read_body()
@@ -53,6 +56,9 @@ void ft::Message::read_body()
 		}
 	}
 	if (length != -1)
-		// тут надо перенести из уже прочитанного, но не являющегося заголовком, того, что в буфере, в body
+	{
+		for (size_t i = 0; i + m_parsed < BUFFER_SIZE; ++i)
+			m_body[i] = m_buff[i + m_parsed];
+	}
 
 }
