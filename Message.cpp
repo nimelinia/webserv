@@ -31,8 +31,9 @@ void ft::Message::parse()
 		m_ver_major = parser.m_ver_major;
 		m_ver_minor = parser.m_ver_minor;
 		read_body();																										// что, если chunked
+		m_ready_responce = true;
 	}
-	else if (pair.first == http::RequestParser::EParse)																	// если парсеру еще есть что читать
+	else if (pair.first == http::RequestParser::EParse)																		// если парсеру еще есть что читать
 		return;
 	else
 		m_bad_request = true;

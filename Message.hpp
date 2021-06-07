@@ -34,6 +34,7 @@ namespace ft {
 		std::string					m_uri;
 		int 						m_ver_major;
 		int							m_ver_minor;
+		bool 						m_ready_responce;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;

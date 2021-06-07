@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.17)
 project(webserv)
 
 set(CMAKE_CXX_STANDARD 98)
@@ -20,4 +20,4 @@ add_executable(webserv
 		AllServers.hpp
 		http/RequestParser.cpp
 		http/RequestParser.h
-		AllowedStd.h)
+		AllowedStd.h Help.cpp Help.hpp)

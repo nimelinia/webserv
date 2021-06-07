@@ -74,7 +74,8 @@ bool ft::AllServers::start_all_servers()
 			if (FD_ISSET(m_open_sockets[i], &writefds))
 			{
 				std::cout << "сокет " << m_open_sockets[i] << " открыт для записи" << std::endl;
-//				this->write_to_socket(m_open_sockets[i]);
+				if (m_clients_data[i].m_msg.m_ready_responce)
+					this->write_to_socket(i);
 			}
 			if (FD_ISSET(m_open_sockets[i], &exfds)) 																	// функция записи в сокет
 				std::cout << "сокет " << m_open_sockets[i] << " содержит исключение" << std::endl;							// обработчик ошибок
@@ -96,7 +97,9 @@ bool ft::AllServers::start_all_servers()
 					m_open_sockets.push_back(connect_fd);
 					FD_SET(connect_fd, &clients);
 					fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
-					Client	new_client(connect_fd, m_servers[i]);
+					Message	msg;
+					Answer	answer;
+					Client	new_client(connect_fd, m_servers[i], msg, answer);
 					new_client.m_socket_serv = m_servers[i].getMSocketFd();
 					m_clients_data.push_back(new_client);
 					max_fd = connect_fd;
@@ -117,28 +120,51 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 	ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
 	if (ret == 0 || ret == -1)
 	{
+
+		// тут можно просто вызвать метод по закрытию сокета и туда все эти штуки перекинуть
 		close(m_open_sockets[index]);																						// закрываю сокет
 		m_open_sockets.erase(m_open_sockets.cbegin() + index);														// удаляю фд сокета из вектора
 		m_clients_data.erase(m_clients_data.cbegin() + index);
 		return (-1);
 	}
-	Message	msg;
-	msg.m_readed += ret;
-	if (!msg.m_bad_request && msg.m_readed <= m_clients_data[index].m_server.getMLimitBodySize())
+	m_clients_data[index].m_msg.m_readed += ret;
+	if (!m_clients_data[index].m_msg.m_bad_request &&
+		m_clients_data[index].m_msg.m_readed <= m_clients_data[index].m_server.getMLimitBodySize())
 	{
-		msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
-		msg.parse();																										// отправила сообщение в парсер
-		msg.clean();
+		m_clients_data[index].m_msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
+		m_clients_data[index].m_msg.parse();																										// отправила сообщение в парсер
+		m_clients_data[index].m_msg.clean();
 	}
 	buff[0] = '\0';																											// чищу буфер
-	if (msg.m_readed > m_clients_data[index].m_server.getMLimitBodySize() && !msg.m_error_num)
-		msg.m_error_num = 413;
-	m_clients_data[index].fill_data(msg);
+	if (m_clients_data[index].m_msg.m_readed > m_clients_data[index].m_server.getMLimitBodySize() &&
+		!m_clients_data[index].m_msg.m_error_num)
+		m_clients_data[index].m_msg.m_error_num = 413;
 	return 0;
 }
 
-ssize_t ft::AllServers::write_to_socket(int fd)
+ssize_t ft::AllServers::write_to_socket(int index)
 {
+	Message	msg = m_clients_data[index].m_msg;
+	m_clients_data[index].m_answer.generate_answer(msg);
+	Answer	answer = m_clients_data[index].m_answer;
+	ssize_t	ret;
+	ret = send(m_clients_data[index].m_socket_cl, answer.m_final_response.c_str(),  answer.m_size_response, 0);
+	if (ret == 0 || ret == -1)
+	{
+		// по идее можно просто сделать метод по закрытию сокета и здесь его вызывать
+		close(m_open_sockets[index]);																						// закрываю сокет
+		m_open_sockets.erase(m_open_sockets.cbegin() + index);														// удаляю фд сокета из вектора
+		m_clients_data.erase(m_clients_data.cbegin() + index);
+	} else
+	{
+		answer.m_final_response.erase(0, ret);
+		if (answer.m_final_response.empty())																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
+		{
+			m_clients_data[index].m_msg.m_ready_responce = false;
+			m_clients_data[index].m_msg.clean();
+			m_clients_data[index].m_answer.clean();
+		}
+	}
 	return 0;
 }
 

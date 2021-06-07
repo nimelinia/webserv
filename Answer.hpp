@@ -6,6 +6,8 @@
 #define WEBSERV_ANSWER_HPP
 
 #include <iostream>
+#include "Message.hpp"
+#include "Help.hpp"
 
 /*
  * Наличие тела сообщения в ответе зависит как от метода запроса, на который он отвечает, так и от кода состояния
@@ -22,8 +24,37 @@ namespace ft
 {
 	class Answer
 	{
-		bool			body_exist;
-		std::string		answer_body;
+	public:
+		Answer();
+
+		std::string		m_protocol_v;
+		size_t			m_status_code;
+		std::string		m_status_text;
+
+		std::string		m_location;
+		std::string		m_server;
+		std::string		m_content_type;
+		size_t			m_content_length;
+		std::string		m_content_language;
+		std::string		m_date;
+
+		std::string		m_last_modified;
+		std::string 	m_transfer_encoding;
+
+
+		bool			m_body_exist;
+		std::string		m_body;
+
+		std::string		m_final_response;
+		size_t			m_size_response;
+
+		void			generate_answer(Message &message);
+		void			clean();
+
+	private:
+		void			generate_GET();
+		void 			generate_POST();
+		void			generate_DELETE();
 	};
 }
 

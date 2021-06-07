@@ -25,8 +25,8 @@ namespace ft
 		AllServers(Config &config);
 		virtual ~AllServers();
 		bool	start_all_servers();
-		ssize_t	read_from_socket(int fd);
-		ssize_t	write_to_socket(int fd);
+		ssize_t	read_from_socket(int index);
+		ssize_t	write_to_socket(int index);
 
 	private:
 		Config					&m_config;

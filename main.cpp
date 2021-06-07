@@ -6,10 +6,14 @@
 
 int	check_count_arguments(int argc)
 {
-	if (argc != 2)
+	if (argc < 2)
 	{
 		std::cout << "There is no config for server!" << std::endl;
 		return (1);
+	}
+	else if (argc > 2)
+	{
+		std::cout << "Too many arguments!" << std::endl;
 	}
 	return (0);
 }

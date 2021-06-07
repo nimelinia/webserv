@@ -8,19 +8,20 @@
 #include <iostream>
 #include "Server.hpp"
 #include "Message.hpp"
+#include "Answer.hpp"
 
 class	Message;
 
 namespace ft {
 	class Client {
 	public:
-		Client(int socketCl, Server &server);
-
-		void fill_data(Message &msg);
+		Client(int socketCl, Server &server, Message &msg, Answer &answer);
 
 		int m_socket_cl;
 		int m_socket_serv;
+		Message	&m_msg;
 		Server &m_server;
+		Answer &m_answer;
 		size_t m_id;
 //	bool	sending;
 //	bool	receiving;
