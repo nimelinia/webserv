@@ -33,12 +33,14 @@ namespace ft
 
 		std::string		m_server;
 		std::string		m_location;
+		std::string 	m_connection;
 		std::string		m_retry_after;
 		std::string		m_allow;
 		std::string		m_content_type;
 		size_t			m_content_length;
+		bool			m_length_exist;
 		std::string		m_content_language;
-		std::string		m_content_location;
+		std::string		m_content_location;																					// не понятно, нужно ли это
 		std::string		m_date;
 
 		std::string		m_last_modified;

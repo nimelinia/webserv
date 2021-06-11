@@ -26,7 +26,7 @@ namespace ft {
 		char						m_buff[BUFFER_SIZE];
 		bool						m_bad_request;																			// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true
 		int							m_error_num;																			// код ошибки, которую отправить клиенту
-		size_t						m_readed;
+		size_t						m_read;
 		size_t						m_parsed;
 		std::vector<http::Header>	m_headers;
 		char 						m_body[BUFFER_SIZE];

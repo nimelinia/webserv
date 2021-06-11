@@ -21,7 +21,7 @@ void ft::Message::parse()
 {
 	http::RequestParser									parser;
 	std::pair<http::RequestParser::EResult, size_t>		pair;
-	pair = parser.parse(m_buff, m_readed - m_parsed);
+	pair = parser.parse(m_buff, m_read - m_parsed);
 	m_parsed += pair.second;
 	if (pair.first == http::RequestParser::EOk) 																			// если парсер закончил свою работу
 	{

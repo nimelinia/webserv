@@ -127,16 +127,16 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 		m_clients_data.erase(m_clients_data.cbegin() + index);
 		return (-1);
 	}
-	m_clients_data[index].m_msg.m_readed += ret;
+	m_clients_data[index].m_msg.m_read += ret;
 	if (!m_clients_data[index].m_msg.m_bad_request &&
-		m_clients_data[index].m_msg.m_readed <= m_clients_data[index].m_server.getMLimitBodySize())
+		m_clients_data[index].m_msg.m_read <= m_clients_data[index].m_server.getMLimitBodySize())
 	{
 		m_clients_data[index].m_msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
 		m_clients_data[index].m_msg.parse();																										// отправила сообщение в парсер
 		m_clients_data[index].m_msg.clean();
 	}
-	buff[0] = '\0';																											// чищу буфер
-	if (m_clients_data[index].m_msg.m_readed > m_clients_data[index].m_server.getMLimitBodySize() &&
+	buff[0] = '\0';																											// чищу буфер (сомнительно, что это работает)
+	if (m_clients_data[index].m_msg.m_read > m_clients_data[index].m_server.getMLimitBodySize() &&
 		!m_clients_data[index].m_msg.m_error_num)
 		m_clients_data[index].m_msg.m_error_num = 413;
 	return 0;
