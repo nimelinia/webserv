@@ -3,6 +3,7 @@
 //#include "Server.hpp"
 //#include "Message.hpp"
 #include "AllServers.hpp"
+#include "Help.hpp"
 
 int	check_count_arguments(int argc)
 {
@@ -20,6 +21,7 @@ int	check_count_arguments(int argc)
 
 int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
 {
+//	std::cout << ft::Help::get_date() << std::endl;
 	if (check_count_arguments(argc))
 		return (errno);																										// тут нужно прописать код ошибки
 	Config		config;

@@ -20,4 +20,6 @@ add_executable(webserv
 		AllServers.hpp
 		http/RequestParser.cpp
 		http/RequestParser.h
-		AllowedStd.h Help.cpp Help.hpp)
+		AllowedStd.h
+		Help.cpp
+		Help.hpp)

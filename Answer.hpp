@@ -31,11 +31,14 @@ namespace ft
 		size_t			m_status_code;
 		std::string		m_status_text;
 
-		std::string		m_location;
 		std::string		m_server;
+		std::string		m_location;
+		std::string		m_retry_after;
+		std::string		m_allow;
 		std::string		m_content_type;
 		size_t			m_content_length;
 		std::string		m_content_language;
+		std::string		m_content_location;
 		std::string		m_date;
 
 		std::string		m_last_modified;
@@ -50,14 +53,41 @@ namespace ft
 
 		void			generate_answer(Message &message);
 		void			clean();
+		void			create_final_response();
 
 	private:
 		void			generate_GET();
 		void 			generate_POST();
 		void			generate_DELETE();
+		void			wrong_method();
 	};
 }
 
 
 
 #endif //WEBSERV_ANSWER_HPP
+
+/*
+ * 200	OK
+ * 201	Успешная команда POST
+ * 202	Запрос принят
+ * 203	Запрос GET или HEAD выполнен
+ * 204	Запрос выполнен но нет содержимого
+ * 300	Ресурс обнаружен в нескольких местах
+ * 301	Ресурс удален навсегда
+ * 302	Ресурс отсутствует временно
+ * 304	Ресурс был изменен
+ * 400	Плохой запрос от клиента
+ * 401	Неавторизованый запрос
+ * 402	Необходима оплата за ресурс
+ * 403	Доступ Запрещен
+ * 404	Ресурс не найден
+ * 405	Метод не применим для данного ресурса
+ * 406	Недопустимый тип ресурса
+ * 410	Ресурс Недоступен
+ * 500	Внутренняя ошибка сервера (это по вашу душу,юные CGI-программисты ;( )
+ * 501	Метод не выполнен
+ * 502	Неисправный шлюз либо перегруз сервера
+ * 503	Сервер недоступен/тайм-аут шлюза
+ * 504	Вторичный шлюз/тай-аут сервера
+ */

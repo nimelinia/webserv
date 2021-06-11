@@ -58,7 +58,9 @@ void ft::Message::read_body()
 	}
 	if (length != -1)
 	{
-		for (size_t i = 0; i + m_parsed < BUFFER_SIZE; ++i)
+		if (length + m_parsed > BUFFER_SIZE)
+			length = BUFFER_SIZE - m_parsed;
+		for (size_t i = 0; i < length; ++i)
 			m_body[i] = m_buff[i + m_parsed];
 	}
 
