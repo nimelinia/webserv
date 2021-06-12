@@ -9,7 +9,7 @@ std::string ft::Help::get_date() // нужно перевести в форма�
 	time_t now = time(0);
 	tm *ltm = localtime(&now);
 	std::string			date_buf;
-	date_buf = asctime(localtime(&now));
+	date_buf = asctime(gmtime(&now));
 	std::stringstream 	date;
 	std::string			zero;
 	int					i = 0;

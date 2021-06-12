@@ -27,12 +27,14 @@ namespace ft
 		bool	start_all_servers();
 		ssize_t	read_from_socket(int index);
 		ssize_t	write_to_socket(int index);
+		int find_max_fd();
 
 	private:
 		Config					&m_config;
 		std::vector<Server>		m_servers;
 		std::vector<int>		m_open_sockets;
 		std::vector<Client>		m_clients_data;
+		fd_set					m_clients;
 
 		AllServers();
 	};

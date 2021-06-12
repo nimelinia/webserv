@@ -23,6 +23,38 @@ ft::Answer::Answer() :
 
 }
 
+void ft::Answer::check_validity(ft::Message &message)
+{
+	if (message.m_method.empty() || message.m_ver_minor < 1.0)
+		message.m_error_num = 400;
+	else if (message.m_method != "GET" && message.m_method != "POST" && message.m_method != "DELETE")
+	{
+		message.m_error_num = 501;
+		check_allow_methods(message);																					// нужно написать метод, который проверяет методы, которые доступны с такими параметрами
+	}
+//	else if (check_this_method(message.m_method, message))
+//		message.m_error_num = 405;
+
+}
+
+void ft::Answer::check_allow_methods(ft::Message &message)																	// нужно как-то понять, где и как проверять доступность методов
+{
+	if (m_all_methods == EGet)
+		m_allow += "GET";
+	if (m_all_methods == EPost) {
+		if (!m_allow.empty())
+			m_allow += ", ";
+		m_allow += "POST";
+	}
+	if (m_all_methods == EDelete)
+	{
+		if (!m_allow.empty())
+			m_allow += ", ";
+		m_allow += "POST";
+	}
+}
+
+
 void ft::Answer::make_error_answer(size_t num)
 {
 	m_status_code = num;
@@ -55,14 +87,17 @@ void ft::Answer::make_error_answer(size_t num)
 	else if (num == 505)
 		m_status_text = "HTTP Version Not Supported";
 	m_connection = "close";
-	m_content_type = "text/html; charset=iso-8859-1";
 	m_body = "";																											// нужно понять, откуда тело брать
 	m_content_length = m_body.length();
+	if (!m_body.empty())
+		m_content_type = "text/html; charset=iso-8859-1";
 	create_final_response();
 }
 
 void ft::Answer::generate_answer(ft::Message &message)
 {
+	if (!message.m_error_num)
+		check_validity(message);
 	if (message.m_error_num)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
 	{
 		make_error_answer(message.m_error_num);
@@ -88,6 +123,7 @@ void ft::Answer::generate_GET()
 {
 	m_status_code = 200;
 	m_status_text = "Ok";
+	m_connection = "Upgrade";
 }
 
 void ft::Answer::generate_POST()
@@ -146,6 +182,10 @@ void ft::Answer::create_final_response()
 	if (m_body_exist)
 		m_final_response += m_body;																							// в x.com я не видела переноса строки после тела ответа
 	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
+	m_size_response = m_final_response.length();
 }
+
+
+
 
 

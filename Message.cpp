@@ -4,7 +4,15 @@
 
 #include "Message.hpp"
 
-ft::Message::Message()
+ft::Message::Message() :
+	m_parsed(0),
+	m_ready_responce(false),
+	m_error_num(0),
+	m_read(0),
+	m_method(""),
+	m_bad_request(false),
+	m_ver_minor(0),
+	m_ver_major(0)
 {
 
 }
@@ -19,49 +27,66 @@ void ft::Message::copy_buff(char *buf)
 
 void ft::Message::parse()
 {
-	http::RequestParser									parser;
+//	http::RequestParser									parser;
 	std::pair<http::RequestParser::EResult, size_t>		pair;
-	pair = parser.parse(m_buff, m_read - m_parsed);
+	pair = m_parser.parse(m_buff, m_read - m_parsed);
 	m_parsed += pair.second;
 	if (pair.first == http::RequestParser::EOk) 																			// если парсер закончил свою работу
 	{
-		m_headers = parser.m_headers;
-		m_method = parser.m_method;
-		m_uri = parser.m_uri;
-		m_ver_major = parser.m_ver_major;
-		m_ver_minor = parser.m_ver_minor;
+		m_headers = m_parser.m_headers;
+		m_method = m_parser.m_method;
+		m_uri = m_parser.m_uri;
+		m_ver_major = m_parser.m_ver_major;
+		m_ver_minor = m_parser.m_ver_minor;
 		read_body();																										// что, если chunked
-		m_ready_responce = true;
+//		m_ready_responce = true;
 	}
 	else if (pair.first == http::RequestParser::EParse)																		// если парсеру еще есть что читать
 		return;
 	else
+	{
 		m_bad_request = true;
+//		m_ready_responce = true;
+	}
+	m_ready_responce = true;
 }
 
 void ft::Message::clean()
 {
 	for (int i = 0; i < BUFFER_SIZE; ++i)
 		m_buff[i] = '\0';
+//	m_parsed = 0,
+//	m_ready_responce = false;
+//	m_error_num = 0;
+//	m_read = 0;
+//	m_method = "";
+//	m_bad_request = false;
+//	m_ver_minor = 0;
+//	m_ver_major = 0;
+//	m_uri = "";
+//	m_parser.clean();
 }
 
 void ft::Message::read_body()
 {
-	size_t	length = -1;
+	size_t	length = 0;
+	bool	readed = false;
 	for (size_t i = 0; i < m_headers.size(); ++i)
 	{
 		if (m_headers[i].name == "Content-Length")
 		{
-			length = std::strtol(m_headers[i].value.c_str(), 0, 0);
+			length = std::strtoul(m_headers[i].value.c_str(), 0, 0);
+			readed = true;
+			if (!length && m_headers[i].value != "0")
+				readed = false;
 			break;
 		}
 	}
-	if (length != -1)
+	if (readed)
 	{
 		if (length + m_parsed > BUFFER_SIZE)
 			length = BUFFER_SIZE - m_parsed;
-		for (size_t i = 0; i < length; ++i)
-			m_body[i] = m_buff[i + m_parsed];
+		m_body.append(m_buff, m_parsed, length);
 	}
 
 }

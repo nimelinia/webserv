@@ -25,6 +25,13 @@ namespace ft
 	class Answer
 	{
 	public:
+
+		enum EAllow_methods {
+			EGet = 1,
+			EPost = 1 << 1,
+			EDelete = 1 << 2
+		};
+
 		Answer();
 
 		std::string		m_protocol_v;
@@ -52,7 +59,10 @@ namespace ft
 
 		std::string		m_final_response;
 		size_t			m_size_response;
+		EAllow_methods	m_all_methods;
 
+		void			check_validity(Message &message);
+		void			check_allow_methods(Message &message);
 		void			generate_answer(Message &message);
 		void			make_error_answer(size_t num);
 		void			clean();

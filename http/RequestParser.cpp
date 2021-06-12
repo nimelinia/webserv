@@ -201,3 +201,12 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
             return EError;
     }
 }
+
+void ft::http::RequestParser::clean()
+{
+	m_method = "";
+	m_uri = "";
+	m_ver_major = 0;
+	m_ver_minor = 0;
+	m_headers.clear();
+}

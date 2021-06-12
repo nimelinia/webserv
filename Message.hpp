@@ -29,12 +29,13 @@ namespace ft {
 		size_t						m_read;
 		size_t						m_parsed;
 		std::vector<http::Header>	m_headers;
-		char 						m_body[BUFFER_SIZE];
+		std::string 				m_body;
 		std::string					m_method;
 		std::string					m_uri;
 		int 						m_ver_major;
 		int							m_ver_minor;
 		bool 						m_ready_responce;
+		http::RequestParser			m_parser;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;

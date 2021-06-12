@@ -4,6 +4,7 @@
 //#include "Message.hpp"
 #include "AllServers.hpp"
 #include "Help.hpp"
+#include "config/Config.h"
 
 int	check_count_arguments(int argc)
 {
@@ -21,6 +22,21 @@ int	check_count_arguments(int argc)
 
 int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
 {
+	ft::cfg::Config cfg;
+	try {
+		cfg.load("../examples/first.config");
+	} catch (const ft::cfg::ConfigException & e)
+	{
+		std::cout << "Failed to load config: " << e.what() << std::endl;
+		return 1;
+	}
+
+	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
+	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it)
+		std::cout << "server_name: " << it->value("server_name") << " | "
+				<< "listen: " << it->value("listen") << " | "
+				<< it->section("location").value("root") << std::endl;
+
 //	std::cout << ft::Help::get_date() << std::endl;
 	if (check_count_arguments(argc))
 		return (errno);																										// тут нужно прописать код ошибки

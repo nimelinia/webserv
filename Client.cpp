@@ -6,11 +6,9 @@
 //#include "Server.hpp"
 
 
-ft::Client::Client(int socketCl, Server &server, Message &msg, Answer &answer) :
+ft::Client::Client(int socketCl, Server *server) :
 	m_socket_cl(socketCl),
-	m_server(server),
-	m_msg(msg),
-	m_answer(answer)
+	m_server(server)
 {
 
 }

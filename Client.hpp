@@ -10,19 +10,19 @@
 #include "Message.hpp"
 #include "Answer.hpp"
 
-class	Message;
+//class	Message;
 
 namespace ft {
 	class Client {
 	public:
-		Client(int socketCl, Server &server, Message &msg, Answer &answer);
+		Client(int socketCl, Server *server);
 
-		int m_socket_cl;
-		int m_socket_serv;
-		Message	&m_msg;
-		Server &m_server;
-		Answer &m_answer;
-		size_t m_id;
+		int		m_socket_cl;
+		int		m_socket_serv;
+		Message	m_msg;
+		Server	*m_server;
+		Answer	m_answer;
+		size_t	m_id;
 //	bool	sending;
 //	bool	receiving;
 
