@@ -56,6 +56,7 @@ namespace ft { namespace http
         RequestParser();
 
         std::pair<EResult, size_t> parse(const char* buf, size_t size);
+        void reset();
 
     private:
         EResult _consume(char c);
