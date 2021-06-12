@@ -62,7 +62,7 @@ ft::cfg::detail::NodeRange
 ft::cfg::Section::_getRange(ft::cfg::detail::PathCIt begin, ft::cfg::detail::PathCIt end,
         ft::cfg::detail::NodeRange range) const
 {
-    if (std::next(begin) == end)
+    if (++begin == end)
         return range;
     for (detail::NodeCIt it = range.first; it != range.second; ++it)
     {
