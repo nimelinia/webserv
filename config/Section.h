@@ -1,8 +1,8 @@
 #ifndef CONFIG_SECTION_H
 #define CONFIG_SECTION_H
 
-#include "AllowedStd.h"
-#include "config/detail/Node.h"
+#include "../AllowedStd.h"
+#include "detail/Node.h"
 
 namespace ft { namespace cfg
 {

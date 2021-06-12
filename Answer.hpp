@@ -54,6 +54,7 @@ namespace ft
 		size_t			m_size_response;
 
 		void			generate_answer(Message &message);
+		void			make_error_answer(size_t num);
 		void			clean();
 		void			create_final_response();
 

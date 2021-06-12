@@ -1,9 +1,9 @@
 #ifndef CONFIG_CONFIG_H
 #define CONFIG_CONFIG_H
 
-#include "AllowedStd.h"
-#include "config/detail/Node.h"
-#include "config/detail/Parser.h"
+#include "../AllowedStd.h"
+#include "detail/Node.h"
+#include "detail/Parser.h"
 #include "exceptions/ParseException.h"
 #include "exceptions/PathException.h"
 #include "exceptions/ValueException.h"

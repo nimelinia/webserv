@@ -1,11 +1,11 @@
 #ifndef LOG_LOGGERBASE_H
 #define LOG_LOGGERBASE_H
 
-#include "AllowedStd.h"
-#include "util/NonCopyable.h"
-#include "log/Level.h"
+#include "../../AllowedStd.h"
+#include "../../util/NonCopyable.h"
+#include "../Level.h"
 #include "Message.h"
-#include "log/handlers/AHandler.h"
+#include "../handlers/AHandler.h"
 
 namespace ft { namespace log { namespace detail
 {

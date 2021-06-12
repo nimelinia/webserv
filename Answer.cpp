@@ -23,16 +23,49 @@ ft::Answer::Answer() :
 
 }
 
+void ft::Answer::make_error_answer(size_t num)
+{
+	m_status_code = num;
+	if (num == 400)
+		m_status_text = "Bad Request";
+	else if (num == 401)
+		m_status_text = "Unauthorized";
+	else if (num == 403)
+		m_status_text = "Forbidden";
+	else if (num == 404)
+		m_status_text = "Not Found";
+	else if (num == 405)
+		m_status_text = "Method Not Allowed";
+	else if (num == 406)
+		m_status_text = "Not Acceptable";
+	else if (num == 408)
+		m_status_text = "Request Timeout";
+	else if (num == 413)
+		m_status_text = "Request Entity Too Large";
+	else if (num == 418)
+		m_status_text = "I'm a teapot";
+	else if (num == 500)
+		m_status_text = "Internal Server Error";
+	else if (num == 501)
+		m_status_text = "Not Implemented";
+	else if (num == 502)
+		m_status_text = "Bad Gateway";
+	else if (num == 503)
+		m_status_text = "Service Unavailable";
+	else if (num == 505)
+		m_status_text = "HTTP Version Not Supported";
+	m_connection = "close";
+	m_content_type = "text/html; charset=iso-8859-1";
+	m_body = "";																											// нужно понять, откуда тело брать
+	m_content_length = m_body.length();
+	create_final_response();
+}
+
 void ft::Answer::generate_answer(ft::Message &message)
 {
-	if (message.m_error_num == 413)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
+	if (message.m_error_num)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
 	{
-		m_status_code = 413;
-		m_status_text = "Request Entity Too Large";
-		m_content_length = 449;
-		m_connection = "close";
-		m_content_type = "text/html; charset=iso-8859-1";
-		create_final_response();
+		make_error_answer(message.m_error_num);
 		return;
 	}
 	if (message.m_method == "GET")
@@ -59,6 +92,9 @@ void ft::Answer::generate_GET()
 
 void ft::Answer::generate_POST()
 {
+	m_status_code = 200;
+	m_status_text = "Ok";
+
 	m_status_code = 201;
 	m_status_text = "Created";
 }
@@ -109,4 +145,7 @@ void ft::Answer::create_final_response()
 	m_final_response += "\r\n";
 	if (m_body_exist)
 		m_final_response += m_body;																							// в x.com я не видела переноса строки после тела ответа
+	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
 }
+
+

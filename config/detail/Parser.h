@@ -1,7 +1,7 @@
 #ifndef CONFIG_PARSER_H
 #define CONFIG_PARSER_H
 
-#include "AllowedStd.h"
+#include "../../AllowedStd.h"
 #include "Node.h"
 
 namespace ft { namespace cfg { namespace detail
