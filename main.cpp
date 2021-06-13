@@ -10,7 +10,7 @@ static void InitLogging()
     ft::log::FileHandler* h = new ft::log::FileHandler(ft::log::FullFormatter);
     if (!h->open("config.log"))
     {
-        LOGE << "Failed to open file for Config logging: " << h->errorString();
+        LOGE << "Failed to open file for Config logging";
         delete h;
     }
     else
@@ -54,6 +54,8 @@ int main()
     for (std::list<std::string>::const_iterator it = lst.begin(); it != lst.end(); ++it)
         LOGD << key2 << " = " << *it;
 
+    LOGD << cfg.value("key4/subkey3/key1");
+
     std::string request = "GET / HTTP/1.1\r\n"
                           "Host: localhost:8080\r\n"
                           "User-Agent: curl/7.64.1\r\n"
@@ -63,7 +65,8 @@ int main()
 
     ft::http::RequestParser parser;
     std::pair<ft::http::RequestParser::EResult, size_t> res = parser.parse(request.data(), request.size());
-
+    parser.reset();
+    res = parser.parse(request.data(), request.size());
     if (res.first == ft::http::RequestParser::EError)
         LOGE << "Error parsing request";
     else

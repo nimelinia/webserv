@@ -16,7 +16,6 @@ set(HEADER_FILES
         config/exceptions/PathException.h
         config/exceptions/ValueException.h
         util/String.h
-        util/File.h
         util/NonCopyable.h
         util/Singleton.h
         log/Log.h
@@ -39,7 +38,6 @@ set(SOURCE_FILES
         config/exceptions/PathException.cpp
         config/exceptions/ValueException.cpp
         util/String.cpp
-        util/File.cpp
         log/Level.cpp
         log/Formatters.cpp
         log/detail/LoggerBase.cpp
