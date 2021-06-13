@@ -55,16 +55,18 @@ void ft::Message::clean()
 {
 	for (int i = 0; i < BUFFER_SIZE; ++i)
 		m_buff[i] = '\0';
-//	m_parsed = 0,
-//	m_ready_responce = false;
-//	m_error_num = 0;
-//	m_read = 0;
-//	m_method = "";
-//	m_bad_request = false;
-//	m_ver_minor = 0;
-//	m_ver_major = 0;
-//	m_uri = "";
-//	m_parser.clean();
+	m_bad_request = false;
+	m_error_num = 0;
+	m_read = 0;
+	m_headers.clear();
+	m_body.clear();
+	m_method.clear();
+	m_uri.clear();
+	m_ver_minor = 0;
+	m_ver_major = 0;
+	m_parsed = 0,
+	m_ready_responce = false;
+	m_parser.clean();
 }
 
 void ft::Message::read_body()

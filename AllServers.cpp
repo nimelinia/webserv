@@ -119,9 +119,16 @@ bool ft::AllServers::start_all_servers()
 	return (true);
 }
 
+void ft::AllServers::clean_buf(char *buff)
+{
+	for (int i = 0; i < BUFFER_SIZE; ++i)
+		buff[i] = '\0';
+}
+
+
 ssize_t	ft::AllServers::read_from_socket(int index)
 {
-	char	buff[1567415];
+	char	buff[BUFFER_SIZE];
 //	char	buff[2];																										// для теста
 	ssize_t	ret;
 
@@ -142,9 +149,8 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 	{
 		m_clients_data[index].m_msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
 		m_clients_data[index].m_msg.parse();																										// отправила сообщение в парсер
-		m_clients_data[index].m_msg.clean();
 	}
-	buff[0] = '\0';																											// чищу буфер (сомнительно, что это работает)
+	clean_buf(buff);																											// чищу буфер (сомнительно, что это работает)
 	if (m_clients_data[index].m_msg.m_read > m_clients_data[index].m_server->getMLimitBodySize() &&
 		!m_clients_data[index].m_msg.m_error_num)
 		m_clients_data[index].m_msg.m_error_num = 413;
@@ -177,6 +183,7 @@ ssize_t ft::AllServers::write_to_socket(int index)
 	}
 	return 0;
 }
+
 
 
 

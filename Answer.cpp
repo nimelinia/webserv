@@ -116,7 +116,26 @@ void ft::Answer::generate_answer(ft::Message &message)
 
 void ft::Answer::clean()
 {
-
+	m_protocol_v = "HTTP/1.1";
+	m_status_code = 0;
+	m_status_text.clear();
+	m_location.clear();
+	m_connection.clear();
+	m_retry_after.clear();
+	m_allow.clear();
+	m_server = "WebServer of dream-team/1.0";
+	m_content_type.clear();
+	m_content_length = 0;
+	m_length_exist = false;
+	m_content_language.clear();
+	m_content_location.clear();
+	m_date = Help::get_date();
+	m_last_modified.clear();
+	m_transfer_encoding.clear();
+	m_body_exist = false;
+	m_body.clear();
+	m_final_response.clear();
+	m_size_response = 0;
 }
 
 void ft::Answer::generate_GET()

@@ -28,6 +28,7 @@ namespace ft
 		ssize_t	read_from_socket(int index);
 		ssize_t	write_to_socket(int index);
 		int find_max_fd();
+		void	clean_buf(char *buff);
 
 	private:
 		Config					&m_config;
