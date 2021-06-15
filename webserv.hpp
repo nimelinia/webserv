@@ -36,14 +36,20 @@
 //#include "Server.hpp"
 //#include "AllServers.hpp"
 
+#define SERV_COUNT 1000
+
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
 	size_t		count_servers;
-	size_t		http;
-	size_t		port[1000];
-	char 		*hostaddress[1000];
-	std::string	server_names;
-	size_t		limit_body_size;
+	std::string	server_name[SERV_COUNT];
+	std::string root[SERV_COUNT];
+	std::string allow[SERV_COUNT];
+	std::string index[SERV_COUNT];
+	bool 		autoindex[SERV_COUNT];
+//	size_t		http;
+	size_t		port[SERV_COUNT];
+	char 		*hostaddress[SERV_COUNT];
+	size_t		limit_body_size[SERV_COUNT];
 
 };
 

@@ -1,6 +1,5 @@
 #include "Parser.h"
-#include "config/exceptions/ParseException.h"
-#include "util/File.h"
+#include "../exceptions/ParseException.h"
 
 ft::cfg::detail::Parser::Parser(ft::cfg::detail::Node & rootNode)
     : m_RootNode(rootNode)
@@ -26,21 +25,22 @@ void ft::cfg::detail::Parser::load(const std::string& filename)
     unsigned lineNo = 0;
     State state = EKey;
 
-    util::File file(filename);
-    if (!file.open(ft::util::File::EReadOnly))
-        throw ParseException("Cannot open file: " + file.errorString(), 0);
+    std::ifstream file(filename.c_str());
+    if (!file.is_open())
+        throw ParseException("Cannot open file: " + filename, 0);
 
     std::stack<detail::Node*> stack;
     detail::Node* last = NULL;
 
     stack.push(&m_RootNode);
     // Чтение файла построчно
-    while (!file.atEnd())
+    while (file.good())
     {
         ++lineNo;
-        std::string line = file.readLine();
-        if (file.hasError())
-            throw ParseException("Read error: " + file.errorString(), 0);
+        std::string line;
+        std::getline(file, line);
+        if (!file.good() && !file.eof())
+            throw ParseException("Read error: " + filename, 0);
 
         const char* str = line.c_str();
 

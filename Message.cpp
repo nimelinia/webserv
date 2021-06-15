@@ -5,14 +5,14 @@
 #include "Message.hpp"
 
 ft::Message::Message() :
-	m_parsed(0),
-	m_ready_responce(false),
+	m_bad_request(false),
 	m_error_num(0),
 	m_read(0),
+	m_parsed(0),
 	m_method(""),
-	m_bad_request(false),
+	m_ver_major(0),
 	m_ver_minor(0),
-	m_ver_major(0)
+	m_ready_responce(false)
 {
 
 }
@@ -46,6 +46,7 @@ void ft::Message::parse()
 	else
 	{
 		m_bad_request = true;
+		m_error_num = 400;
 //		m_ready_responce = true;
 	}
 	m_ready_responce = true;
@@ -66,7 +67,7 @@ void ft::Message::clean()
 	m_ver_major = 0;
 	m_parsed = 0,
 	m_ready_responce = false;
-	m_parser.clean();
+	m_parser.reset();
 }
 
 void ft::Message::read_body()

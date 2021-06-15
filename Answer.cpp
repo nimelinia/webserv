@@ -6,11 +6,11 @@
 
 ft::Answer::Answer() :
 	m_protocol_v("HTTP/1.1"),
+	m_server("WebServer of dream-team/1.0"),
 	m_location(""),
 	m_connection(""),
 	m_retry_after(""),
 	m_allow(""),
-	m_server("WebServer of dream-team/1.0"),
 	m_content_type(""),
 	m_content_length(0),
 	m_length_exist(false),
@@ -25,7 +25,7 @@ ft::Answer::Answer() :
 
 void ft::Answer::check_validity(ft::Message &message)
 {
-	if (message.m_method.empty() || message.m_ver_minor < 1.0)
+	if (message.m_method.empty() || message.m_ver_major < 1)
 		message.m_error_num = 400;
 	else if (message.m_method != "GET" && message.m_method != "POST" && message.m_method != "DELETE")
 	{
@@ -37,16 +37,16 @@ void ft::Answer::check_validity(ft::Message &message)
 
 }
 
-void ft::Answer::check_allow_methods(ft::Message &message)																	// нужно как-то понять, где и как проверять доступность методов
+void ft::Answer::check_allow_methods(Message &message)																		// нужно как-то понять, где и как проверять доступность методов
 {
-	if (m_all_methods == EGet)
+	if (message.m_uri == "path from config for method GET")
 		m_allow += "GET";
-	if (m_all_methods == EPost) {
+	if (message.m_uri == "path from config for method POST") {
 		if (!m_allow.empty())
 			m_allow += ", ";
 		m_allow += "POST";
 	}
-	if (m_all_methods == EDelete)
+	if (message.m_uri == "path from config for method DELETE")
 	{
 		if (!m_allow.empty())
 			m_allow += ", ";

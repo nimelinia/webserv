@@ -1,7 +1,7 @@
 #include "Section.h"
-#include "config/exceptions/PathException.h"
-#include "config/exceptions/ValueException.h"
-#include "util/String.h"
+#include "exceptions/PathException.h"
+#include "exceptions/ValueException.h"
+#include "../util/String.h"
 
 ft::cfg::Section::Section(const ft::cfg::detail::Node& node)
     : m_Node(node)
@@ -58,11 +58,21 @@ std::list<ft::cfg::Section> ft::cfg::Section::sectionList(const std::string & pa
     return lst;
 }
 
+bool ft::cfg::Section::contains(const std::string& path)
+{
+	std::list<std::string> pathList = util::str::Split(path, '/');
+	if (pathList.empty())
+		throw PathException("Path is empty", path);
+
+	const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
+	return range.first != range.second;
+}
+
 ft::cfg::detail::NodeRange
 ft::cfg::Section::_getRange(ft::cfg::detail::PathCIt begin, ft::cfg::detail::PathCIt end,
         ft::cfg::detail::NodeRange range) const
 {
-    if (std::next(begin) == end)
+    if (++begin == end)
         return range;
     for (detail::NodeCIt it = range.first; it != range.second; ++it)
     {

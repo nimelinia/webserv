@@ -6,7 +6,7 @@
 
 ft::AllServers::AllServers(Config &config) : m_config(config)
 {
-	for (int i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.count_servers; ++i)
 	{
 		ft::Server _server(m_config, config.port[i], config.hostaddress[i], i);
 		m_servers.push_back(_server);
@@ -27,7 +27,7 @@ int ft::AllServers::find_max_fd()
 
 bool ft::AllServers::start_all_servers()
 {
-	for (int i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.count_servers; ++i)
 	{
 		if (!m_servers[i].create_server())
 			return (false);
@@ -37,7 +37,7 @@ bool ft::AllServers::start_all_servers()
 
 	FD_ZERO(&m_clients);
 	max_fd = 3;
-	for (int i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.count_servers; ++i)
 	{
 		FD_SET(m_servers[i].getMSocketFd(), &m_clients);																// ставлю соответствующий флажок в элементе массива файловых дескрипторов
 		if (m_servers[i].getMSocketFd() > max_fd)
@@ -50,7 +50,6 @@ bool ft::AllServers::start_all_servers()
 		struct sockaddr addr_client;
 //		struct sockaddr_t *addr_client;
 		socklen_t addrlen = sizeof(addr_client);
-		int fd;																												// дескриптор клиента
 		fd_set readfds;
 		fd_set writefds;
 		fd_set exfds;
@@ -73,7 +72,7 @@ bool ft::AllServers::start_all_servers()
 		if (res == 0)
 			continue;
 		std::cout << "Socket loop" << std::endl;
-		for (int i = 0; i < m_open_sockets.size(); ++i) {
+		for (size_t i = 0; i < m_open_sockets.size(); ++i) {
 			if (FD_ISSET(m_open_sockets[i], &readfds))
 			{
 				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения" << std::endl; 							// функция чтения из сокета
@@ -89,7 +88,7 @@ bool ft::AllServers::start_all_servers()
 			if (FD_ISSET(m_open_sockets[i], &exfds)) 																	// функция записи в сокет
 				std::cout << "сокет " << m_open_sockets[i] << " содержит исключение" << std::endl;							// обработчик ошибок
 		}
-		for (int i = 0; i < m_config.count_servers; ++i)
+		for (size_t i = 0; i < m_config.count_servers; ++i)
 		{
 			if (FD_ISSET(m_servers[i].getMSocketFd(), &readfds))
 			{

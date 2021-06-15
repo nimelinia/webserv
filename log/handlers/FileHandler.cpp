@@ -12,17 +12,11 @@ ft::log::FileHandler::~FileHandler()
 
 void ft::log::FileHandler::write(const detail::Message & msg)
 {
-    m_File.write(m_Format(msg));
-    m_File.write("\n");
+    m_File << m_Format(msg) << std::endl;
 }
 
 bool ft::log::FileHandler::open(const std::string & filename)
 {
-    m_File.setFileName(filename);
-    return m_File.open(util::File::EWriteOnly);
-}
-
-const std::string & ft::log::FileHandler::errorString() const
-{
-    return m_File.errorString();
+    m_File.open(filename.c_str());
+    return m_File.is_open();
 }

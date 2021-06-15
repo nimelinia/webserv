@@ -27,6 +27,8 @@ namespace ft { namespace cfg
         Section section(const std::string & path, size_t pos = 0) const;
         std::list<Section> sectionList(const std::string & path) const;
 
+		bool contains(const std::string & path);
+
     private:
         detail::NodeRange _getRange(detail::PathCIt begin, detail::PathCIt end,
                 detail::NodeRange range) const;

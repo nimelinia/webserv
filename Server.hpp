@@ -33,7 +33,6 @@ namespace ft
 		size_t				m_id;
 		int					m_socket_fd;
 		bool				m_error_fatal;
-//		std::vector<int>	m_open_sockets;
 		size_t				m_limit_body_size;
 
 		Server();

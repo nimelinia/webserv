@@ -12,6 +12,8 @@
 #include <exception>
 #include <ctime>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 
 
 // Write external functions as "::func()"
