@@ -54,7 +54,15 @@ int main()
     for (std::list<std::string>::const_iterator it = lst.begin(); it != lst.end(); ++it)
         LOGD << key2 << " = " << *it;
 
-    LOGD << cfg.value("key4/subkey3/key1");
+    if (cfg.contains("key4/subkey3/key1"))
+        LOGD << cfg.value("key4/subkey3/key1");
+    else
+        LOGD << "cfg does not contain \"key4/subkey3/key1\"";
+
+    if (cfg.contains("key4/subkey3/key2"))
+        LOGD << cfg.value("key4/subkey3/key2");
+    else
+        LOGD << "cfg does not contain \"key4/subkey3/key2\"";
 
     std::string request = "GET / HTTP/1.1\r\n"
                           "Host: localhost:8080\r\n"

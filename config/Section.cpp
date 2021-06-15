@@ -58,6 +58,16 @@ std::list<ft::cfg::Section> ft::cfg::Section::sectionList(const std::string & pa
     return lst;
 }
 
+bool ft::cfg::Section::contains(const std::string& path)
+{
+    std::list<std::string> pathList = util::str::Split(path, '/');
+    if (pathList.empty())
+        throw PathException("Path is empty", path);
+
+    const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
+    return range.first != range.second;
+}
+
 ft::cfg::detail::NodeRange
 ft::cfg::Section::_getRange(ft::cfg::detail::PathCIt begin, ft::cfg::detail::PathCIt end,
         ft::cfg::detail::NodeRange range) const
