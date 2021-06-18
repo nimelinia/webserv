@@ -36,6 +36,7 @@ namespace ft {
 		int							m_ver_minor;
 		bool 						m_ready_responce;
 		http::RequestParser			m_parser;
+		size_t						m_client_id;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;

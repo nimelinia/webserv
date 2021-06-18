@@ -107,6 +107,7 @@ bool ft::AllServers::start_all_servers()
 					FD_SET(connect_fd, &m_clients);
 					fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
 					Client	new_client(connect_fd, &m_servers[i]);
+					new_client.m_msg.m_client_id = i;
 					new_client.m_socket_serv = m_servers[i].getMSocketFd();
 					m_clients_data.push_back(new_client);
 					max_fd = connect_fd;

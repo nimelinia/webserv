@@ -103,6 +103,7 @@ void ft::Answer::generate_answer(ft::Message &message)
 		make_error_answer(message.m_error_num);
 		return;
 	}
+	m_path_to_file = m_config->root[message.m_client_id] + message.m_uri;
 	if (message.m_method == "GET")
 		generate_GET();
 	else if (message.m_method == "POST")
@@ -143,6 +144,8 @@ void ft::Answer::generate_GET()
 	m_status_code = 200;
 	m_status_text = "Ok";
 	m_connection = "Upgrade";
+
+
 }
 
 void ft::Answer::generate_POST()
@@ -202,6 +205,12 @@ void ft::Answer::create_final_response()
 		m_final_response += m_body;																							// в x.com я не видела переноса строки после тела ответа
 	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
 	m_size_response = m_final_response.length();
+}
+
+ft::Answer::Answer(Config *config) :
+	m_config(config)
+{
+
 }
 
 

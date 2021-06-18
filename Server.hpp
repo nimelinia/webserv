@@ -26,8 +26,8 @@ namespace ft
 
 		size_t				getMLimitBodySize() const;
 
-	private:
 		Config				&m_config;
+	private:
 		size_t				m_port;
 		char 				*m_host_address;
 		size_t				m_id;

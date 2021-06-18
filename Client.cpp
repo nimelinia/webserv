@@ -8,7 +8,8 @@
 
 ft::Client::Client(int socketCl, Server *server) :
 	m_socket_cl(socketCl),
-	m_server(server)
+	m_server(server),
+	m_answer(&server->m_config)
 {
 
 }

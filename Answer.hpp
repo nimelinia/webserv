@@ -8,6 +8,7 @@
 #include <iostream>
 #include "Message.hpp"
 #include "Help.hpp"
+#include "webserv.hpp"
 
 /*
  * Наличие тела сообщения в ответе зависит как от метода запроса, на который он отвечает, так и от кода состояния
@@ -26,7 +27,7 @@ namespace ft
 	{
 	public:
 
-		Answer();
+		Answer(Config *config);
 
 		std::string		m_protocol_v;
 		size_t			m_status_code;
@@ -53,6 +54,10 @@ namespace ft
 
 		std::string		m_final_response;
 		size_t			m_size_response;
+		std::string		m_path_to_file;
+
+		Config			*m_config;
+
 
 		void			check_validity(Message &message);
 		void			check_allow_methods(Message &message);
@@ -66,6 +71,7 @@ namespace ft
 		void 			generate_POST();
 		void			generate_DELETE();
 		void			wrong_method();
+		Answer();
 	};
 }
 
