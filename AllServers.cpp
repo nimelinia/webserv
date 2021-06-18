@@ -22,7 +22,10 @@ int ft::AllServers::find_max_fd()
 	std::vector<int> copy;
 	copy = m_open_sockets;
 	std::sort(copy.begin(), copy.end(), std::greater<int>());
-	return (copy[0]);
+	if (copy.empty())
+		return (2);
+	else
+		return (copy[0]);
 }
 
 bool ft::AllServers::start_all_servers()
@@ -134,6 +137,7 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 
 	ret = recv(m_open_sockets[index], buff, sizeof(buff), 0);
 	if (ret == 0 || ret == -1)
+//	if (ret == -1)
 	{
 
 		// тут можно просто вызвать метод по закрытию сокета и туда все эти штуки перекинуть
@@ -160,10 +164,10 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 ssize_t ft::AllServers::write_to_socket(int index)
 {
 	Message	msg = m_clients_data[index].m_msg;
-	m_clients_data[index].m_answer.generate_answer(msg);
-	Answer	answer = m_clients_data[index].m_answer;
+	m_clients_data[index].m_answer->generate_answer(msg);
+	Answer	*answer = m_clients_data[index].m_answer;
 	ssize_t	ret;
-	ret = send(m_clients_data[index].m_socket_cl, answer.m_final_response.c_str(),  answer.m_size_response, 0);
+	ret = send(m_clients_data[index].m_socket_cl, answer->m_final_response.c_str(),  answer->m_size_response, 0);
 	if (ret == 0 || ret == -1)
 	{
 		// по идее можно просто сделать метод по закрытию сокета и здесь его вызывать
@@ -173,12 +177,12 @@ ssize_t ft::AllServers::write_to_socket(int index)
 		m_clients_data.erase(m_clients_data.begin() + index);
 	} else
 	{
-		answer.m_final_response.erase(0, ret);
-		if (answer.m_final_response.empty())																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
+		answer->m_final_response.erase(0, ret);
+		if (answer->m_final_response.empty())																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
 		{
 			m_clients_data[index].m_msg.m_ready_responce = false;
 			m_clients_data[index].m_msg.clean();
-			m_clients_data[index].m_answer.clean();
+			m_clients_data[index].m_answer->clean();
 		}
 	}
 	return 0;

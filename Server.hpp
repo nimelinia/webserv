@@ -2,8 +2,10 @@
 // Created by Streetmentioner Copycat on 5/22/21.
 //
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#pragma once
+
+//#ifndef SERVER_HPP
+//#define SERVER_HPP
 
 #include <iostream>
 #include <vector>
@@ -40,4 +42,4 @@ namespace ft
 	};
 }
 
-#endif //SERVER_HPP
+//#endif //SERVER_HPP

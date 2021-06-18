@@ -2,13 +2,14 @@
 // Created by Streetmentioner Copycat on 5/22/21.
 //
 
-#ifndef ALLSERVERS_HPP
-#define ALLSERVERS_HPP
+#pragma once
+//#ifndef ALLSERVERS_HPP
+//#define ALLSERVERS_HPP
 
 #include <iostream>
 #include <vector>
 #include "webserv.hpp"
-#include "Message.hpp"
+//#include "Message.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 
@@ -41,4 +42,4 @@ namespace ft
 	};
 }
 
-#endif //ALLSERVERS_HPP
+//#endif //ALLSERVERS_HPP

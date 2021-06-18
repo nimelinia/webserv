@@ -2,8 +2,10 @@
 // Created by Streetmentioner Copycat on 5/8/21.
 //
 
-#ifndef WEBSERV_HPP
-#define WEBSERV_HPP
+#pragma once
+
+//#ifndef WEBSERV_HPP
+//#define WEBSERV_HPP
 
 #include <iostream>
 #include <vector>
@@ -22,6 +24,7 @@
 #include <unistd.h>
 #include <csignal>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <cstdio>
@@ -53,4 +56,4 @@ struct Config // нужно наполнить структуры необход
 
 };
 
-#endif //WEBSERV_HPP
+//#endif //WEBSERV_HPP

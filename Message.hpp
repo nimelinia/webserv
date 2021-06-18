@@ -1,9 +1,9 @@
 //
 // Created by Streetmentioner Copycat on 5/8/21.
 //
-
-#ifndef MESSAGE_HPP
-#define MESSAGE_HPP
+#pragma once
+//#ifndef MESSAGE_HPP
+//#define MESSAGE_HPP
 
 #include <iostream>
 #include <map>
@@ -54,4 +54,4 @@ namespace ft {
 	};
 }
 
-#endif //MESSAGE_HPP
+//#endif //MESSAGE_HPP

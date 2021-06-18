@@ -2,13 +2,18 @@
 // Created by Streetmentioner Copycat on 5/8/21.
 //
 
-#ifndef WEBSERV_ANSWER_HPP
-#define WEBSERV_ANSWER_HPP
+#pragma once
+//#ifndef WEBSERV_ANSWER_HPP
+//#define WEBSERV_ANSWER_HPP
 
 #include <iostream>
-#include "Message.hpp"
+#include <dirent.h>
+//#include "Message.hpp"
 #include "Help.hpp"
 #include "webserv.hpp"
+#include "Client.hpp"
+
+#define DOT "."
 
 /*
  * Наличие тела сообщения в ответе зависит как от метода запроса, на который он отвечает, так и от кода состояния
@@ -27,7 +32,7 @@ namespace ft
 	{
 	public:
 
-		Answer(Config *config);
+		explicit Answer(Config *config);
 
 		std::string		m_protocol_v;
 		size_t			m_status_code;
@@ -65,6 +70,9 @@ namespace ft
 		void			make_error_answer(size_t num);
 		void			clean();
 		void			create_final_response();
+		void			create_response_body();
+		std::string		detect_content_type();
+		std::string 	detect_last_modified();
 
 	private:
 		void			generate_GET();
@@ -77,7 +85,7 @@ namespace ft
 
 
 
-#endif //WEBSERV_ANSWER_HPP
+//#endif //WEBSERV_ANSWER_HPP
 
 /*
  * 200	OK

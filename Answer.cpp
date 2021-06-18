@@ -25,7 +25,8 @@ ft::Answer::Answer() :
 
 void ft::Answer::check_validity(ft::Message &message)
 {
-	if (message.m_method.empty() || message.m_ver_major < 1)
+
+	if (message.m_method.empty() || message.m_ver_major < 1 || message.m_bad_request)
 		message.m_error_num = 400;
 	else if (message.m_method != "GET" && message.m_method != "POST" && message.m_method != "DELETE")
 	{
@@ -39,7 +40,7 @@ void ft::Answer::check_validity(ft::Message &message)
 
 void ft::Answer::check_allow_methods(Message &message)																		// нужно как-то понять, где и как проверять доступность методов
 {
-	if (message.m_uri == "path from config for method GET")
+	if (message.m_uri == "path from config for method GET")																	// это какая то чушь написана
 		m_allow += "GET";
 	if (message.m_uri == "path from config for method POST") {
 		if (!m_allow.empty())
@@ -65,7 +66,19 @@ void ft::Answer::make_error_answer(size_t num)
 	else if (num == 403)
 		m_status_text = "Forbidden";
 	else if (num == 404)
+	{
 		m_status_text = "Not Found";
+		std::ostringstream			oss;
+		std::ifstream				file;
+
+		file.open("../www/pages/404.html");
+		if (file.is_open()) {
+			oss << file.rdbuf();
+			m_body = oss.str();
+			m_body_exist = true;
+			file.close();
+		}
+	}
 	else if (num == 405)
 		m_status_text = "Method Not Allowed";
 	else if (num == 406)
@@ -87,7 +100,7 @@ void ft::Answer::make_error_answer(size_t num)
 	else if (num == 505)
 		m_status_text = "HTTP Version Not Supported";
 	m_connection = "close";
-	m_body = "";																											// нужно понять, откуда тело брать
+//	m_body = "";																											// нужно понять, откуда тело брать
 	m_content_length = m_body.length();
 	if (!m_body.empty())
 		m_content_type = "text/html; charset=iso-8859-1";
@@ -103,7 +116,9 @@ void ft::Answer::generate_answer(ft::Message &message)
 		make_error_answer(message.m_error_num);
 		return;
 	}
-	m_path_to_file = m_config->root[message.m_client_id] + message.m_uri;
+	m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
+	if (message.m_uri == "/")
+		m_path_to_file += m_config->index[message.m_client_id];
 	if (message.m_method == "GET")
 		generate_GET();
 	else if (message.m_method == "POST")
@@ -139,13 +154,69 @@ void ft::Answer::clean()
 	m_size_response = 0;
 }
 
+void ft::Answer::create_response_body()
+{
+	std::ostringstream			oss;
+	std::ifstream				file;
+	DIR							*dir;
+	std::vector<std::string>	files;
+	struct dirent				*ent;
+
+	file.open(m_path_to_file);
+	if (file.is_open())
+	{
+		oss << file.rdbuf();
+		m_body = oss.str();
+		m_body_exist = true;
+		file.close();
+		return;
+	} else
+	{
+		if ((dir = opendir(m_path_to_file.c_str())) != NULL) {
+			/* print all the files and directories within directory */
+			while ((ent = readdir(dir)) != NULL)
+			{
+				files.push_back((std::string)ent->d_name);
+			}
+			closedir (dir);
+		} else {
+			make_error_answer(404);
+			/* could not open directory */
+			perror ("");
+			return;
+		}
+	}
+
+
+
+
+
+//	file.open("../index.html");
+//	if (!file.is_open())
+//		std::cout << "file is not open" << std::endl;
+//	oss << file.rdbuf();
+//	m_body = oss.str();
+//	m_body_exist = true;
+//	file.close();
+}
+
 void ft::Answer::generate_GET()
 {
 	m_status_code = 200;
 	m_status_text = "Ok";
 	m_connection = "Upgrade";
-
-
+	create_response_body();
+	if (m_body_exist)
+	{
+		m_content_length = m_body.length();
+		m_length_exist = true;
+	}
+	if (m_status_code == 200)
+	{
+		m_content_type = detect_content_type();
+		m_content_location = m_path_to_file;
+		m_last_modified = detect_last_modified();
+	}
 }
 
 void ft::Answer::generate_POST()
@@ -208,9 +279,37 @@ void ft::Answer::create_final_response()
 }
 
 ft::Answer::Answer(Config *config) :
-	m_config(config)
+		m_protocol_v("HTTP/1.1"),
+		m_server("WebServer of dream-team/1.0"),
+		m_location(""),
+		m_connection(""),
+		m_retry_after(""),
+		m_allow(""),
+		m_content_type(""),
+		m_content_length(0),
+		m_length_exist(false),
+		m_content_location(""),
+		m_date(Help::get_date()), // по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
+		m_last_modified(""),
+		m_transfer_encoding(""),
+		m_body(""),
+		m_config(config)
 {
 
+}
+
+std::string ft::Answer::detect_content_type()
+{
+	return ("");
+}
+
+std::string ft::Answer::detect_last_modified()
+{
+	struct stat buff;
+	std::string	file;
+	file = m_path_to_file;
+	stat(file.c_str(), &buff);
+	return (Help::get_date(buff.st_ctimespec));
 }
 
 

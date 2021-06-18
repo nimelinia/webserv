@@ -2,17 +2,19 @@
 // Created by Streetmentioner Copycat on 5/8/21.
 //
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
+//#ifndef CLIENT_HPP
+//#define CLIENT_HPP
 
 #include <iostream>
 #include "Server.hpp"
 #include "Message.hpp"
 #include "Answer.hpp"
 
-//class	Message;
+class	Answer;
 
 namespace ft {
+//	class Answer;
 	class Client {
 	public:
 		Client(int socketCl, Server *server);
@@ -21,7 +23,7 @@ namespace ft {
 		int		m_socket_serv;
 		Message	m_msg;
 		Server	*m_server;
-		Answer	m_answer;
+		Answer	*m_answer;
 		size_t	m_id;
 //	bool	sending;
 //	bool	receiving;
@@ -29,5 +31,5 @@ namespace ft {
 	};
 }
 
-#endif //CLIENT_HPP
+//#endif //CLIENT_HPP
 
