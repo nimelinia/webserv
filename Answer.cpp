@@ -71,7 +71,7 @@ void ft::Answer::make_error_answer(size_t num)
 		std::ostringstream			oss;
 		std::ifstream				file;
 
-		file.open("../www/pages/404.html");
+		file.open("./www/pages/404.html");
 		if (file.is_open()) {
 			oss << file.rdbuf();
 			m_body = oss.str();
@@ -104,11 +104,12 @@ void ft::Answer::make_error_answer(size_t num)
 	m_content_length = m_body.length();
 	if (!m_body.empty())
 		m_content_type = "text/html; charset=iso-8859-1";
-	create_final_response();
+//	create_final_response();
 }
 
 void ft::Answer::generate_answer(ft::Message &message)
 {
+	m_uri = message.m_uri;
 	if (!message.m_error_num)
 		check_validity(message);
 	if (message.m_error_num)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
@@ -116,13 +117,17 @@ void ft::Answer::generate_answer(ft::Message &message)
 		make_error_answer(message.m_error_num);
 		return;
 	}
-	m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
+//	if (m_path_to_file.empty())
+		m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
+//	else
+//		m_path_to_file = m_path_to_file + message.m_uri;
 	if (message.m_uri == "/")
 		m_path_to_file += m_config->index[message.m_client_id];
 	if (message.m_method == "GET")
 		generate_GET();
 	else if (message.m_method == "POST")
 		generate_POST();
+//		generate_GET();
 	else if (message.m_method == "DELETE")
 		generate_DELETE();
 	else
@@ -132,26 +137,28 @@ void ft::Answer::generate_answer(ft::Message &message)
 
 void ft::Answer::clean()
 {
-	m_protocol_v = "HTTP/1.1";
-	m_status_code = 0;
+
 	m_status_text.clear();
 	m_location.clear();
 	m_connection.clear();
 	m_retry_after.clear();
 	m_allow.clear();
-	m_server = "WebServer of dream-team/1.0";
 	m_content_type.clear();
-	m_content_length = 0;
-	m_length_exist = false;
 	m_content_language.clear();
 	m_content_location.clear();
-	m_date = Help::get_date();
 	m_last_modified.clear();
 	m_transfer_encoding.clear();
-	m_body_exist = false;
 	m_body.clear();
 	m_final_response.clear();
+	m_protocol_v = "HTTP/1.1";
+	m_status_code = 0;
+	m_server = "WebServer of dream-team/1.0";
+	m_content_length = 0;
+	m_length_exist = false;
+	m_body_exist = false;
 	m_size_response = 0;
+	m_uri.clear();
+	m_path_to_file.clear();
 }
 
 void ft::Answer::create_response_body()
@@ -159,11 +166,16 @@ void ft::Answer::create_response_body()
 	std::ostringstream			oss;
 	std::ifstream				file;
 	DIR							*dir;
-	std::vector<std::string>	files;
+//	std::vector<std::string>	files;
 	struct dirent				*ent;
+	std::string					slash;
+	struct stat buff;
+	stat(m_path_to_file.c_str(), &buff);
 
+	if (m_uri[m_uri.length() - 1] != '/')
+		slash = "/";
 	file.open(m_path_to_file);
-	if (file.is_open())
+	if (file.is_open() && (buff.st_mode & S_IFMT) != S_IFDIR)
 	{
 		oss << file.rdbuf();
 		m_body = oss.str();
@@ -174,11 +186,25 @@ void ft::Answer::create_response_body()
 	{
 		if ((dir = opendir(m_path_to_file.c_str())) != NULL) {
 			/* print all the files and directories within directory */
+			oss << BEFORE_BODY;
 			while ((ent = readdir(dir)) != NULL)
 			{
-				files.push_back((std::string)ent->d_name);
+//				files.push_back((std::string)ent->d_name);
+//				if ((std::string)ent->d_name != "." && (std::string)ent->d_name != "..")
+					oss << "<a href='" << m_uri + slash + ent->d_name << "'>" << ent->d_name << "</a><br />";
+//				else if ((std::string)ent->d_name == ".")
+//					oss << "<a href='" << m_uri << "'>" << ent->d_name << "</a><br />";
+//				else if ((std::string)ent->d_name == "..")
+//				{
+//					std::string prev_dir;
+//					prev_dir = m_uri.substr(0, m_uri.find_last_of("/"));
+//					oss << "<a href='" << prev_dir << "'>" << ent->d_name << "</a><br />";
+//				}
 			}
 			closedir (dir);
+			oss << AFTER_BODY;
+			m_body = oss.str();
+			m_body_exist = true;
 		} else {
 			make_error_answer(404);
 			/* could not open directory */

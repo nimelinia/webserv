@@ -210,4 +210,5 @@ void ft::http::RequestParser::reset()
     m_ver_major = 0;
     m_ver_minor = 0;
     m_headers.clear();
+
 }

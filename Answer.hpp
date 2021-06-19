@@ -13,7 +13,9 @@
 #include "webserv.hpp"
 #include "Client.hpp"
 
-#define DOT "."
+#define DOT ""
+#define BEFORE_BODY "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Содержимое</title><style>body{margin: 40px; margin-left: 60px;color: #ff001e;font-size: 26px;font-family: \"PT Serif\",Georgia,Times New Roman,Times,serif;font-style: normal;}</style></head><body>"
+#define AFTER_BODY "</body ></html >"
 
 /*
  * Наличие тела сообщения в ответе зависит как от метода запроса, на который он отвечает, так и от кода состояния
@@ -62,6 +64,7 @@ namespace ft
 		std::string		m_path_to_file;
 
 		Config			*m_config;
+		std::string		m_uri;
 
 
 		void			check_validity(Message &message);
