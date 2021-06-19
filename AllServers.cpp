@@ -19,13 +19,15 @@ ft::AllServers::~AllServers()
 
 int ft::AllServers::find_max_fd()
 {
-	std::vector<int> copy;
-	copy = m_open_sockets;
-	std::sort(copy.begin(), copy.end(), std::greater<int>());
-	if (copy.empty())
-		return (2);
-	else
-		return (copy[0]);
+//	std::vector<int> copy;
+//	copy = m_open_sockets;
+//	std::sort(copy.begin(), copy.end(), std::greater<int>());
+//	if (copy.empty())
+//		return (2);
+//	else
+//		return (copy[0]);
+	std::vector<int>::iterator max = std::max_element(m_open_sockets.begin(), m_open_sockets.end());
+	return (max == m_open_sockets.end() ? 2 : *max);
 }
 
 bool ft::AllServers::start_all_servers()
