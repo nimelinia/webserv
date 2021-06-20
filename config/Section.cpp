@@ -29,6 +29,11 @@ const std::list<std::string> & ft::cfg::Section::valueList(const std::string & p
     return s.m_Node.value_list;
 }
 
+const std::list<std::string> & ft::cfg::Section::valueList() const
+{
+	return m_Node.value_list;
+}
+
 ft::cfg::Section ft::cfg::Section::section(const std::string& path, size_t pos /* = 0*/) const
 {
     std::list<Section> lst = sectionList(path);

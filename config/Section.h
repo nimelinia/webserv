@@ -23,6 +23,7 @@ namespace ft { namespace cfg
 
         const std::string & value(const std::string & path, size_t pos = 0) const;
         const std::list<std::string> & valueList(const std::string & path) const;
+		const std::list<std::string> & valueList() const;
 
         Section section(const std::string & path, size_t pos = 0) const;
         std::list<Section> sectionList(const std::string & path) const;

@@ -65,11 +65,13 @@ namespace ft
 
 		Config			*m_config;
 		std::string		m_uri;
+		Locations		*m_conf_location;
 
 
 		void			check_validity(Message &message);
 		void			check_allow_methods(Message &message);
 		void			generate_answer(Message &message);
+		void			find_path_to_file(Message &message);
 		void			make_error_answer(size_t num);
 		void			clean();
 		void			create_final_response();

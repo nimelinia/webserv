@@ -12,8 +12,8 @@ ft::Server::Server(Config &config, size_t port, char *host_address, size_t id) :
 	m_socket_fd(0),
 	m_error_fatal(false)
 {
-	if (config.limit_body_size[id])
-		m_limit_body_size = config.limit_body_size[m_id];
+	if (config.limit_body_size)
+		m_limit_body_size = config.limit_body_size;
 	else
 		m_limit_body_size = MAXBODYSIZE;
 }

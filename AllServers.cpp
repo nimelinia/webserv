@@ -4,11 +4,11 @@
 
 #include "AllServers.hpp"
 
-ft::AllServers::AllServers(Config &config) : m_config(config)
+ft::AllServers::AllServers(std::vector<Config> &config) : m_config(config)
 {
-	for (size_t i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.size(); ++i)
 	{
-		ft::Server _server(m_config, config.port[i], config.hostaddress[i], i);
+		ft::Server _server(m_config[i], config[i].port, config[i].hostaddress, i);
 		m_servers.push_back(_server);
 	}
 }
@@ -19,20 +19,13 @@ ft::AllServers::~AllServers()
 
 int ft::AllServers::find_max_fd()
 {
-//	std::vector<int> copy;
-//	copy = m_open_sockets;
-//	std::sort(copy.begin(), copy.end(), std::greater<int>());
-//	if (copy.empty())
-//		return (2);
-//	else
-//		return (copy[0]);
 	std::vector<int>::iterator max = std::max_element(m_open_sockets.begin(), m_open_sockets.end());
 	return (max == m_open_sockets.end() ? 2 : *max);
 }
 
 bool ft::AllServers::start_all_servers()
 {
-	for (size_t i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.size(); ++i)
 	{
 		if (!m_servers[i].create_server())
 			return (false);
@@ -42,7 +35,7 @@ bool ft::AllServers::start_all_servers()
 
 	FD_ZERO(&m_clients);
 	max_fd = 3;
-	for (size_t i = 0; i < m_config.count_servers; ++i)
+	for (size_t i = 0; i < m_config.size(); ++i)
 	{
 		FD_SET(m_servers[i].getMSocketFd(), &m_clients);																// ставлю соответствующий флажок в элементе массива файловых дескрипторов
 		if (m_servers[i].getMSocketFd() > max_fd)
@@ -80,20 +73,20 @@ bool ft::AllServers::start_all_servers()
 		for (size_t i = 0; i < m_open_sockets.size(); ++i) {
 			if (FD_ISSET(m_open_sockets[i], &readfds))
 			{
-				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения" << std::endl; 							// функция чтения из сокета
+//				std::cout << "сокет " << m_open_sockets[i] << " открыт для чтения" << std::endl; 							// функция чтения из сокета
 				if (this->read_from_socket(i) == -1)																		// если функция вернула -1, значит во время чтения произошла ошибка и сокет был закрыт, то есть возможно,
 					max_fd = find_max_fd();
 			}
 			if (FD_ISSET(m_open_sockets[i], &writefds))
 			{
-				std::cout << "сокет " << m_open_sockets[i] << " открыт для записи" << std::endl;
+//				std::cout << "сокет " << m_open_sockets[i] << " открыт для записи" << std::endl;
 				if (m_clients_data[i].m_msg.m_ready_responce)
 					this->write_to_socket(i);
 			}
 			if (FD_ISSET(m_open_sockets[i], &exfds)) 																	// функция записи в сокет
 				std::cout << "сокет " << m_open_sockets[i] << " содержит исключение" << std::endl;							// обработчик ошибок
 		}
-		for (size_t i = 0; i < m_config.count_servers; ++i)
+		for (size_t i = 0; i < m_config.size(); ++i)
 		{
 			if (FD_ISSET(m_servers[i].getMSocketFd(), &readfds))
 			{
@@ -119,7 +112,7 @@ bool ft::AllServers::start_all_servers()
 				}
 			}
 		}
-		usleep(1000000);																									// так долго, чтобы тестить
+		usleep(1000);																									// так долго, чтобы тестить
 	}
 	return (true);
 }

@@ -39,20 +39,26 @@
 //#include "Server.hpp"
 //#include "AllServers.hpp"
 
-#define SERV_COUNT 1000
+//#define SERV_COUNT 100
+
+struct Locations
+{
+	std::list<std::string>		path_to_location;
+	std::string					root;
+	std::string					allow;
+	std::string					index;
+	bool 						autoindex;
+};
+
 
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
-	size_t		count_servers;
-	std::string	server_name[SERV_COUNT];
-	std::string root[SERV_COUNT];
-	std::string allow[SERV_COUNT];
-	std::string index[SERV_COUNT];
-	bool 		autoindex[SERV_COUNT];
-//	size_t		http;
-	size_t		port[SERV_COUNT];
-	char 		*hostaddress[SERV_COUNT];
-	size_t		limit_body_size[SERV_COUNT];
+	size_t					count_locations;
+	std::string				server_name;
+	std::vector<Locations>	locations;
+	size_t					port;
+	char*					hostaddress;
+	size_t					limit_body_size;
 
 };
 

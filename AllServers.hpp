@@ -23,7 +23,7 @@ namespace ft
 	class AllServers
 	{
 	public:
-		AllServers(Config &config);
+		AllServers(std::vector<Config> &config);
 		virtual ~AllServers();
 		bool	start_all_servers();
 		ssize_t	read_from_socket(int index);
@@ -32,7 +32,7 @@ namespace ft
 		void	clean_buf(char *buff);
 
 	private:
-		Config					&m_config;
+		std::vector<Config>		&m_config;
 		std::vector<Server>		m_servers;
 		std::vector<int>		m_open_sockets;
 		std::vector<Client>		m_clients_data;

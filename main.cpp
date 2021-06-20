@@ -33,36 +33,44 @@ int main(int argc, char **argv) 																							// переписать, 
 		return 1;
 	}
 
-	Config		config;
-	size_t i = 0;
+	std::vector<Config>		servers_conf;
 	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
 	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it) {
+		Config	config;
 		std::cout << "server_name: " << it->value("server_name") << " | "
 				<< "listen: " << it->value("listen") << " | "
 				<< it->section("location").value("root") << std::endl;
-		config.server_name[i] = it->value("server_name");
-		config.hostaddress[i] = (char*)"127.0.0.1";
-		config.port[i] = std::strtoul(it->value("listen").c_str(), 0, 0);
+		config.server_name = it->value("server_name");
+		config.hostaddress = (char*)"127.0.0.1";
+		config.port = std::strtoul(it->value("listen").c_str(), 0, 0);
 		if (it->contains("client_max_body_size"))
-			config.limit_body_size[i] = std::strtoul(it->value("client_max_body_size").c_str(), 0, 0);
+			config.limit_body_size = std::strtoul(it->value("client_max_body_size").c_str(), 0, 0);
 		else
-			config.limit_body_size[i] = 0;
-		if (it->section("location").contains("root"))
-			config.root[i] = it->section("location").value("root");
-		if (it->section("location").contains("index"))
-			config.index[i] = it->section("location").value("index");
-		if (it->section("location").contains("limit_except"))
-			config.allow[i] = it->section("location").value("limit_except");
-		if (it->section("location").contains("autoindex") && it->section("location").value("autoindex") == "on")
-			config.autoindex[i] = true;
-
-		i++;
+			config.limit_body_size = 0;
+		std::list<ft::cfg::Section> locations = it->sectionList("location");
+//		std::list<std::string> value = it->valueList("location");
+		for(std::list<ft::cfg::Section>::iterator it = locations.begin(); it != locations.end(); ++it)
+		{
+			Locations	loc;
+			loc.path_to_location = it->valueList();
+			if (it->contains("root"))
+				loc.root = it->value("root");
+			if (it->contains("limit_except"))
+				loc.allow = it->value("limit_except");
+			if (it->contains("index"))
+				loc.index = it->value("index");
+			if (it->contains("autoindex") && it->value("autoindex") == "on")
+				loc.autoindex = true;
+			config.locations.push_back(loc);
+		}
+		config.count_locations = config.locations.size();
+		servers_conf.push_back(config);
 	}
-	config.count_servers = i;
+//	config.count_servers = i;
 //	std::cout << ft::Help::get_date() << std::endl;
 
 
-	ft::AllServers servers(config);
+	ft::AllServers servers(servers_conf);
 	servers.start_all_servers();																							// нужно внутри сделать класс селект, который сделать синглтоном
 
 	return (0);

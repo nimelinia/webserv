@@ -23,6 +23,27 @@ ft::Answer::Answer() :
 
 }
 
+ft::Answer::Answer(Config *config) :
+		m_protocol_v("HTTP/1.1"),
+//		m_server("WebServer of dream-team/1.0"),
+		m_server(config->server_name),
+		m_location(""),
+		m_connection(""),
+		m_retry_after(""),
+		m_allow(""),
+		m_content_type(""),
+		m_content_length(0),
+		m_length_exist(false),
+		m_content_location(""),
+		m_date(Help::get_date()), // по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
+		m_last_modified(""),
+		m_transfer_encoding(""),
+		m_body(""),
+		m_config(config)
+{
+
+}
+
 void ft::Answer::check_validity(ft::Message &message)
 {
 
@@ -107,6 +128,47 @@ void ft::Answer::make_error_answer(size_t num)
 //	create_final_response();
 }
 
+void ft::Answer::find_path_to_file(ft::Message &message)
+{
+	std::string		path_buf;
+	size_t			pos;
+	path_buf = message.m_uri;
+
+	while (!path_buf.empty())
+	{
+		for (size_t i = 0; i < m_config->locations.size(); ++i) {
+			for (std::list<std::string>::iterator it = m_config->locations[i].path_to_location.begin();
+				it != m_config->locations[i].path_to_location.end(); ++it) {
+				if (path_buf == *it) {
+					m_conf_location = &m_config->locations[i];
+					m_path_to_file = m_conf_location->root + m_uri;
+					return;
+				}
+			}
+		}
+		pos = path_buf.find_last_of('/');
+		if (pos == std::string::npos)
+			return;
+		if (pos != 0)
+			pos -= 1;
+		path_buf = path_buf.substr(0, pos);
+	}
+
+//	for (size_t i = 0; i < m_config->locations.size(); ++i)
+//	{
+//		for (std::list<std::string>::iterator it = m_config->locations[i].path_to_location.begin(); it != m_config->locations[i].path_to_location.end(); ++it)
+//		{
+//			if (message.m_uri.find(*it) == 0)
+//			{
+//				m_conf_location = &m_config->locations[i];
+//				m_path_to_file = m_conf_location->root + (*it).substr(message.m_uri.size());
+//				break;
+//			}
+//		}
+//
+//	}
+}
+
 void ft::Answer::generate_answer(ft::Message &message)
 {
 	m_uri = message.m_uri;
@@ -117,12 +179,10 @@ void ft::Answer::generate_answer(ft::Message &message)
 		make_error_answer(message.m_error_num);
 		return;
 	}
-//	if (m_path_to_file.empty())
-		m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
-//	else
-//		m_path_to_file = m_path_to_file + message.m_uri;
-	if (message.m_uri == "/")
-		m_path_to_file += m_config->index[message.m_client_id];
+	find_path_to_file(message);
+//	m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
+//	if (message.m_uri == "/")
+//		m_path_to_file += m_config->index[message.m_client_id];
 	if (message.m_method == "GET")
 		generate_GET();
 	else if (message.m_method == "POST")
@@ -152,7 +212,8 @@ void ft::Answer::clean()
 	m_final_response.clear();
 	m_protocol_v = "HTTP/1.1";
 	m_status_code = 0;
-	m_server = "WebServer of dream-team/1.0";
+	m_server = m_config->server_name;
+//	m_server = "WebServer of dream-team/1.0";
 	m_content_length = 0;
 	m_length_exist = false;
 	m_body_exist = false;
@@ -166,7 +227,6 @@ void ft::Answer::create_response_body()
 	std::ostringstream			oss;
 	std::ifstream				file;
 	DIR							*dir;
-//	std::vector<std::string>	files;
 	struct dirent				*ent;
 	std::string					slash;
 	struct stat buff;
@@ -174,8 +234,9 @@ void ft::Answer::create_response_body()
 
 	if (m_uri[m_uri.length() - 1] != '/')
 		slash = "/";
-	file.open(m_path_to_file);
-	if (file.is_open() && (buff.st_mode & S_IFMT) != S_IFDIR)
+	if ((buff.st_mode & S_IFMT) != S_IFDIR)
+		file.open(m_path_to_file);
+	if (file.is_open())
 	{
 		oss << file.rdbuf();
 		m_body = oss.str();
@@ -184,28 +245,33 @@ void ft::Answer::create_response_body()
 		return;
 	} else
 	{
-		if ((dir = opendir(m_path_to_file.c_str())) != NULL) {
-			/* print all the files and directories within directory */
-			oss << BEFORE_BODY;
-			while ((ent = readdir(dir)) != NULL)
-			{
-//				files.push_back((std::string)ent->d_name);
-//				if ((std::string)ent->d_name != "." && (std::string)ent->d_name != "..")
-					oss << "<a href='" << m_uri + slash + ent->d_name << "'>" << ent->d_name << "</a><br />";
-//				else if ((std::string)ent->d_name == ".")
-//					oss << "<a href='" << m_uri << "'>" << ent->d_name << "</a><br />";
-//				else if ((std::string)ent->d_name == "..")
-//				{
-//					std::string prev_dir;
-//					prev_dir = m_uri.substr(0, m_uri.find_last_of("/"));
-//					oss << "<a href='" << prev_dir << "'>" << ent->d_name << "</a><br />";
-//				}
+		if (!m_conf_location->index.empty())
+		{
+			stat((m_path_to_file + m_conf_location->index).c_str(), &buff);
+			if ((buff.st_mode & S_IFMT) != S_IFDIR) {
+				file.open(m_path_to_file + m_conf_location->index);
 			}
-			closedir (dir);
-			oss << AFTER_BODY;
-			m_body = oss.str();
-			m_body_exist = true;
-		} else {
+			if (file.is_open())
+			{
+				oss << file.rdbuf();
+				m_body = oss.str();
+				m_body_exist = true;
+				file.close();
+				return;
+			}
+		} else if (m_conf_location->autoindex == true)
+			{
+				if ((dir = opendir(m_path_to_file.c_str())) != NULL) {
+					oss << BEFORE_BODY;
+					while ((ent = readdir(dir)) != NULL)
+						oss << "<a href='" << m_uri + slash + ent->d_name << "'>" << ent->d_name << "</a><br />";
+					closedir (dir);
+					oss << AFTER_BODY;
+					m_body = oss.str();
+					m_body_exist = true;
+			}
+		}
+		else {
 			make_error_answer(404);
 			/* could not open directory */
 			perror ("");
@@ -213,17 +279,6 @@ void ft::Answer::create_response_body()
 		}
 	}
 
-
-
-
-
-//	file.open("../index.html");
-//	if (!file.is_open())
-//		std::cout << "file is not open" << std::endl;
-//	oss << file.rdbuf();
-//	m_body = oss.str();
-//	m_body_exist = true;
-//	file.close();
 }
 
 void ft::Answer::generate_GET()
@@ -302,26 +357,6 @@ void ft::Answer::create_final_response()
 		m_final_response += m_body;																							// в x.com я не видела переноса строки после тела ответа
 	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
 	m_size_response = m_final_response.length();
-}
-
-ft::Answer::Answer(Config *config) :
-		m_protocol_v("HTTP/1.1"),
-		m_server("WebServer of dream-team/1.0"),
-		m_location(""),
-		m_connection(""),
-		m_retry_after(""),
-		m_allow(""),
-		m_content_type(""),
-		m_content_length(0),
-		m_length_exist(false),
-		m_content_location(""),
-		m_date(Help::get_date()), // по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
-		m_last_modified(""),
-		m_transfer_encoding(""),
-		m_body(""),
-		m_config(config)
-{
-
 }
 
 std::string ft::Answer::detect_content_type()
