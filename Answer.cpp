@@ -18,7 +18,8 @@ ft::Answer::Answer() :
 	m_date(Help::get_date()), // по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
 	m_last_modified(""),
 	m_transfer_encoding(""),
-	m_body("")
+	m_body(""),
+	m_slash("")
 {
 
 }
@@ -39,7 +40,8 @@ ft::Answer::Answer(Config *config) :
 		m_last_modified(""),
 		m_transfer_encoding(""),
 		m_body(""),
-		m_config(config)
+		m_config(config),
+		m_slash("")
 {
 
 }
@@ -128,12 +130,35 @@ void ft::Answer::make_error_answer(size_t num)
 //	create_final_response();
 }
 
+
+std::string ft::Answer::cut_part_path(std::string &path)
+{
+	int pos;
+	std::string part_path;
+
+	pos = path.find_last_of('/');
+	if (pos == std::string::npos)
+		return ("");
+//	if (pos != 0)
+//		pos -= 1;
+	if (pos == 0)
+		pos = 1;
+	part_path = path.substr(0, pos);
+	return (part_path);
+}
+
+
+
 void ft::Answer::find_path_to_file(ft::Message &message)
 {
 	std::string		path_buf;
-	size_t			pos;
-	path_buf = message.m_uri;
 
+	if (message.m_uri[message.m_uri.length() - 1] != '/') {
+		m_slash = "/";
+	}
+	path_buf = message.m_uri + m_slash;
+//	if (!m_slash.empty())
+//		path_buf = cut_part_path(path_buf);
 	while (!path_buf.empty())
 	{
 		for (size_t i = 0; i < m_config->locations.size(); ++i) {
@@ -146,27 +171,10 @@ void ft::Answer::find_path_to_file(ft::Message &message)
 				}
 			}
 		}
-		pos = path_buf.find_last_of('/');
-		if (pos == std::string::npos)
+		if (path_buf == "/")
 			return;
-		if (pos != 0)
-			pos -= 1;
-		path_buf = path_buf.substr(0, pos);
+		path_buf = cut_part_path(path_buf);
 	}
-
-//	for (size_t i = 0; i < m_config->locations.size(); ++i)
-//	{
-//		for (std::list<std::string>::iterator it = m_config->locations[i].path_to_location.begin(); it != m_config->locations[i].path_to_location.end(); ++it)
-//		{
-//			if (message.m_uri.find(*it) == 0)
-//			{
-//				m_conf_location = &m_config->locations[i];
-//				m_path_to_file = m_conf_location->root + (*it).substr(message.m_uri.size());
-//				break;
-//			}
-//		}
-//
-//	}
 }
 
 void ft::Answer::generate_answer(ft::Message &message)
@@ -183,14 +191,14 @@ void ft::Answer::generate_answer(ft::Message &message)
 //	m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
 //	if (message.m_uri == "/")
 //		m_path_to_file += m_config->index[message.m_client_id];
-	if (message.m_method == "GET")
+	if (message.m_method == "GET" && !m_status_code)
 		generate_GET();
-	else if (message.m_method == "POST")
+	else if (message.m_method == "POST" && !m_status_code)
 		generate_POST();
 //		generate_GET();
-	else if (message.m_method == "DELETE")
+	else if (message.m_method == "DELETE" && !m_status_code)
 		generate_DELETE();
-	else
+	else if (!m_status_code)
 		wrong_method();
 	create_final_response();
 }
@@ -235,50 +243,65 @@ void ft::Answer::create_response_body()
 	if (m_uri[m_uri.length() - 1] != '/')
 		slash = "/";
 	if ((buff.st_mode & S_IFMT) != S_IFDIR)
+	{
 		file.open(m_path_to_file);
-	if (file.is_open())
-	{
-		oss << file.rdbuf();
-		m_body = oss.str();
-		m_body_exist = true;
-		file.close();
-		return;
-	} else
-	{
-		if (!m_conf_location->index.empty())
-		{
-			stat((m_path_to_file + m_conf_location->index).c_str(), &buff);
-			if ((buff.st_mode & S_IFMT) != S_IFDIR) {
-				file.open(m_path_to_file + m_conf_location->index);
-			}
-			if (file.is_open())
-			{
-				oss << file.rdbuf();
-				m_body = oss.str();
-				m_body_exist = true;
-				file.close();
-				return;
-			}
-		} else if (m_conf_location->autoindex == true)
-			{
-				if ((dir = opendir(m_path_to_file.c_str())) != NULL) {
-					oss << BEFORE_BODY;
-					while ((ent = readdir(dir)) != NULL)
-						oss << "<a href='" << m_uri + slash + ent->d_name << "'>" << ent->d_name << "</a><br />";
-					closedir (dir);
-					oss << AFTER_BODY;
-					m_body = oss.str();
-					m_body_exist = true;
-			}
-		}
-		else {
+		if (file.is_open()) {
+			oss << file.rdbuf();
+			m_body = oss.str();
+			m_body_exist = true;
+			file.close();
+			return;
+		} else {
 			make_error_answer(404);
 			/* could not open directory */
 			perror ("");
 			return;
 		}
 	}
-
+	else
+	{
+		if (!m_conf_location->index.empty())
+		{
+			stat((m_path_to_file + slash + m_conf_location->index).c_str(), &buff);
+			if ((buff.st_mode & S_IFMT) != S_IFDIR) {
+				file.open(m_path_to_file + slash + m_conf_location->index);
+				if (file.is_open()) {
+					oss << file.rdbuf();
+					m_body = oss.str();
+					m_body_exist = true;
+					file.close();
+					return;
+				}
+			}
+		}
+		if (m_conf_location->autoindex == true)
+		{
+			if ((dir = opendir(m_path_to_file.c_str())) != NULL)
+			{
+				oss << BEFORE_BODY;
+				while ((ent = readdir(dir)) != NULL)
+					oss << "<a href='" << m_uri + slash + ent->d_name << "'>" << ent->d_name << "</a><br />";
+				closedir (dir);
+				oss << AFTER_BODY;
+				m_body = oss.str();
+				m_body_exist = true;
+			}
+			else
+			{
+				make_error_answer(404);
+				/* could not open directory */
+				perror ("");
+				return;
+			}
+		}
+		else
+		{
+			make_error_answer(404);
+			/* could not open directory */
+			perror ("");
+			return;
+		}
+	}
 }
 
 void ft::Answer::generate_GET()
@@ -372,6 +395,7 @@ std::string ft::Answer::detect_last_modified()
 	stat(file.c_str(), &buff);
 	return (Help::get_date(buff.st_ctimespec));
 }
+
 
 
 

@@ -13,7 +13,6 @@
 #include "webserv.hpp"
 #include "Client.hpp"
 
-#define DOT ""
 #define BEFORE_BODY "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Содержимое</title><style>body{margin: 40px; margin-left: 60px;color: #ff001e;font-size: 26px;font-family: \"PT Serif\",Georgia,Times New Roman,Times,serif;font-style: normal;}</style></head><body>"
 #define AFTER_BODY "</body ></html >"
 
@@ -80,10 +79,12 @@ namespace ft
 		std::string 	detect_last_modified();
 
 	private:
+		std::string		m_slash;
 		void			generate_GET();
 		void 			generate_POST();
 		void			generate_DELETE();
 		void			wrong_method();
+		std::string		cut_part_path(std::string &path);
 		Answer();
 	};
 }
