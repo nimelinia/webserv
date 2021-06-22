@@ -133,7 +133,7 @@ void ft::Answer::make_error_answer(size_t num)
 
 std::string ft::Answer::cut_part_path(std::string &path)
 {
-	int pos;
+	size_t pos;
 	std::string part_path;
 
 	pos = path.find_last_of('/');
@@ -164,7 +164,7 @@ void ft::Answer::find_path_to_file(ft::Message &message)
 		for (size_t i = 0; i < m_config->locations.size(); ++i) {
 			for (std::list<std::string>::iterator it = m_config->locations[i].path_to_location.begin();
 				it != m_config->locations[i].path_to_location.end(); ++it) {
-				if (path_buf == *it) {
+				if (path_buf == *it || (path_buf + m_slash) == *it) {
 					m_conf_location = &m_config->locations[i];
 					m_path_to_file = m_conf_location->root + m_uri;
 					return;
@@ -201,6 +201,7 @@ void ft::Answer::generate_answer(ft::Message &message)
 	else if (!m_status_code)
 		wrong_method();
 	create_final_response();
+	message.m_ready_responce = true;
 }
 
 void ft::Answer::clean()
@@ -251,7 +252,9 @@ void ft::Answer::create_response_body()
 			m_body_exist = true;
 			file.close();
 			return;
-		} else {
+		}
+		else
+		{
 			make_error_answer(404);
 			/* could not open directory */
 			perror ("");
@@ -274,7 +277,7 @@ void ft::Answer::create_response_body()
 				}
 			}
 		}
-		if (m_conf_location->autoindex == true)
+		if (m_conf_location->autoindex)
 		{
 			if ((dir = opendir(m_path_to_file.c_str())) != NULL)
 			{

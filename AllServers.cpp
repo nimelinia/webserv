@@ -147,7 +147,8 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 		m_clients_data[index].m_msg.m_read <= m_clients_data[index].m_server->getMLimitBodySize())
 	{
 		m_clients_data[index].m_msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
-		m_clients_data[index].m_msg.parse();																										// отправила сообщение в парсер
+		m_clients_data[index].m_msg.parse();
+		m_clients_data[index].m_answer->generate_answer(m_clients_data[index].m_msg);
 	}
 	clean_buf(buff);																											// чищу буфер (сомнительно, что это работает)
 	if (m_clients_data[index].m_msg.m_read > m_clients_data[index].m_server->getMLimitBodySize() &&
@@ -159,7 +160,7 @@ ssize_t	ft::AllServers::read_from_socket(int index)
 ssize_t ft::AllServers::write_to_socket(int index)
 {
 	Message	msg = m_clients_data[index].m_msg;
-	m_clients_data[index].m_answer->generate_answer(msg);
+//	m_clients_data[index].m_answer->generate_answer(msg);
 	Answer	*answer = m_clients_data[index].m_answer;
 	ssize_t	ret;
 	ret = send(m_clients_data[index].m_socket_cl, answer->m_final_response.c_str(),  answer->m_size_response, 0);

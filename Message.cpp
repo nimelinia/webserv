@@ -49,7 +49,7 @@ void ft::Message::parse()
 		m_error_num = 400;
 //		m_ready_responce = true;
 	}
-	m_ready_responce = true;
+//	m_ready_responce = true;
 }
 
 void ft::Message::clean()

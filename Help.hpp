@@ -13,7 +13,7 @@ namespace ft {
 	class Help {
 	public:
 		static std::string get_date();
-		static std::string get_date(timespec time);
+		static std::string get_date(struct timespec time);
 		static std::string to_string(size_t num);
 	};
 }

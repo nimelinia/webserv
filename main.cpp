@@ -63,7 +63,6 @@ int main(int argc, char **argv) 																							// переписать, 
 				loc.autoindex = true;
 			config.locations.push_back(loc);
 		}
-		config.count_locations = config.locations.size();
 		servers_conf.push_back(config);
 	}
 //	config.count_servers = i;

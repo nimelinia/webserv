@@ -33,7 +33,7 @@ std::string ft::Help::to_string(size_t num)
 	return (buf.str());
 }
 
-std::string ft::Help::get_date(timespec time)
+std::string ft::Help::get_date(struct timespec time)
 {
 
 //	time.tv_sec = time.tv_sec + time.tv_nsec / 1000000000;
