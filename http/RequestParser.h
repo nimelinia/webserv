@@ -2,6 +2,7 @@
 #define HTTP_REQUESTPARSER_H
 
 #include "../AllowedStd.h"
+#include "Message.hpp"
 
 namespace ft { namespace http
 {
@@ -46,20 +47,15 @@ namespace ft { namespace http
 
     public:
         EState m_state;
-        std::string m_method;
-        std::string m_uri;
-        int m_ver_major;
-        int m_ver_minor;
-        std::vector<Header> m_headers;
 
     public:
         RequestParser();
 
-        std::pair<EResult, size_t> parse(const char* buf, size_t size);
+        std::pair<EResult, size_t> parse(Message& msg, const char* buf, size_t size);
         void reset();
 
     private:
-        EResult _consume(char c);
+        EResult _consume(Message& msg, char c);
     };
 } }
 

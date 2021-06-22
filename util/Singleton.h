@@ -1,6 +1,9 @@
 #ifndef UTIL_SINGLETON_H
 #define UTIL_SINGLETON_H
 
+#include "NonCopyable.h"
+#include <cstddef>
+
 namespace ft { namespace util
 {
     template<class T>

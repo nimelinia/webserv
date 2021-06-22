@@ -4,12 +4,11 @@
 
 #include "Server.hpp"
 
-ft::Server::Server(Config &config, size_t port, char *host_address, size_t id) :
+ft::Server::Server(Config &config, size_t port, std::string &host_address) :
 	m_config(config),
 	m_port(port),
 	m_host_address(host_address),
-	m_id(id),
-	m_socket_fd(0),
+	m_socket_fd(-1),
 	m_error_fatal(false)
 {
 	if (config.limit_body_size)
@@ -37,7 +36,7 @@ bool ft::Server::create_server()
 	}
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(m_port); 																							// преобразую в архитектуру сервера
-	addr.sin_addr.s_addr = inet_addr(m_host_address); 																		// заносит четырехбайтное целое число, отображающее корректный
+	addr.sin_addr.s_addr = inet_addr(m_host_address.c_str()); 																		// заносит четырехбайтное целое число, отображающее корректный
 																															// адрес, представленный в виде строки, в структуру.
 																															// возвращает адрес в сетевом порядке байтов
 
@@ -46,7 +45,7 @@ bool ft::Server::create_server()
 	fcntl(m_socket_fd, F_SETFL, O_NONBLOCK); 																				// ставлю сокет в неблокирующий режим.
 	if (bind(m_socket_fd, (struct sockaddr*) &addr, sizeof (addr)) == -1) 													// снабжаем сокет адресом
 	{
-		std::cout << "Ошибка: связывания сервера с id " << m_id << std:: endl;
+		std::cout << "Ошибка: связывания сервера" << std:: endl;
 		close(m_socket_fd); 																								// возможно, это лучше перенести в деструктор
 		m_error_fatal = true;
 		return (false);
@@ -55,21 +54,77 @@ bool ft::Server::create_server()
 																															// очереди (-1 значит, что по максимуму, предусмотренному для системы -
 																															// цифра меняется на максимально поддерживаемое системой)
 	{
-		std::cout << "Ошибка: прослушивания сервера с id " << m_id << std::endl;
+		std::cout << "Ошибка: прослушивания сервера" << std::endl;
 		close(m_socket_fd);
 		m_error_fatal = true;
 		return (false);
 	}
+	Select::get().set_fd(m_socket_fd);
 	return (true);
 }
 
-int ft::Server::getMSocketFd() const
+bool ft::Server::do_work()
 {
-	return m_socket_fd;
+	bool need_update = false;
+	std::list<Client>::iterator it = m_clients.begin();
+	while (it != m_clients.end())
+	{
+		if (Select::get().can_read(it->m_socket_cl))
+		{
+			if (it->read_message())
+			{
+				it->close();
+				m_clients.erase(it++);
+				need_update = true;
+				continue;
+			}
+		}
+		if (Select::get().can_write(it->m_socket_cl))
+		{
+			if (it->send_message())
+			{
+				it->close();
+				m_clients.erase(it++);
+				need_update = true;
+				continue;
+			}
+		}
+		++it;
+	}
+	if (Select::get().can_read(m_socket_fd))
+		need_update = create_new_connection() || need_update;
+	return (need_update);
 }
 
-size_t ft::Server::getMLimitBodySize() const
+
+int ft::Server::get_max_fd() const
 {
-	return m_limit_body_size;
+	int max_fd = m_socket_fd;
+	for (std::list<Client>::const_iterator max = m_clients.begin(); max != m_clients.end(); ++max)
+		max_fd = std::max(max_fd, max->m_socket_cl);
+	return (max_fd);
 }
+
+bool ft::Server::create_new_connection()
+{
+	socklen_t addrlen = sizeof(m_addr_client);
+	int connect_fd = accept(m_socket_fd, &m_addr_client, &addrlen);
+	if (connect_fd < 0)
+	{
+		std::cout << "Ошибка: принятия" << std::endl;
+		return (false);
+	}
+
+	else
+	{
+		std::cout << "Появилось новое подключение" << std::endl;
+		Select::get().set_fd(connect_fd);
+		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
+		Client	new_client(connect_fd, this);
+		m_clients.push_back(new_client);
+		return (true);
+	}
+}
+
+
 

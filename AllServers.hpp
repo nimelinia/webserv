@@ -9,9 +9,8 @@
 #include <iostream>
 #include <vector>
 #include "webserv.hpp"
-//#include "Message.hpp"
 #include "Server.hpp"
-#include "Client.hpp"
+#include "Select.hpp"
 
 struct	Config;
 class	Client;
@@ -23,22 +22,16 @@ namespace ft
 	class AllServers
 	{
 	public:
-		AllServers(std::vector<Config> &config);
+		AllServers();
 		virtual ~AllServers();
+		void	create_server(Config &config);
 		bool	start_all_servers();
-		ssize_t	read_from_socket(int index);
-		ssize_t	write_to_socket(int index);
-		int find_max_fd();
-		void	clean_buf(char *buff);
+		int 	find_max_fd();
 
 	private:
-		std::vector<Config>		&m_config;
-		std::vector<Server>		m_servers;
-		std::vector<int>		m_open_sockets;
-		std::vector<Client>		m_clients_data;
-		fd_set					m_clients;
+		std::list<Server>		m_servers;
 
-		AllServers();
+
 	};
 }
 

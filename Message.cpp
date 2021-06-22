@@ -25,11 +25,11 @@ void ft::Message::copy_buff(char *buf)
 		m_buff[i] = buf[i];
 }
 
-bool ft::Message::parse()
+bool ft::Message::parse(char *buf)
 {
 //	http::RequestParser									parser;
 	std::pair<http::RequestParser::EResult, size_t>		pair;
-	pair = m_parser.parse(m_buff, m_read - m_parsed);
+	pair = m_parser.parse(buf, m_read - m_parsed);
 	m_parsed += pair.second;
 	if (pair.first == http::RequestParser::EOk) 																			// если парсер закончил свою работу
 	{
@@ -38,7 +38,8 @@ bool ft::Message::parse()
 		m_uri = m_parser.m_uri;
 		m_ver_major = m_parser.m_ver_major;
 		m_ver_minor = m_parser.m_ver_minor;
-		return (read_body());
+//		read_body();
+		return (true);
 		// что, если chunked
 //		m_ready_responce = true;
 	}
@@ -49,7 +50,7 @@ bool ft::Message::parse()
 		m_bad_request = true;
 		m_error_num = 400;
 //		m_ready_responce = true;
-		return (true);
+		return (false);
 	}
 //	m_ready_responce = true;
 }

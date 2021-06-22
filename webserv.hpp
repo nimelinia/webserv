@@ -56,7 +56,7 @@ struct Config // нужно наполнить структуры необход
 	std::string				server_name;
 	std::vector<Locations>	locations;
 	size_t					port;
-	char*					hostaddress;
+	std::string 			hostaddress;
 	size_t					limit_body_size;
 
 };

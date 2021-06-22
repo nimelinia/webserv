@@ -8,10 +8,10 @@
 
 #include <iostream>
 #include <dirent.h>
-//#include "Message.hpp"
+#include "Message.hpp"
 #include "Help.hpp"
 #include "webserv.hpp"
-#include "Client.hpp"
+//#include "Client.hpp"
 
 #define BEFORE_BODY "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Содержимое</title><style>body{margin: 40px; margin-left: 60px;color: #ff001e;font-size: 26px;font-family: \"PT Serif\",Georgia,Times New Roman,Times,serif;font-style: normal;}</style></head><body>"
 #define AFTER_BODY "</body ></html >"

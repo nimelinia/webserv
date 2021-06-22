@@ -7,24 +7,37 @@
 //#define CLIENT_HPP
 
 #include <iostream>
-#include "Server.hpp"
 #include "Message.hpp"
 #include "Answer.hpp"
-
 class	Answer;
 
 namespace ft {
 //	class Answer;
+	class Server;
 	class Client {
-	public:
-		Client(int socketCl, Server *server);
 
+	private:
+		enum Estate {
+			e_parse_header,
+			e_read_body,
+			e_ready,
+			e_error
+		};
+	public:
+		Client(int socketCl, Server* server);
+
+		bool	read_message();
+		bool	send_message();
+		void	close();
+
+		Estate	m_state;
+		http::RequestParser	m_parser;
 		int		m_socket_cl;
-		int		m_socket_serv;
+		char*	m_buff;
 		Message	m_msg;
-		Server	*m_server;
-		Answer	*m_answer;
-		size_t	m_id;
+		Server*	m_server;
+		Answer	m_answer;
+		bool	m_delete_me;
 //	bool	sending;
 //	bool	receiving;
 

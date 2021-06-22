@@ -16,16 +16,16 @@ namespace ft {
 	public:
 		Message();
 
-		void copy_buff(char *buf);
+//		void copy_buff(char *buf);
 
-		bool parse();
+		bool parse(char* buf);
 		bool read_body();
 
 		void clean();
 
 		void setMReadyResponce(bool mReadyResponce);
 
-		char						m_buff[BUFFER_SIZE];
+//		char*						m_buff;
 		bool						m_bad_request;																			// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true
 		int							m_error_num;																			// код ошибки, которую отправить клиенту
 		size_t						m_read;
@@ -37,7 +37,6 @@ namespace ft {
 		int 						m_ver_major;
 		int							m_ver_minor;
 		bool 						m_ready_responce;
-		http::RequestParser			m_parser;
 		size_t						m_client_id;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
