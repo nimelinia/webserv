@@ -18,7 +18,7 @@ namespace ft {
 
 		void copy_buff(char *buf);
 
-		void parse();
+		bool parse();
 		void read_body();
 
 		void clean();

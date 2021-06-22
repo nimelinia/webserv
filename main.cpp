@@ -37,10 +37,13 @@ int main(int argc, char **argv) 																							// переписать, 
 	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
 	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it) {
 		Config	config;
-		std::cout << "server_name: " << it->value("server_name") << " | "
-				<< "listen: " << it->value("listen") << " | "
-				<< it->section("location").value("root") << std::endl;
-		config.server_name = it->value("server_name");
+//		std::cout << "server_name: " << it->value("server_name") << " | "
+//				<< "listen: " << it->value("listen") << " | "
+//				<< it->section("location").value("root") << std::endl;
+		if (it->contains("server_name"))
+			config.server_name = it->value("server_name");
+		else
+			config.server_name = "WebServer of dream-team/1.0";
 		config.hostaddress = (char*)"127.0.0.1";
 		config.port = std::strtoul(it->value("listen").c_str(), 0, 0);
 		if (it->contains("client_max_body_size"))
