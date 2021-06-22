@@ -19,9 +19,11 @@ namespace ft {
 		void copy_buff(char *buf);
 
 		bool parse();
-		void read_body();
+		bool read_body();
 
 		void clean();
+
+		void setMReadyResponce(bool mReadyResponce);
 
 		char						m_buff[BUFFER_SIZE];
 		bool						m_bad_request;																			// если в процессе парсинга станет ясно, что идет какая-то дичь, то тут надо ставить true

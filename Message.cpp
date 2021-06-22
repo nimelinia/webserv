@@ -38,8 +38,7 @@ bool ft::Message::parse()
 		m_uri = m_parser.m_uri;
 		m_ver_major = m_parser.m_ver_major;
 		m_ver_minor = m_parser.m_ver_minor;
-		read_body();
-		return (true);
+		return (read_body());
 		// что, если chunked
 //		m_ready_responce = true;
 	}
@@ -73,10 +72,11 @@ void ft::Message::clean()
 	m_parser.reset();
 }
 
-void ft::Message::read_body()
+bool ft::Message::read_body()
 {
 	size_t	length = 0;
 	bool	readed = false;
+	bool	finished = false;
 	for (size_t i = 0; i < m_headers.size(); ++i)
 	{
 		if (m_headers[i].name == "Content-Length")
@@ -90,9 +90,19 @@ void ft::Message::read_body()
 	}
 	if (readed)
 	{
+		finished = true;
 		if (length + m_parsed > BUFFER_SIZE)
+		{
 			length = BUFFER_SIZE - m_parsed;
+			finished = false;
+		}
 		m_body.append(m_buff, m_parsed, length);
-	}
+	} else
+		finished = true;
+	return (finished);
+}
 
+void ft::Message::setMReadyResponce(bool mReadyResponce)
+{
+	m_ready_responce = mReadyResponce;
 }

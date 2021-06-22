@@ -201,7 +201,7 @@ void ft::Answer::generate_answer(ft::Message &message)
 	else if (!m_status_code)
 		wrong_method();
 	create_final_response();
-	message.m_ready_responce = true;
+	message.setMReadyResponce(true);
 }
 
 void ft::Answer::clean()
