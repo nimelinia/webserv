@@ -1,11 +1,11 @@
 #include "RequestParser.h"
+#include "Message.hpp"
 
 #define CR '\r'
 #define LR '\n'
 
 ft::http::RequestParser::RequestParser()
     : m_state(EStart)
-    , m_ver_major(0), m_ver_minor(0)
 {
 }
 

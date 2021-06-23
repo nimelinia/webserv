@@ -4,7 +4,7 @@
 
 #include "Server.hpp"
 
-ft::Server::Server(Config &config, size_t port, std::string &host_address) :
+ft::Server::Server(Config config, size_t port, std::string &host_address) :
 	m_config(config),
 	m_port(port),
 	m_host_address(host_address),

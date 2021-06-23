@@ -3,9 +3,11 @@
 //
 
 #include "Answer.hpp"
+#include "http/RequestParser.h"
 
 ft::Answer::Answer() :
 	m_protocol_v("HTTP/1.1"),
+	m_status_code(0),
 	m_server("WebServer of dream-team/1.0"),
 	m_location(""),
 	m_connection(""),
@@ -26,6 +28,7 @@ ft::Answer::Answer() :
 
 ft::Answer::Answer(Config *config) :
 		m_protocol_v("HTTP/1.1"),
+		m_status_code(0),
 //		m_server("WebServer of dream-team/1.0"),
 		m_server(config->server_name),
 		m_location(""),
@@ -145,7 +148,7 @@ std::string ft::Answer::cut_part_path(std::string &path)
 	return (part_path);
 }
 
-
+// /path/[script_name | index.php]/extra_path?arg=value
 
 void ft::Answer::find_path_to_file(ft::Message &message)
 {
@@ -159,12 +162,13 @@ void ft::Answer::find_path_to_file(ft::Message &message)
 //		path_buf = cut_part_path(path_buf);
 	while (!path_buf.empty())
 	{
-		for (size_t i = 0; i < m_config->locations.size(); ++i) {
-			for (std::list<std::string>::iterator it = m_config->locations[i].path_to_location.begin();
-				it != m_config->locations[i].path_to_location.end(); ++it) {
+		for (std::list<Locations>::iterator loc = m_config->locations.begin(); loc != m_config->locations.end(); ++loc)
+		{
+			for (std::list<std::string>::iterator it = loc->path_to_location.begin();
+				it != loc->path_to_location.end(); ++it) {
 				if (path_buf == *it || (path_buf + m_slash) == *it) {
-					m_conf_location = &m_config->locations[i];
-					m_path_to_file = m_conf_location->root + m_uri;
+					m_conf_location = *loc;
+					m_path_to_file = m_conf_location.root + m_uri;
 					return;
 				}
 			}
@@ -178,6 +182,7 @@ void ft::Answer::find_path_to_file(ft::Message &message)
 void ft::Answer::generate_answer(ft::Message &message)
 {
 	m_uri = message.m_uri;
+	find_path_to_file(message);
 	if (!message.m_error_num)
 		check_validity(message);
 	if (message.m_error_num)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
@@ -185,7 +190,7 @@ void ft::Answer::generate_answer(ft::Message &message)
 		make_error_answer(message.m_error_num);
 		return;
 	}
-	find_path_to_file(message);
+
 //	m_path_to_file = DOT + m_config->root[message.m_client_id] + message.m_uri;
 //	if (message.m_uri == "/")
 //		m_path_to_file += m_config->index[message.m_client_id];
@@ -199,7 +204,7 @@ void ft::Answer::generate_answer(ft::Message &message)
 	else if (!m_status_code)
 		wrong_method();
 	create_final_response();
-	message.setMReadyResponce(true);
+	message.set_m_ready_response(true);
 }
 
 void ft::Answer::clean()
@@ -261,11 +266,11 @@ void ft::Answer::create_response_body()
 	}
 	else
 	{
-		if (!m_conf_location->index.empty())
+		if (!m_conf_location.index.empty())
 		{
-			stat((m_path_to_file + slash + m_conf_location->index).c_str(), &buff);
+			stat((m_path_to_file + slash + m_conf_location.index).c_str(), &buff);
 			if ((buff.st_mode & S_IFMT) != S_IFDIR) {
-				file.open(m_path_to_file + slash + m_conf_location->index);
+				file.open(m_path_to_file + slash + m_conf_location.index);
 				if (file.is_open()) {
 					oss << file.rdbuf();
 					m_body = oss.str();
@@ -275,7 +280,7 @@ void ft::Answer::create_response_body()
 				}
 			}
 		}
-		if (m_conf_location->autoindex)
+		if (m_conf_location.autoindex)
 		{
 			if ((dir = opendir(m_path_to_file.c_str())) != NULL)
 			{
@@ -354,32 +359,37 @@ void ft::Answer::wrong_method()
 void ft::Answer::create_final_response()
 {
 	m_final_response += m_protocol_v + " " + Help::to_string(m_status_code) + " " + m_status_text + "\r\n";
-	m_final_response += "Server: " + m_server + "\r\n";
+//	m_final_response += "Server: " + m_server + "\r\n";
 	m_final_response += "Date: " + Help::get_date() + "\r\n";
-	if (!m_connection.empty())
-		m_final_response += "Connection: " + m_connection + "\r\n";
-	if (!m_location.empty())
-		m_final_response += "Location: " + m_location + "\r\n";
-	if (!m_retry_after.empty())
-		m_final_response += "Retry-After: " + m_retry_after + "\r\n";
-	if (!m_last_modified.empty())
-		m_final_response += "Last-Modified: " + m_last_modified + "\r\n";
-	if (!m_allow.empty())
-		m_final_response += "Allow: " + m_allow + "\r\n";
-	if (!m_content_type.empty())
-		m_final_response += "Content-Type: " + m_content_type + "\r\n";
-	if (m_length_exist)
-		m_final_response += "Content-Length: " + Help::to_string(m_content_length) + "\r\n";
-	if (!m_transfer_encoding.empty())
-		m_final_response += "Transfer-Encoding: " + m_transfer_encoding + "\r\n";
-	if (!m_content_language.empty())
-		m_final_response += "Content-Language: " + m_content_language + "\r\n";
-	if (!m_content_location.empty())
-		m_final_response += "Content-Location: " + m_content_location + "\r\n";
+
+	for (std::list<http::Header>::iterator it = m_headers.begin(); it != m_headers.end(); ++it)
+	{
+		m_final_response += it->name + ": " + it->value + "\r\n";
+	}
+//	if (!m_connection.empty())
+//		m_final_response += "Connection: " + m_connection + "\r\n";
+//	if (!m_location.empty())
+//		m_final_response += "Location: " + m_location + "\r\n";
+//	if (!m_retry_after.empty())
+//		m_final_response += "Retry-After: " + m_retry_after + "\r\n";
+//	if (!m_last_modified.empty())
+//		m_final_response += "Last-Modified: " + m_last_modified + "\r\n";
+//	if (!m_allow.empty())
+//		m_final_response += "Allow: " + m_allow + "\r\n";
+//	if (!m_content_type.empty())
+//		m_final_response += "Content-Type: " + m_content_type + "\r\n";
+//	if (m_length_exist)
+//		m_final_response += "Content-Length: " + Help::to_string(m_content_length) + "\r\n";
+//	if (!m_transfer_encoding.empty())
+//		m_final_response += "Transfer-Encoding: " + m_transfer_encoding + "\r\n";
+//	if (!m_content_language.empty())
+//		m_final_response += "Content-Language: " + m_content_language + "\r\n";
+//	if (!m_content_location.empty())
+//		m_final_response += "Content-Location: " + m_content_location + "\r\n";
 	m_final_response += "\r\n";
 	if (m_body_exist)
 		m_final_response += m_body;																							// в x.com я не видела переноса строки после тела ответа
-	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
+//	std::cout << "Весь ответ: " << m_final_response << std::endl;															// это для теста, потом надо будет убрать
 	m_size_response = m_final_response.length();
 }
 

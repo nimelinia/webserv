@@ -28,7 +28,8 @@ namespace ft {
 
 		bool				read_message();
 		bool				send_message();
-		bool				read_body();
+		void				read_body(ssize_t ret);
+		void				find_content_length();
 		void				close();
 
 
@@ -39,6 +40,8 @@ namespace ft {
 		Message				m_msg;
 		Server*				m_server;
 		Answer				m_answer;
+		size_t				m_parsed;
+		size_t				m_content_length;
 		bool				m_delete_me;
 //	bool	sending;
 //	bool	receiving;

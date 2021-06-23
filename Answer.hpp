@@ -40,19 +40,19 @@ namespace ft
 		std::string		m_status_text;
 
 		std::string		m_server;
-		std::string		m_location;
-		std::string 	m_connection;
-		std::string		m_retry_after;
-		std::string		m_allow;
-		std::string		m_content_type;
+//		std::string		m_location;
+//		std::string 	m_connection;
+//		std::string		m_retry_after;
+//		std::string		m_allow;
+//		std::string		m_content_type;
 		size_t			m_content_length;
-		bool			m_length_exist;
-		std::string		m_content_language;
-		std::string		m_content_location;																					// не понятно, нужно ли это
+//		bool			m_length_exist;
+//		std::string		m_content_language;
+//		std::string		m_content_location;																					// не понятно, нужно ли это
 		std::string		m_date;
 
-		std::string		m_last_modified;
-		std::string 	m_transfer_encoding;
+//		std::string		m_last_modified;
+//		std::string 	m_transfer_encoding;
 
 
 		bool			m_body_exist;
@@ -62,9 +62,10 @@ namespace ft
 		size_t			m_size_response;
 		std::string		m_path_to_file;
 
-		Config			*m_config;
-		std::string		m_uri;
-		Locations		*m_conf_location;
+//		Config			*m_config;
+//		sstd::string		m_uri;
+//		Locations		m_conf_location;
+		std::list<http::Header>	m_headers;
 
 
 		void			check_validity(Message &message);

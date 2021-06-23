@@ -54,7 +54,7 @@ struct Locations
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
 	std::string				server_name;
-	std::vector<Locations>	locations;
+	std::list<Locations>	locations;
 	size_t					port;
 	std::string 			hostaddress;
 	size_t					limit_body_size;

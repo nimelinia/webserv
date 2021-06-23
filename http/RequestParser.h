@@ -2,15 +2,28 @@
 #define HTTP_REQUESTPARSER_H
 
 #include "../AllowedStd.h"
-#include "Message.hpp"
 
-namespace ft { namespace http
+
+namespace ft {
+	class Message;
+	namespace http
 {
     struct Header
     {
         std::string name;
         std::string value;
+        Header(const std::string& n, const std::string& v): name(n), value(v) {}
     };
+
+	struct FindHeader: public std::unary_function<Header, bool>
+	{
+		std::string m_name;
+		FindHeader(const std::string& name): m_name(name) {}
+		bool operator()(const Header& header)
+		{
+			return header.name == m_name;
+		}
+	};
 
     class RequestParser
     {
