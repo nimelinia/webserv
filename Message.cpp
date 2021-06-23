@@ -9,20 +9,13 @@ ft::Message::Message() :
 	m_error_num(0),
 	m_read(0),
 	m_parsed(0),
+	m_body_tale(0),
 	m_method(""),
 	m_ver_major(0),
 	m_ver_minor(0),
 	m_ready_responce(false)
 {
 
-}
-
-void ft::Message::copy_buff(char *buf)
-{
-	if (!buf)
-		return;
-	for (size_t i = 0; buf[i] != '\0'; ++i)
-		m_buff[i] = buf[i];
 }
 
 bool ft::Message::parse(char *buf)
@@ -62,6 +55,7 @@ void ft::Message::clean()
 	m_bad_request = false;
 	m_error_num = 0;
 	m_read = 0;
+	m_body_tale = 0;
 	m_headers.clear();
 	m_body.clear();
 	m_method.clear();

@@ -26,8 +26,8 @@ bool ft::Client::read_message()
 	m_msg.m_read += ret;
 	if (m_state == e_parse_header)
 	{
-		m_msg.parse(m_buff);
-		std::pair<http::RequestParser::EResult, size_t> res = m_parser.parse(m_msg);
+		std::pair<http::RequestParser::EResult, size_t> res = m_parser.parse(m_msg, m_buff, BUFFER_SIZE);
+		m_msg.m_parsed += res.second;
 		if (res.first == http::RequestParser::EOk)
 			m_state = e_read_body;
 		else if (res.first == http::RequestParser::EError)
@@ -37,25 +37,54 @@ bool ft::Client::read_message()
 			m_msg.m_error_num = 400;
 		}
 	}
-	if (!m_clients_data[index].m_msg.m_bad_request &&
-		m_clients_data[index].m_msg.m_read <= m_clients_data[index].m_server->getMLimitBodySize())
+	if (m_state == e_read_body)
 	{
-//		m_clients_data[index].m_msg.copy_buff(buff);																								// скопировала прочтеное в мессадж
-		m_clients_data[index].m_msg.parse(buff);
-		m_clients_data[index].m_answer->generate_answer(m_clients_data[index].m_msg);
+		if (read_body())
+			m_state = e_ready;
+		if (m_msg.m_error_num)
+			m_state = e_error;
+		m_msg.m_parsed = 0;
 	}
-	clean_buf(buff);																											// чищу буфер (сомнительно, что это работает)
-	if (m_clients_data[index].m_msg.m_read > m_clients_data[index].m_server->getMLimitBodySize() &&
-		!m_clients_data[index].m_msg.m_error_num)
-		m_clients_data[index].m_msg.m_error_num = 413;
-	return 0;
-
 	return false;
 }
 
 bool ft::Client::send_message()
 {
 	return false;
+}
+
+bool ft::Client::read_body()
+{
+	if (!m_msg.m_body_tale)
+	{
+		for (size_t i = 0; i < m_msg.m_headers.size(); ++i) {
+			if (m_msg.m_headers[i].name == "Content-Length") {
+				m_msg.m_body_tale = std::strtoul(m_msg.m_headers[i].value.c_str(), 0, 0);
+				if (!m_msg.m_body_tale && m_msg.m_headers[i].value != "0") {
+					m_msg.m_bad_request = true;
+					m_msg.m_error_num = 400;
+					return (false);
+				}
+				break;
+			}
+			if (i == m_msg.m_headers.size() - 1)
+				return (true);
+		}
+		if (m_msg.m_body_tale > m_server->m_config.limit_body_size)
+		{
+			m_msg.m_error_num = 413;
+			return (false);
+		}
+	}
+	if (m_msg.m_read - m_msg.m_parsed < m_msg.m_body_tale)
+	{
+		m_msg.m_body.append(m_buff, m_msg.m_parsed, m_msg.m_read - m_msg.m_parsed);
+		m_msg.m_body_tale -= m_msg.m_read - m_msg.m_parsed;
+		return (false);
+	}
+	else
+		m_msg.m_body.append(m_buff, m_msg.m_parsed, m_msg.m_body_tale);
+	return (true);
 }
 
 void ft::Client::close()

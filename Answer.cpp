@@ -139,8 +139,6 @@ std::string ft::Answer::cut_part_path(std::string &path)
 	pos = path.find_last_of('/');
 	if (pos == std::string::npos)
 		return ("");
-//	if (pos != 0)
-//		pos -= 1;
 	if (pos == 0)
 		pos = 1;
 	part_path = path.substr(0, pos);

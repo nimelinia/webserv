@@ -30,6 +30,7 @@ namespace ft {
 		int							m_error_num;																			// код ошибки, которую отправить клиенту
 		size_t						m_read;
 		size_t						m_parsed;
+		size_t						m_body_tale;
 		std::vector<http::Header>	m_headers;
 		std::string 				m_body;
 		std::string					m_method;
@@ -37,7 +38,6 @@ namespace ft {
 		int 						m_ver_major;
 		int							m_ver_minor;
 		bool 						m_ready_responce;
-		size_t						m_client_id;
 //	std::string							input; // сюда записывается весь текст из прочтенного сообщения
 //	std::string							buf; // вспомогательая строка
 //	double								http_version;

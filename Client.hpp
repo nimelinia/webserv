@@ -26,18 +26,20 @@ namespace ft {
 	public:
 		Client(int socketCl, Server* server);
 
-		bool	read_message();
-		bool	send_message();
-		void	close();
+		bool				read_message();
+		bool				send_message();
+		bool				read_body();
+		void				close();
 
-		Estate	m_state;
+
+		Estate				m_state;
 		http::RequestParser	m_parser;
-		int		m_socket_cl;
-		char*	m_buff;
-		Message	m_msg;
-		Server*	m_server;
-		Answer	m_answer;
-		bool	m_delete_me;
+		int					m_socket_cl;
+		char*				m_buff;
+		Message				m_msg;
+		Server*				m_server;
+		Answer				m_answer;
+		bool				m_delete_me;
 //	bool	sending;
 //	bool	receiving;
 
