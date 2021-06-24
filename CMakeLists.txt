@@ -31,4 +31,7 @@ add_executable(webserv
 		config/Section.cpp
 		config/Config.cpp
 		util/String.cpp
-		util/File.cpp ResponseHandler.cpp ResponseHandler.hpp UriParser.cpp UriParser.hpp)
+		util/File.cpp ResponseHandler.cpp ResponseHandler.hpp UriParser.cpp
+		StatusCodes.cpp
+		MimeTypes.cpp
+		)

@@ -53,20 +53,27 @@ int main(int argc, char **argv) 																							// переписать, 
 			config.limit_body_size = std::strtoul(it->value("client_max_body_size").c_str(), 0, 0);
 		else
 			config.limit_body_size = 0;
-		std::list<ft::cfg::Section> locations = it->sectionList("location");
-		for(std::list<ft::cfg::Section>::iterator it = locations.begin(); it != locations.end(); ++it)
+		std::list<ft::cfg::Section> error_pages = it->sectionList("error_page");
+		for (std::list<ft::cfg::Section>::iterator sit = error_pages.begin(); sit != error_pages.end(); ++sit)
 		{
-			Locations	loc;
-			loc.path_to_location = it->valueList();
-			if (it->contains("root"))
-				loc.root = it->value("root");
-			if (it->contains("limit_except"))
-				loc.allow = it->value("limit_except");
-			if (it->contains("index"))
-				loc.index = it->value("index");
-			if (it->contains("autoindex") && it->value("autoindex") == "on")
+			const size_t status_code = std::strtoul(sit->value().c_str(), 0, 0);
+			config.default_error_pages.insert(std::make_pair(status_code, sit->value(1)));
+		}
+
+		std::list<ft::cfg::Section> locations = it->sectionList("location");
+		for(std::list<ft::cfg::Section>::iterator lit = locations.begin(); lit != locations.end(); ++lit)
+		{
+			config.locations.push_back(Locations());
+			Locations& loc = config.locations.back();
+			loc.path_to_location = lit->valueList();
+			if (lit->contains("root"))
+				loc.root = lit->value("root");
+			if (lit->contains("limit_except"))
+				loc.allow = lit->value("limit_except");
+			if (lit->contains("index"))
+				loc.index = lit->value("index");
+			if (lit->contains("autoindex") && lit->value("autoindex") == "on")
 				loc.autoindex = true;
-			config.locations.push_back(loc);
 		}
 		servers.create_server(config);
 	}

@@ -36,7 +36,6 @@ std::string ft::Help::to_string(size_t num)
 std::string ft::Help::get_date(struct timespec time)
 {
 
-//	time.tv_sec = time.tv_sec + time.tv_nsec / 1000000000;
 	tm *ltm = localtime(&time.tv_sec);
 	std::string			date_buf;
 	date_buf = asctime(gmtime(&time.tv_sec));
@@ -53,7 +52,5 @@ std::string ft::Help::get_date(struct timespec time)
 		 << date_buf.substr(4, 3) + " "
 		 << date_buf.substr(20, 4) + " "
 		 << date_buf.substr(11, 8) + " GMT";
-//	char date_1[256];
-//	strftime(date_1, 256, "%c", ltm);
 	return (date.str());
 }

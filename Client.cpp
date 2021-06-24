@@ -45,19 +45,22 @@ bool ft::Client::read_message()
 	{
 		read_body(ret);
 	}
-	if (m_state == e_ready)
+	if (m_state == e_request_ready)
 	{
 		m_parser.reset();
-		m_answer.generate_answer(m_msg);
 		ResponseHandler handler(m_server->m_config, m_msg, m_answer);
-		handler.generate_answer();
+		if (handler.generate_answer())
+		{
+			handler.generate_status_body();
+			m_state = e_response_ready;
+		}
 	}
 	return (false);
 }
 
 bool ft::Client::send_message()
 {
-
+ 	m_answer.create_final_response();
 	ssize_t	ret;
 	ret = send(m_socket_cl, m_answer.m_final_response.c_str(),  m_answer.m_size_response, 0);
 	if (ret == 0 || ret == -1)
@@ -78,7 +81,7 @@ void ft::Client::read_body(ssize_t readed)
 	{
 		m_msg.m_body.append(m_buff, m_parsed, m_content_length);
 		m_content_length = 0;
-		m_state = e_ready;
+		m_state = e_request_ready;
 	}
 	else
 	{
@@ -102,7 +105,7 @@ void ft::Client::find_content_length()
 														  http::FindHeader("Content-Length"));
 	if (it == m_msg.m_headers.end())
 	{
-		m_state = e_ready;
+		m_state = e_request_ready;
 		return;
 	}
 	m_content_length = std::strtoul(it->value.c_str(), 0, 0);
@@ -116,4 +119,9 @@ void ft::Client::find_content_length()
 		m_msg.m_error_num = 413;
 		m_state = e_error;
 	}
+}
+
+bool ft::Client::ready_write() const
+{
+	return (m_state == e_response_ready);
 }

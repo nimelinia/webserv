@@ -79,7 +79,7 @@ bool ft::Server::do_work()
 				continue;
 			}
 		}
-		if (Select::get().can_write(it->m_socket_cl))
+		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
 		{
 			if (it->send_message())
 			{

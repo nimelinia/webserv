@@ -3,8 +3,6 @@
 //
 
 #pragma once
-//#ifndef WEBSERV_ANSWER_HPP
-//#define WEBSERV_ANSWER_HPP
 
 #include <iostream>
 #include <dirent.h>
@@ -12,9 +10,6 @@
 #include "Help.hpp"
 #include "webserv.hpp"
 //#include "Client.hpp"
-
-#define BEFORE_BODY "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Содержимое</title><style>body{margin: 40px; margin-left: 60px;color: #ff001e;font-size: 26px;font-family: \"PT Serif\",Georgia,Times New Roman,Times,serif;font-style: normal;}</style></head><body>"
-#define AFTER_BODY "</body ></html >"
 
 /*
  * Наличие тела сообщения в ответе зависит как от метода запроса, на который он отвечает, так и от кода состояния
@@ -35,64 +30,29 @@ namespace ft
 
 		explicit Answer(Config *config);
 
-		std::string		m_protocol_v;
-		size_t			m_status_code;
-		std::string		m_status_text;
+		size_t					m_status_code;
 
-		std::string		m_server;
-//		std::string		m_location;
-//		std::string 	m_connection;
-//		std::string		m_retry_after;
-//		std::string		m_allow;
-//		std::string		m_content_type;
-		size_t			m_content_length;
-//		bool			m_length_exist;
-//		std::string		m_content_language;
-//		std::string		m_content_location;																					// не понятно, нужно ли это
-		std::string		m_date;
+		const std::string		m_server;
+//		std::string				m_date;
 
-//		std::string		m_last_modified;
-//		std::string 	m_transfer_encoding;
-
-
-		bool			m_body_exist;
-		std::string		m_body;
-
-		std::string		m_final_response;
-		size_t			m_size_response;
-		std::string		m_path_to_file;
-
-//		Config			*m_config;
-//		sstd::string		m_uri;
-//		Locations		m_conf_location;
 		std::list<http::Header>	m_headers;
 
+		bool					m_body_exist;
+		std::string				m_body;
 
-		void			check_validity(Message &message);
-		void			check_allow_methods(Message &message);
-		void			generate_answer(Message &message);
-		void			find_path_to_file(Message &message);
-		void			make_error_answer(size_t num);
+		std::string				m_final_response;
+		size_t					m_size_response;
+
+
+		std::string				m_path_to_file;
+
 		void			clean();
 		void			create_final_response();
-		void			create_response_body();
-		std::string		detect_content_type();
-		std::string 	detect_last_modified();
 
 	private:
-		std::string		m_slash;
-		void			generate_GET();
-		void 			generate_POST();
-		void			generate_DELETE();
-		void			wrong_method();
-		std::string		cut_part_path(std::string &path);
 		Answer();
 	};
 }
-
-
-
-//#endif //WEBSERV_ANSWER_HPP
 
 /*
  * 200	OK

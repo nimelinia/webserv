@@ -12,7 +12,6 @@ namespace ft {
     {
         std::string name;
         std::string value;
-        Header(const std::string& n, const std::string& v): name(n), value(v) {}
     };
 
 	struct FindHeader: public std::unary_function<Header, bool>

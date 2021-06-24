@@ -22,6 +22,7 @@ namespace ft { namespace cfg
         explicit Section(const detail::Node & node);
 
         const std::string & value(const std::string & path, size_t pos = 0) const;
+		const std::string & value(size_t pos = 0) const;
         const std::list<std::string> & valueList(const std::string & path) const;
 		const std::list<std::string> & valueList() const;
 

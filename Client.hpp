@@ -20,8 +20,9 @@ namespace ft {
 		enum Estate {
 			e_parse_header,
 			e_read_body,
-			e_ready,
-			e_error
+			e_request_ready,
+			e_error,
+			e_response_ready
 		};
 	public:
 		Client(int socketCl, Server* server);
@@ -31,6 +32,7 @@ namespace ft {
 		void				read_body(ssize_t ret);
 		void				find_content_length();
 		void				close();
+		bool				ready_write() const;
 
 
 		Estate				m_state;

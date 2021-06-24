@@ -43,21 +43,23 @@
 
 struct Locations
 {
-	std::list<std::string>		path_to_location;
-	std::string					root;
-	std::string					allow;
-	std::string					index;
-	bool 						autoindex;
+	std::list<std::string>				path_to_location;
+	std::string							root;
+	std::string							allow;
+	std::string							index;
+	std::pair<std::string, std::string>	cgi;
+	bool 								autoindex;
 };
 
 
 struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
 {
-	std::string				server_name;
-	std::list<Locations>	locations;
-	size_t					port;
-	std::string 			hostaddress;
-	size_t					limit_body_size;
+	std::string							server_name;
+	std::list<Locations>				locations;
+	size_t								port;
+	std::string 						hostaddress;
+	size_t								limit_body_size;
+	std::map<size_t, std::string>		default_error_pages;
 
 };
 
