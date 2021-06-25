@@ -34,4 +34,13 @@ add_executable(webserv
 		util/File.cpp ResponseHandler.cpp ResponseHandler.hpp UriParser.cpp
 		StatusCodes.cpp
 		MimeTypes.cpp
+		http/CgiHandler.cpp
+		http/CgiProcess.cpp
+		log/Level.cpp
+		log/Formatters.cpp
+		log/detail/LoggerBase.cpp
+		log/detail/Message.cpp
+		log/handlers/ColorConsoleHandler.cpp
+		log/handlers/ConsoleHandler.cpp
+		log/handlers/FileHandler.cpp
 		)

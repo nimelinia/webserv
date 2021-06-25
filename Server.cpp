@@ -89,6 +89,19 @@ bool ft::Server::do_work()
 				continue;
 			}
 		}
+
+		if (it->cgi_spawned())
+            need_update = true;
+		else if (it->cgi_ready_read() && Select::get().can_write(it->m_cgi_process.read_fd()))
+        {
+            if (it->cgi_read())
+                need_update = true;
+        }
+		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd()))
+        {
+            if (it->cgi_write())
+                need_update = true;
+        }
 		++it;
 	}
 	if (Select::get().can_read(m_socket_fd))
@@ -101,7 +114,7 @@ int ft::Server::get_max_fd() const
 {
 	int max_fd = m_socket_fd;
 	for (std::list<Client>::const_iterator max = m_clients.begin(); max != m_clients.end(); ++max)
-		max_fd = std::max(max_fd, max->m_socket_cl);
+		max_fd = std::max(max_fd, max->max_fd());
 	return (max_fd);
 }
 

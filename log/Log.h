@@ -36,5 +36,6 @@ namespace ft { namespace log
 #define LOGD    LOG(ft::log::EDebug)
 
 #define CFG 0
+#define CGI 1
 
 #endif //LOG_LOG_H

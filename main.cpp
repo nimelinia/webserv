@@ -6,6 +6,7 @@
 #include "Help.hpp"
 #include "config/Config.h"
 #include "util/String.h"
+#include "log/Log.h"
 
 int	check_count_arguments(int argc)
 {
@@ -23,6 +24,9 @@ int	check_count_arguments(int argc)
 
 int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
 {
+    LOGGER_(CGI).addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
+    LOGGER_(CGI).setMaxLevel(ft::log::EDebug);
+
 	if (check_count_arguments(argc))
 		return (errno);																										// тут нужно прописать код ошибки
 	ft::cfg::Config cfg;
@@ -74,6 +78,11 @@ int main(int argc, char **argv) 																							// переписать, 
 				loc.index = lit->value("index");
 			if (lit->contains("autoindex") && lit->value("autoindex") == "on")
 				loc.autoindex = true;
+			if (lit->contains("cgi"))
+            {
+			    loc.cgi.first = lit->value("cgi", 0);
+			    loc.cgi.second = lit->value("cgi", 1);
+            }
 		}
 		servers.create_server(config);
 	}

@@ -4,8 +4,6 @@
 #pragma once
 
 #include "UriParser.hpp"
-#include "Answer.hpp"
-#include "Message.hpp"
 
 #define BEFORE_BODY "<html lang=\"en\"><head><meta charset=\"utf-8\"> \
 					<title>Содержимое</title> \
@@ -14,16 +12,18 @@
 #define AFTER_BODY "</body></html>"
 
 
-namespace ft{
+namespace ft
+{
+    class Client;
+
 	class ResponseHandler
 	{
 	public:
-		ResponseHandler(Config &config, Message& msg, Answer &answer);
+		ResponseHandler(Config &config, Client& client);
 
 		Uri						m_uri;
 		Config&					m_config;
-		Message&				m_msg;
-		Answer&					m_answer;
+		Client&                 m_client;
 		const Locations*		m_location;
 
 		bool	generate_answer();

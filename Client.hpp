@@ -9,6 +9,8 @@
 #include <iostream>
 #include "Message.hpp"
 #include "Answer.hpp"
+#include "http/CgiHandler.hpp"
+
 class	Answer;
 
 namespace ft {
@@ -33,10 +35,18 @@ namespace ft {
 		void				find_content_length();
 		void				close();
 		bool				ready_write() const;
+		int 				max_fd() const;
+
+		bool cgi_spawned();
+		bool cgi_ready_read() const;
+		bool cgi_ready_write() const;
+		bool cgi_read();
+		bool cgi_write();
 
 
 		Estate				m_state;
 		http::RequestParser	m_parser;
+		http::CgiProcess	m_cgi_process;
 		int					m_socket_cl;
 		char*				m_buff;
 		Message				m_msg;

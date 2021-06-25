@@ -3,11 +3,11 @@
 //
 
 #include "ResponseHandler.hpp"
+#include "Client.hpp"
 
-ft::ResponseHandler::ResponseHandler(Config &config, Message& msg, Answer &answer) :
+ft::ResponseHandler::ResponseHandler(Config &config, Client& client) :
 	m_config(config),
-	m_msg(msg),
-	m_answer(answer),
+	m_client(client),
 	m_location(NULL)
 {
 
@@ -15,6 +15,9 @@ ft::ResponseHandler::ResponseHandler(Config &config, Message& msg, Answer &answe
 
 bool ft::ResponseHandler::generate_answer()
 {
+    Message& m_msg = m_client.m_msg;
+    Answer& m_answer = m_client.m_answer;
+
 	UriParser parser(m_config.locations);
 	if (!parser.parse_uri(m_msg.m_uri, m_uri))
 	{
@@ -33,8 +36,22 @@ bool ft::ResponseHandler::generate_answer()
 		m_answer.m_status_code = status;
 		return true;
 	}
+
 	if (m_msg.m_method == "GET")
-		generate_GET();
+    {
+	    if (!m_location->cgi.second.empty() && m_location->cgi.first == m_uri.file_ext)
+        {
+	        http::CgiHandler handler(m_config, m_client, m_uri);
+	        m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
+	        if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
+            {
+                m_answer.m_status_code = 500;
+                return true;
+            }
+            return false;
+        }
+        generate_GET();
+    }
 	else if (m_msg.m_method == "POST")
 		generate_POST();
 	else if (m_msg.m_method == "DELETE")
@@ -53,6 +70,7 @@ int ft::ResponseHandler::check_validity()
 
 void ft::ResponseHandler::generate_GET()
 {
+    Answer& m_answer = m_client.m_answer;
 	m_answer.m_status_code = 200;
 	generate_body();
 	if (m_answer.m_status_code == 200)
@@ -71,32 +89,34 @@ void ft::ResponseHandler::generate_HEAD()
 {
 	generate_GET();
 //	m_answer.m_body.clear();
-	m_answer.m_body_exist = false;
+	m_client.m_answer.m_body_exist = false;
 }
 
 void ft::ResponseHandler::generate_POST()
 {
-	m_answer.m_status_code = 200;
+    m_client.m_answer.m_status_code = 200;
 
 
-	m_answer.m_status_code = 201;
+    m_client.m_answer.m_status_code = 201;
 }
 
 void ft::ResponseHandler::generate_DELETE()
 {
-	m_answer.m_status_code = 200;
+    m_client.m_answer.m_status_code = 200;
 
-	m_answer.m_status_code = 202;
+    m_client.m_answer.m_status_code = 202;
 
-	m_answer.m_status_code = 204;
+    m_client.m_answer.m_status_code = 204;
 }
 
 void ft::ResponseHandler::wrong_method()
 {
-	m_answer.m_status_code = 501;
+    m_client.m_answer.m_status_code = 501;
 }
 
-void ft::ResponseHandler::generate_body() {
+void ft::ResponseHandler::generate_body()
+{
+    Answer& m_answer = m_client.m_answer;
 	std::ostringstream oss;
 	std::ifstream file;
 	DIR *dir;
@@ -120,6 +140,7 @@ void ft::ResponseHandler::generate_body() {
 
 void ft::ResponseHandler::generate_status_body()
 {
+    Answer& m_answer = m_client.m_answer;
 	const bool body_exist = m_answer.m_body_exist;
 	/*
 	 * if (custom status page)
@@ -132,6 +153,7 @@ void ft::ResponseHandler::generate_status_body()
 
 bool ft::ResponseHandler::from_file_to_body(const std::string &path)
 {
+    Answer& m_answer = m_client.m_answer;
 	std::ostringstream			oss;
 	std::ifstream				file;
 
@@ -157,7 +179,8 @@ bool ft::ResponseHandler::from_file_to_body(const std::string &path)
 //	return false;
 //}
 
-std::string ft::ResponseHandler::detect_last_modified() {
+std::string ft::ResponseHandler::detect_last_modified()
+{
 	struct stat buff;
 	std::string	file;
 	file = m_uri.path + m_uri.file_name;
