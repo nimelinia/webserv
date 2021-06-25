@@ -1,7 +1,7 @@
 #ifndef CONFIG_CONFIGEXCEPTION_H
 #define CONFIG_CONFIGEXCEPTION_H
 
-#include "AllowedStd.h"
+#include "../../AllowedStd.h"
 
 namespace ft { namespace cfg
 {

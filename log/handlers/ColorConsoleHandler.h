@@ -1,7 +1,7 @@
 #ifndef LOG_COLORCONSOLEHANDLER_H
 #define LOG_COLORCONSOLEHANDLER_H
 
-#include "AllowedStd.h"
+#include "../../AllowedStd.h"
 #include "AHandler.h"
 
 namespace ft { namespace log

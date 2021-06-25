@@ -1,97 +1,92 @@
+//#include "webserv.hpp"
+//#include "Client.hpp"
+//#include "Server.hpp"
+//#include "Message.hpp"
+#include "AllServers.hpp"
+#include "Help.hpp"
 #include "config/Config.h"
-#include "log/Log.h"
-#include "http/RequestParser.h"
+#include "util/String.h"
 
-static void InitLogging()
+int	check_count_arguments(int argc)
 {
-    LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
-    LOGGER.setMaxLevel(ft::log::EDebug);
-
-    ft::log::FileHandler* h = new ft::log::FileHandler(ft::log::FullFormatter);
-    if (!h->open("config.log"))
-    {
-        LOGE << "Failed to open file for Config logging";
-        delete h;
-    }
-    else
-    {
-        LOGGER_(CFG).addHandler(h);
-        LOGGER_(CFG).setMaxLevel(ft::log::EDebug);
-    }
+	if (argc < 2)
+	{
+		std::cout << "There is no config for server!" << std::endl;
+		return (1);
+	}
+	else if (argc > 2)
+	{
+		std::cout << "Too many arguments!" << std::endl;
+	}
+	return (0);
 }
 
-int main()
+int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
 {
-    InitLogging();
+	if (check_count_arguments(argc))
+		return (errno);																										// тут нужно прописать код ошибки
+	ft::cfg::Config cfg;
+	try {
+		cfg.load(argv[1]);
+	} catch (const ft::cfg::ConfigException & e)
+	{
+		std::cout << "Failed to load config: " << e.what() << std::endl;
+		return 1;
+	}
 
-    LOGF << "GLOBAL TEST";
-    LOGE << "GLOBAL TEST";
-    LOGW << "GLOBAL TEST";
-    LOGI << "GLOBAL TEST";
-    LOGD << "GLOBAL TEST";
+	ft::AllServers servers;
+	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
+	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it) {
+		Config	config;
+		if (it->contains("server_name"))
+			config.server_name = it->value("server_name");
+		else
+			config.server_name = "WebServer of dream-team/1.0";
+		config.hostaddress = (char*)"127.0.0.1";
+		std::list<std::string> listen_split = ft::util::str::Split(it->value("listen"), ':');
+		if (listen_split.empty() || listen_split.size() > 2)
+			std::cout << "error" << std::endl;
+		config.port = std::strtoul(listen_split.back().c_str(), 0, 0);
+		if (listen_split.size() == 2)
+			config.hostaddress = listen_split.front();
+		if (it->contains("client_max_body_size"))
+			config.limit_body_size = std::strtoul(it->value("client_max_body_size").c_str(), 0, 0);
+		else
+			config.limit_body_size = 0;
+		std::list<ft::cfg::Section> error_pages = it->sectionList("error_page");
+		for (std::list<ft::cfg::Section>::iterator sit = error_pages.begin(); sit != error_pages.end(); ++sit)
+		{
+			const size_t status_code = std::strtoul(sit->value().c_str(), 0, 0);
+			config.default_error_pages.insert(std::make_pair(status_code, sit->value(1)));
+		}
 
-    LOGF_(CFG) << "CFG TEST";
-    LOGE_(CFG) << "CFG TEST";
-    LOGW_(CFG) << "CFG TEST";
-    LOGI_(CFG) << "CFG TEST";
-    LOGD_(CFG) << "CFG TEST";
+		std::list<ft::cfg::Section> locations = it->sectionList("location");
+		for(std::list<ft::cfg::Section>::iterator lit = locations.begin(); lit != locations.end(); ++lit)
+		{
+			config.locations.push_back(Locations());
+			Locations& loc = config.locations.back();
+			loc.path_to_location = lit->valueList();
+			if (lit->contains("root"))
+				loc.root = lit->value("root");
+			if (lit->contains("limit_except"))
+				loc.allow = lit->value("limit_except");
+			if (lit->contains("index"))
+				loc.index = lit->value("index");
+			if (lit->contains("autoindex") && lit->value("autoindex") == "on")
+				loc.autoindex = true;
+		}
+		servers.create_server(config);
+	}
 
-    ft::cfg::Config cfg;
-    try {
-        cfg.load("./examples/example.config");
-    } catch (const ft::cfg::ConfigException & e)
-    {
-        LOGF << "Failed to load config: " << e.what();
-        return 1;
-    }
+	servers.start_all_servers();																							// нужно внутри сделать класс селект, который сделать синглтоном
 
-    std::string key1 = "key4";
-    ft::cfg::Section s = cfg.section(key1);
-    std::string key2 = "subkey1";
-    LOGD << key2 << " = " << s.value(key2);
-    key2 = "subkey2";
-    std::list<std::string> lst = s.valueList(key2);
-    for (std::list<std::string>::const_iterator it = lst.begin(); it != lst.end(); ++it)
-        LOGD << key2 << " = " << *it;
-
-    if (cfg.contains("key4/subkey3/key1"))
-        LOGD << cfg.value("key4/subkey3/key1");
-    else
-        LOGD << "cfg does not contain \"key4/subkey3/key1\"";
-
-    if (cfg.contains("key4/subkey3/key2"))
-        LOGD << cfg.value("key4/subkey3/key2");
-    else
-        LOGD << "cfg does not contain \"key4/subkey3/key2\"";
-
-    std::string request = "GET / HTTP/1.1\r\n"
-                          "Host: localhost:8080\r\n"
-                          "User-Agent: curl/7.64.1\r\n"
-                          "Accept: */*\r\n"
-                          "\r\n"
-                          "Hello World!";
-
-    ft::http::RequestParser parser;
-    std::pair<ft::http::RequestParser::EResult, size_t> res = parser.parse(request.data(), request.size());
-    parser.reset();
-    res = parser.parse(request.data(), request.size());
-    if (res.first == ft::http::RequestParser::EError)
-        LOGE << "Error parsing request";
-    else
-    {
-        LOGD;
-        LOGD << "METHOD: " << parser.m_method;
-        LOGD << "URI: " << parser.m_uri;
-        LOGD << "MAJOR_VER: " << parser.m_ver_major;
-        LOGD << "MINOR_VER: " << parser.m_ver_minor;
-        LOGD << "Headers: ";
-        for (std::vector<ft::http::Header>::iterator it = parser.m_headers.begin(); it != parser.m_headers.end(); ++it)
-            LOGD << "\t" << it->name << ": " << it->value;
-
-        LOGD;
-        LOGD << "Request left: " << request.substr(res.second + 1);
-        return 0;
-    }
-
-    return 0;
+	return (0);
 }
+
+
+/*
+ * сетевой адрес сокета - это ip-адрес + номер порта
+ * октет - это 8 бит
+ * при передаче применяется big endian (старший байт передается первым)
+ * htons, htonl, ntohl, ntohs используются для преобразования архитектур сети и машины (из little endian в big и наоборот)
+ */

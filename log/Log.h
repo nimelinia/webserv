@@ -1,8 +1,8 @@
 #ifndef LOG_LOG_H
 #define LOG_LOG_H
 
-#include "log/detail/LoggerBase.h"
-#include "util/Singleton.h"
+#include "detail/LoggerBase.h"
+#include "../util/Singleton.h"
 
 #include "Formatters.h"
 

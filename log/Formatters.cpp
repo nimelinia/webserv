@@ -1,7 +1,7 @@
 #include "Formatters.h"
 #include "Level.h"
-#include "util/String.h"
-#include "log/detail/Message.h"
+#include "../util/String.h"
+#include "detail/Message.h"
 
 std::string ft::log::TextOnlyFormatter(const detail::Message & msg)
 {

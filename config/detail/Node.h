@@ -1,7 +1,7 @@
 #ifndef CONFIG_NODE_H
 #define CONFIG_NODE_H
 
-#include "AllowedStd.h"
+#include "../../AllowedStd.h"
 
 namespace ft { namespace cfg { namespace detail
 {

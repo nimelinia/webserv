@@ -1,5 +1,5 @@
 #include "ParseException.h"
-#include "util/String.h"
+#include "../../util/String.h"
 
 ft::cfg::ParseException::ParseException(const std::string & msg, unsigned long line)
     : ConfigException(ParseException::Format(msg, line))

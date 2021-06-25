@@ -1,5 +1,5 @@
 #include "Parser.h"
-#include "config/exceptions/ParseException.h"
+#include "../exceptions/ParseException.h"
 
 ft::cfg::detail::Parser::Parser(ft::cfg::detail::Node & rootNode)
     : m_RootNode(rootNode)

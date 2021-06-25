@@ -1,7 +1,7 @@
 #ifndef LOG_FILEHANDLER_H
 #define LOG_FILEHANDLER_H
 
-#include "AllowedStd.h"
+#include "../../AllowedStd.h"
 #include "AHandler.h"
 
 namespace ft { namespace log

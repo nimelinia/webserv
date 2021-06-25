@@ -1,15 +1,28 @@
 #ifndef HTTP_REQUESTPARSER_H
 #define HTTP_REQUESTPARSER_H
 
-#include "AllowedStd.h"
+#include "../AllowedStd.h"
 
-namespace ft { namespace http
+
+namespace ft {
+	class Message;
+	namespace http
 {
     struct Header
     {
         std::string name;
         std::string value;
     };
+
+	struct FindHeader: public std::unary_function<Header, bool>
+	{
+		std::string m_name;
+		FindHeader(const std::string& name): m_name(name) {}
+		bool operator()(const Header& header)
+		{
+			return header.name == m_name;
+		}
+	};
 
     class RequestParser
     {
@@ -46,20 +59,15 @@ namespace ft { namespace http
 
     public:
         EState m_state;
-        std::string m_method;
-        std::string m_uri;
-        int m_ver_major;
-        int m_ver_minor;
-        std::vector<Header> m_headers;
 
     public:
         RequestParser();
 
-        std::pair<EResult, size_t> parse(const char* buf, size_t size);
+        std::pair<EResult, size_t> parse(Message& msg, const char* buf, size_t size);
         void reset();
 
     private:
-        EResult _consume(char c);
+        EResult _consume(Message& msg, char c);
     };
 } }
 

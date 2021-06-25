@@ -1,7 +1,7 @@
 #include "Section.h"
-#include "config/exceptions/PathException.h"
-#include "config/exceptions/ValueException.h"
-#include "util/String.h"
+#include "exceptions/PathException.h"
+#include "exceptions/ValueException.h"
+#include "../util/String.h"
 
 ft::cfg::Section::Section(const ft::cfg::detail::Node& node)
     : m_Node(node)
@@ -23,15 +23,33 @@ const std::string& ft::cfg::Section::value(const std::string& path, size_t pos /
     throw ValueException("Unexpected end of value list");
 }
 
+const std::string &ft::cfg::Section::value(size_t pos) const
+{
+	for (std::list<std::string>::const_iterator it = m_Node.value_list.begin(); it != m_Node.value_list.end(); ++it)
+	{
+		if (pos == 0)
+			return *it;
+		--pos;
+	}
+	throw ValueException("Unexpected end of value list");
+}
+
 const std::list<std::string> & ft::cfg::Section::valueList(const std::string & path) const
 {
     Section s = section(path);
     return s.m_Node.value_list;
 }
 
+const std::list<std::string> & ft::cfg::Section::valueList() const
+{
+	return m_Node.value_list;
+}
+
 ft::cfg::Section ft::cfg::Section::section(const std::string& path, size_t pos /* = 0*/) const
 {
     std::list<Section> lst = sectionList(path);
+    if (lst.empty())
+		throw PathException("No such key", path);
     if (pos >= lst.size())
         throw PathException("No such section", path);
     for (std::list<Section>::const_iterator it = lst.begin(); it != lst.end(); ++it)
@@ -49,23 +67,24 @@ std::list<ft::cfg::Section> ft::cfg::Section::sectionList(const std::string & pa
     if (pathList.empty())
         throw PathException("Path is empty", path);
 
+	std::list<Section> lst;
     const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
-    if (range.first == range.second)
-        throw PathException("No such key", path);
-    std::list<Section> lst;
-    for (detail::NodeCIt it = range.first; it != range.second; ++it)
-        lst.push_back(Section(it->second));
+    if (range.first != range.second)
+	{
+		for (detail::NodeCIt it = range.first; it != range.second; ++it)
+			lst.push_back(Section(it->second));
+	}
     return lst;
 }
 
 bool ft::cfg::Section::contains(const std::string& path)
 {
-    std::list<std::string> pathList = util::str::Split(path, '/');
-    if (pathList.empty())
-        throw PathException("Path is empty", path);
+	std::list<std::string> pathList = util::str::Split(path, '/');
+	if (pathList.empty())
+		throw PathException("Path is empty", path);
 
-    const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
-    return range.first != range.second;
+	const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
+	return range.first != range.second;
 }
 
 ft::cfg::detail::NodeRange

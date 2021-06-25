@@ -1,26 +1,26 @@
 #include "RequestParser.h"
+#include "Message.hpp"
 
 #define CR '\r'
 #define LR '\n'
 
 ft::http::RequestParser::RequestParser()
     : m_state(EStart)
-    , m_ver_major(0), m_ver_minor(0)
 {
 }
 
-std::pair<ft::http::RequestParser::EResult, size_t> ft::http::RequestParser::parse(const char* buf, size_t size)
+std::pair<ft::http::RequestParser::EResult, size_t> ft::http::RequestParser::parse(Message& msg, const char* buf, size_t size)
 {
    for (size_t i = 0; i < size; ++i)
    {
-       EResult res = _consume(buf[i]);
+       EResult res = _consume(msg, buf[i]);
        if (res != EParse)
            return std::make_pair(res, i);
    }
    return std::make_pair(EParse, size);
 }
 
-ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
+ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg, char c)
 {
     switch (m_state)
     {
@@ -30,7 +30,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
             else
             {
                 m_state = EMethod;
-                m_method.push_back(c);
+                msg.m_method.push_back(c);
                 return EParse;
             }
         case EMethod:
@@ -43,7 +43,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
                 return EError;
             else
             {
-                m_method.push_back(c);
+				msg.m_method.push_back(c);
                 return EParse;
             }
         case EUri:
@@ -56,7 +56,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
                 return EError;
             else
             {
-                m_uri.push_back(c);
+				msg.m_uri.push_back(c);
                 return EParse;
             }
         case EVer_H:
@@ -102,7 +102,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
         case EVer_MajorStart:
             if (std::isdigit(c))
             {
-                m_ver_major = c - '0';
+				msg.m_ver_major = c - '0';
                 m_state = EVer_MajorEnd;
                 return EParse;
             }
@@ -119,7 +119,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
         case EVer_MinorStart:
             if (std::isdigit(c))
             {
-                m_ver_minor = c - '0';
+				msg.m_ver_minor = c - '0';
                 m_state = EVer_MinorEnd;
                 return EParse;
             }
@@ -156,8 +156,8 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
                 return EError;
             else
             {
-                m_headers.push_back(Header());
-                m_headers.back().name.push_back(c);
+				msg.m_headers.push_back(Header());
+				msg.m_headers.back().name.push_back(c);
                 m_state = EHeaderName;
                 return EParse;
             }
@@ -169,7 +169,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
             }
             else if (std::isalpha(c) || c == '-')
             {
-                m_headers.back().name.push_back(c);
+				msg.m_headers.back().name.push_back(c);
                 return EParse;
             }
             else
@@ -192,7 +192,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
                 return EError;
             else
             {
-                m_headers.back().value.push_back(c);
+				msg.m_headers.back().value.push_back(c);
                 return EParse;
             }
         case ENewLine2:
@@ -205,9 +205,4 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(char c)
 void ft::http::RequestParser::reset()
 {
     m_state = EStart;
-    m_method.clear();
-    m_uri.clear();
-    m_ver_major = 0;
-    m_ver_minor = 0;
-    m_headers.clear();
 }
