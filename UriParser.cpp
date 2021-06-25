@@ -53,7 +53,15 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 			return true;
 		if (m_location->index.empty())
 			return false;
-		uri.file_name = m_location->index;
+		for (std::list<std::string>::const_iterator cit = m_location->path_to_location.begin(); cit != m_location->path_to_location.end(); ++cit)
+		{
+			if (path == cit->substr(cit->find_first_of('/')))
+			{
+				uri.file_name = m_location->index;
+				break;
+			}
+		}
+//		uri.file_name = m_location->index;
 		const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
 		if (dot_pos != std::string::npos)
 			uri.file_ext = uri.file_name.substr(dot_pos);

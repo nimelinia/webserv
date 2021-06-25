@@ -28,5 +28,5 @@ const char* ft::util::extension_to_mime_type(const std::string& extension)
         if (mime_types::mapping[i].extension == extension)
             return mime_types::mapping[i].type;
     }
-    return "text/plain";
+    return "";
 }

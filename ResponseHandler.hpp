@@ -35,10 +35,10 @@ namespace ft{
 		void	generate_POST();
 		void	generate_DELETE();
 		void	wrong_method();
-//		bool	check_is_file(const std::string &path);
+		bool	check_is_file(const std::string &path);
 		bool	from_file_to_body(const std::string &path);
 		std::string detect_last_modified();
-		std::string detect_content_type();
+		void	detect_content_type();
 	};
 
 }

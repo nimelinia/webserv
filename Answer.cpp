@@ -88,6 +88,7 @@ void ft::Answer::clean()
 	m_body_exist = false;
 	m_size_response = 0;
 	m_path_to_file.clear();
+	m_headers.clear();
 }
 
 void ft::Answer::create_final_response()
