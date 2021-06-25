@@ -107,7 +107,7 @@ void ft::ResponseHandler::generate_body() {
 	{
 		oss << BEFORE_BODY;
 		while ((ent = readdir(dir)) != NULL)
-			oss << "<a href='" << m_uri.path + ent->d_name << "'>" << ent->d_name << "</a><br>";
+			oss << "<a href='/" << m_uri.path + ent->d_name << "'>" << ent->d_name << "</a><br>";
 		closedir (dir);
 		oss << AFTER_BODY;
 		m_answer.m_body = oss.str();

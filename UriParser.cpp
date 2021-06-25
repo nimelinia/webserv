@@ -32,6 +32,7 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 		if ((path_stat.st_mode & S_IFMT) == S_IFDIR)
 		{
 			uri.path += split.front() + "/";
+			uri.last_path = split.front() + "/";
 			split.pop_front();
 		}
 		else if ((path_stat.st_mode & S_IFMT) == S_IFREG)

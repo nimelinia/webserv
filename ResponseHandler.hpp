@@ -21,12 +21,10 @@ namespace ft{
 		ResponseHandler(Config &config, Message& msg, Answer &answer);
 
 		Uri						m_uri;
-//		std::list<Locations>&	m_locations;
 		Config&					m_config;
 		Message&				m_msg;
 		Answer&					m_answer;
 		const Locations*		m_location;
-//		bool					m_valid;
 
 		bool	generate_answer();
 		int		check_validity();
@@ -44,4 +42,3 @@ namespace ft{
 	};
 
 }
-
