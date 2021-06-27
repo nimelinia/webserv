@@ -9,10 +9,11 @@
 
 
 ft::Client::Client(int socketCl, Server *server) :
-	m_state(e_parse_header),
+	m_state(e_request_parse),
 	m_socket_cl(socketCl),
 	m_server(server),
-	m_answer(&server->m_config)
+	m_answer(&server->m_config),
+	m_parser(server->m_config.limit_body_size)
 {
 	m_buff = new char[BUFFER_SIZE];
 }
@@ -24,26 +25,17 @@ bool ft::Client::read_message()
 	ret = recv(m_socket_cl, m_buff, BUFFER_SIZE, 0);
 	if (ret == 0 || ret == -1)
 		return (true);
-	if (m_state == e_parse_header)
+	if (m_state == e_request_parse)
 	{
-		std::pair<http::RequestParser::EResult, size_t> res = m_parser.parse(m_msg, m_buff, ret);
-		m_parsed = res.second;
-		if (res.first == http::RequestParser::EOk)
-		{
-			m_state = e_read_body;
-			find_content_length();
-			ret -= static_cast<ssize_t>(res.second);
-		}
-		else if (res.first == http::RequestParser::EError)
+        http::RequestParser::EResult res = m_parser.parse(m_msg, m_buff, ret);
+		if (res == http::RequestParser::EOk)
+            m_state = e_request_ready;
+		else if (res == http::RequestParser::EError)
 		{
 			m_state = e_error;
 //			m_msg.m_bad_request = true;
 			m_msg.m_error_num = 400;
 		}
-	}
-	if (m_state == e_read_body)
-	{
-		read_body(ret);
 	}
 	if (m_state == e_request_ready)
 	{

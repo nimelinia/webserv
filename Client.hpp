@@ -20,7 +20,7 @@ namespace ft {
 
 	private:
 		enum Estate {
-			e_parse_header,
+			e_request_parse,
 			e_read_body,
 			e_request_ready,
 			e_error,

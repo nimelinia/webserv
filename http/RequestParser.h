@@ -54,20 +54,35 @@ namespace ft {
             EHeaderStart,
             EHeaderName,
             EHeaderSpace,
-            EHeaderValue
+            EHeaderValue,
+            EBodyFull,
+            EBodyChunked_SizeStart,
+            EBodyChunked_SizeCont,
+            EBodyChunked_Ext,
+            EBodyChunked_NewLine1,
+            EBodyChunked_Data,
+            EBodyChunked_NewLine2,
+            EBodyChunked_TrailerStart,
+            EBodyChunked_TrailerName,
+            EBodyChunked_TrailerSpace,
+            EBodyChunked_TrailerValue,
+            EBodyChunked_NewLine3,
         };
 
     public:
         EState m_state;
+        size_t m_content_length;
+        size_t m_max_body_size;
 
     public:
-        RequestParser();
+        explicit RequestParser(size_t max_body_size);
 
-        std::pair<EResult, size_t> parse(Message& msg, const char* buf, size_t size);
+        EResult parse(Message& msg, const char* buf, size_t size);
         void reset();
 
     private:
         EResult _consume(Message& msg, char c);
+        ft::http::RequestParser::EResult _init_body_size(Message& msg);
     };
 } }
 
