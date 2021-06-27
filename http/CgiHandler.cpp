@@ -89,15 +89,40 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
 
     LOGI_(CGI) << "Cgi process spawned";
 
-    Select::get().set_fd(process.m_cgi_fd[0]);
-    Select::get().set_fd(process.m_cgi_fd[1]);
-
     if (m_client.m_msg.m_method == "GET")
         process.m_method_type = CgiProcess::EGet;
     else if (m_client.m_msg.m_method == "POST")
         process.m_method_type = CgiProcess::EPost;
     process.m_state = CgiProcess::ESpawn;
+
+    Select::get().set_fd(process.m_cgi_fd[0]);
+    Select::get().set_fd(process.m_cgi_fd[1]);
+
     return process;
+}
+
+void ft::http::CgiHandler::parse_cgi_body()
+{
+    Answer& answer = m_client.m_answer;
+    const std::string& body = answer.m_body;
+    std::string::size_type header_end = body.find("\r\n\r\n");
+    if (header_end == std::string::npos)
+        answer.m_status_code = 200;
+    else
+    {
+        std::string::size_type line_start = 0;
+        while (line_start < header_end)
+        {
+            std::string::size_type line_end = body.find("\r\n", line_start);
+            std::string::size_type delim = body.find(": ", line_start);
+            answer.m_headers.push_back((http::Header){
+                    body.substr(line_start, delim - line_start),
+                    body.substr(delim + 2, line_end - delim - 2)});
+            line_start = line_end + 2;
+        }
+        answer.m_body = body.substr(header_end + 4);
+        answer.m_status_code = 200;
+    }
 }
 
 std::string ft::http::CgiHandler::_env_path_info() const

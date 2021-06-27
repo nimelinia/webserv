@@ -1,0 +1,9 @@
+GET http://localhost:8080/php/hello.php
+
+###
+GET http://localhost:8080/php/index.php
+
+###
+GET http://localhost:8080/php/
+
+###

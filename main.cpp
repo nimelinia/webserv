@@ -24,6 +24,8 @@ int	check_count_arguments(int argc)
 
 int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
 {
+    ::signal(SIGPIPE, SIG_IGN);
+
     LOGGER_(CGI).addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
     LOGGER_(CGI).setMaxLevel(ft::log::EDebug);
 

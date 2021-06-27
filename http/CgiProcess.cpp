@@ -26,7 +26,7 @@ int ft::http::CgiProcess::max_fd() const
 
 void ft::http::CgiProcess::clear()
 {
-    if (m_pid != -1)
+    if (m_pid != -1 && (::waitpid(m_pid, NULL, WNOHANG) == 0))
     {
         ::kill(m_pid, SIGKILL);
         ::waitpid(m_pid, NULL, 0);
@@ -56,30 +56,16 @@ int ft::http::CgiProcess::read_fd() const
     return m_cgi_fd[0];
 }
 
-bool ft::http::CgiProcess::read()
+void ft::http::CgiProcess::end_read(size_t ret)
 {
-    char buffer[BUFFER_SIZE];
-    ssize_t ret = ::read(m_cgi_fd[0], buffer, BUFFER_SIZE);
-    if (ret == 0 || ret == -1)
+    m_cgi_fd[0] = -1;
+    if (ret == -1)
     {
-        ::close(m_cgi_fd[0]);
-        Select::get().clear_fd(m_cgi_fd[0]);
-        m_cgi_fd[0] = -1;
-        if (ret == -1)
-        {
-            LOGD_(CGI) << "read() error: " << strerror(errno);
-            m_state = EError;
-        }
-        else
-            m_state = EIdle;
-        ::waitpid(m_pid, NULL, 0);
-        return true;
+        LOGD_(CGI) << "read() error: " << strerror(errno);
+        m_state = EError;
     }
     else
-    {
-        m_body.append(buffer, ret);
-        return false;
-    }
+        m_state = EIdle;
 }
 
 bool ft::http::CgiProcess::write()

@@ -23,6 +23,7 @@ namespace ft { namespace http
         CgiHandler(const Config& cfg, Client& client, const Uri& m_uri);
 
         ft::http::CgiProcess spawn_cgi_process(const Locations& loc);
+        void parse_cgi_body();
 
     private:
         std::string _env_path_info() const;

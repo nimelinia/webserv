@@ -6,7 +6,7 @@
 #include "Server.hpp"
 #include "http/RequestParser.h"
 #include "ResponseHandler.hpp"
-
+#include "log/Log.h"
 
 ft::Client::Client(int socketCl, Server *server) :
 	m_state(e_request_parse),
@@ -154,36 +154,28 @@ bool ft::Client::cgi_ready_write() const
 
 bool ft::Client::cgi_read()
 {
-    if (m_cgi_process.read())
+    ssize_t ret = ::read(m_cgi_process.read_fd(), m_buff, BUFFER_SIZE);
+    if (ret == 0 || ret == -1)
     {
+        ::close(m_cgi_process.read_fd());
+        Select::get().clear_fd(m_cgi_process.read_fd());
+        m_cgi_process.end_read(ret);
+
         if (m_cgi_process.state() == http::CgiProcess::EError)
             m_answer.m_status_code = 500;
         else
         {
-            const std::string& body = m_cgi_process.body();
-            std::string::size_type header_end = body.find("\r\n\r\n");
-            if (header_end == std::string::npos)
-                m_answer.m_status_code = 200;
-            else
-            {
-                m_answer.m_body = body.substr(header_end + 4);
-                std::string::size_type line_start = 0;
-                while (line_start < header_end)
-                {
-                    std::string::size_type line_end = body.find("\r\n", line_start);
-                    std::string::size_type delim = body.find(": ", line_start);
-                    m_answer.m_headers.push_back((http::Header){
-                        body.substr(line_start, delim - line_start),
-                        body.substr(delim + 2, line_end - delim - 2)});
-                    line_start = line_end + 2;
-                }
-                m_answer.m_status_code = 200;
-            }
+            http::CgiHandler handler(m_server->m_config, *this, Uri());
+            handler.parse_cgi_body();
         }
         m_state = e_response_ready;
         return true;
     }
-    return false;
+    else
+    {
+        m_answer.m_body.append(m_buff, ret);
+        return false;
+    }
 }
 
 bool ft::Client::cgi_write()

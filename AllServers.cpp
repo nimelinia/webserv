@@ -43,7 +43,7 @@ bool ft::AllServers::start_all_servers()
 			if (update_max_fd)
 				Select::get().set_max_fd(find_max_fd());
 		}
-		usleep(1000000);																									// так долго, чтобы тестить
+		usleep(100);																									// так долго, чтобы тестить
 	}
 	return (true);
 }

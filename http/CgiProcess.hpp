@@ -49,7 +49,7 @@ namespace ft { namespace http
         const std::string& body() const;
         void clear();
         bool update_state();
-        bool read();
+        void end_read(size_t ret);
         bool write();
     };
 } }
