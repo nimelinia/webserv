@@ -9,10 +9,11 @@
 
 
 ft::Client::Client(int socketCl, Server *server) :
-	m_state(e_parse_header),
+	m_state(e_request_parse),
 	m_socket_cl(socketCl),
 	m_server(server),
-	m_answer(&server->m_config)
+	m_answer(&server->m_config),
+	m_parser(server->m_config.limit_body_size)
 {
 	m_buff = new char[BUFFER_SIZE];
 }
@@ -24,30 +25,21 @@ bool ft::Client::read_message()
 	ret = recv(m_socket_cl, m_buff, BUFFER_SIZE, 0);
 	if (ret == 0 || ret == -1)
 		return (true);
-	if (m_state == e_parse_header)
+	if (m_state == e_request_parse)
 	{
-		std::pair<http::RequestParser::EResult, size_t> res = m_parser.parse(m_msg, m_buff, ret);
-		m_parsed = res.second;
-		if (res.first == http::RequestParser::EOk)
-		{
-			m_state = e_read_body;
-			find_content_length();
-			ret -= static_cast<ssize_t>(res.second);
-		}
-		else if (res.first == http::RequestParser::EError)
+        http::RequestParser::EResult res = m_parser.parse(m_msg, m_buff, ret);
+		if (res == http::RequestParser::EOk)
+            m_state = e_request_ready;
+		else if (res == http::RequestParser::EError)
 		{
 			m_state = e_error;
 			m_msg.m_error_num = 400;
 		}
 	}
-	if (m_state == e_read_body)
-	{
-		read_body(ret);
-	}
 	if (m_state == e_request_ready)
 	{
 		m_parser.reset();
-		ResponseHandler handler(m_server->m_config, m_msg, m_answer);
+		ResponseHandler handler(m_server->m_config, *this);
 		if (handler.generate_answer())
 		{
 			handler.generate_status_body();
@@ -59,6 +51,12 @@ bool ft::Client::read_message()
 
 bool ft::Client::send_message()
 {
+    if (m_msg.m_method == "GET")
+    {
+        m_answer.m_body_exist = true;
+        m_answer.m_headers.push_back((http::Header){"Content-Length",
+                                                    util::str::ToString(m_answer.m_body.size())});
+    }
  	m_answer.create_final_response();
 	ssize_t	ret;
 	ret = send(m_socket_cl, m_answer.m_final_response.c_str(),  m_answer.m_size_response, 0);
@@ -70,15 +68,14 @@ bool ft::Client::send_message()
 		m_msg.m_ready_responce = false;
 		m_msg.clean();
 		m_answer.clean();
-		m_parser.reset();
-		m_state = e_parse_header;
+		m_cgi_process.clear();
 	}
 	return (false);
 }
 
 void ft::Client::read_body(ssize_t readed)
 {
-	if (static_cast<size_t>(readed) > m_content_length)
+	if (readed > m_content_length)
 	{
 		m_msg.m_body.append(m_buff, m_parsed, m_content_length);
 		m_content_length = 0;
@@ -125,4 +122,70 @@ void ft::Client::find_content_length()
 bool ft::Client::ready_write() const
 {
 	return (m_state == e_response_ready);
+}
+
+int ft::Client::max_fd() const
+{
+    return std::max(m_socket_cl, m_cgi_process.max_fd());
+}
+
+bool ft::Client::cgi_spawned()
+{
+    if (m_cgi_process.state() == http::CgiProcess::ESpawn)
+    {
+        if (m_cgi_process.update_state())
+            return true;
+        m_answer.m_status_code = 500;
+        m_state = e_response_ready;
+    }
+    return false;
+}
+
+bool ft::Client::cgi_ready_read() const
+{
+    return m_cgi_process.state() == http::CgiProcess::ERead;
+}
+
+bool ft::Client::cgi_ready_write() const
+{
+    return m_cgi_process.state() == http::CgiProcess::EWrite;
+}
+
+bool ft::Client::cgi_read()
+{
+    if (m_cgi_process.read())
+    {
+        if (m_cgi_process.state() == http::CgiProcess::EError)
+            m_answer.m_status_code = 500;
+        else
+        {
+            const std::string& body = m_cgi_process.body();
+            std::string::size_type header_end = body.find("\r\n\r\n");
+            if (header_end == std::string::npos)
+                m_answer.m_status_code = 200;
+            else
+            {
+                m_answer.m_body = body.substr(header_end + 4);
+                std::string::size_type line_start = 0;
+                while (line_start < header_end)
+                {
+                    std::string::size_type line_end = body.find("\r\n", line_start);
+                    std::string::size_type delim = body.find(": ", line_start);
+                    m_answer.m_headers.push_back((http::Header){
+                        body.substr(line_start, delim - line_start),
+                        body.substr(delim + 2, line_end - delim - 2)});
+                    line_start = line_end + 2;
+                }
+                m_answer.m_status_code = 200;
+            }
+        }
+        m_state = e_response_ready;
+        return true;
+    }
+    return false;
+}
+
+bool ft::Client::cgi_write()
+{
+    return true;
 }
