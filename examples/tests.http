@@ -1,0 +1,15 @@
+GET http://localhost:8080/
+
+###
+
+PUT http://localhost:8080/pages/lala.txt
+Content-Length: 11
+
+Hello world
+
+###
+
+POST http://localhost:8080/pages
+Content-Type: text/plain
+
+###

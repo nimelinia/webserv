@@ -23,16 +23,17 @@ namespace ft {
 			e_request_parse,
 			e_read_body,
 			e_request_ready,
-			e_error,
-			e_response_ready
+//			e_error,
+			e_response_ready,
+			e_sending
 		};
 	public:
 		Client(int socketCl, Server* server);
 
 		bool				read_message();
 		bool				send_message();
-		void				read_body(ssize_t ret);
-		void				find_content_length();
+//		void				read_body(ssize_t ret);
+//		void				find_content_length();
 		void				close();
 		bool				ready_write() const;
 		int 				max_fd() const;

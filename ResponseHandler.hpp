@@ -28,13 +28,14 @@ namespace ft
 
 		bool	generate_answer();
 		int		check_validity();
-		void	generate_GET();
+		bool 	generate_GET();
 		void	generate_body();
 		void	generate_status_body();
-		void	generate_HEAD();
-		void	generate_POST();
-		void	generate_DELETE();
-		void	wrong_method();
+		bool 	generate_HEAD();
+		bool	generate_POST();
+		bool	generate_PUT();
+		bool	generate_DELETE();
+		bool	wrong_method();
 		bool	check_is_file(const std::string &path);
 		bool	from_file_to_body(const std::string &path);
 		std::string detect_last_modified();

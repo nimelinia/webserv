@@ -45,7 +45,7 @@ struct Locations
 {
 	std::list<std::string>				path_to_location;
 	std::string							root;
-	std::string							allow;
+	std::list<std::string>				allow;
 	std::string							index;
 	std::pair<std::string, std::string>	cgi;
 	bool 								autoindex;

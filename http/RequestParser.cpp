@@ -160,7 +160,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
             else
             {
                 msg.m_headers.push_back(Header());
-                msg.m_headers.back().name.push_back(c);
+                msg.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
                 m_state = EHeaderName;
                 return EParse;
             }
@@ -172,7 +172,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
             }
             else if (std::isalpha(c) || c == '-')
             {
-                msg.m_headers.back().name.push_back(c);
+                msg.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
                 return EParse;
             }
             else
@@ -195,7 +195,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
                 return EError;
             else
             {
-                msg.m_headers.back().value.push_back(c);
+                msg.m_headers.back().value.push_back(static_cast<char>(std::tolower(c)));
                 return EParse;
             }
         case ENewLine2:
@@ -274,7 +274,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
         case EBodyChunked_TrailerStart:
             if (c == CR)
             {
-                m_state = EBodyChunked_NewLine2;
+                m_state = EBodyChunked_NewLine3;
                 return EParse;
             }
             else if (!std::isalpha(c))
@@ -282,7 +282,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
             else
             {
                 msg.m_headers.push_back(Header());
-                msg.m_headers.back().name.push_back(c);
+                msg.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
                 m_state = EBodyChunked_TrailerName;
                 return EParse;
             }
@@ -294,7 +294,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
             }
             else if (std::isalpha(c) || c == '-')
             {
-                msg.m_headers.back().name.push_back(c);
+                msg.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
                 return EParse;
             }
             else
@@ -317,7 +317,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
                 return EError;
             else
             {
-                msg.m_headers.back().value.push_back(c);
+                msg.m_headers.back().value.push_back(static_cast<char>(std::tolower(c)));
                 return EParse;
             }
         case EBodyChunked_NewLine3:
@@ -336,7 +336,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_init_body_size(Messag
 {
     std::vector<http::Header>::iterator it = std::find_if(msg.m_headers.begin(),
             msg.m_headers.end(),
-            http::FindHeader("Content-Length"));
+            http::FindHeader("content-length"));
     if (it != msg.m_headers.end())
     {
         std::pair<size_t, bool> res = util::str::FromString<size_t>(it->value);
@@ -347,7 +347,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_init_body_size(Messag
         return m_content_length == 0 ? EOk : EParse;
     }
     it = std::find_if(msg.m_headers.begin(), msg.m_headers.end(),
-            http::FindHeader("Transfer-Encoding"));
+            http::FindHeader("transfer-encoding"));
     if (it != msg.m_headers.end())
     {
         if (it->value != "chunked")
