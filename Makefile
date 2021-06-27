@@ -1,4 +1,4 @@
-FLAG = -Wall -Wextra -Werror
+FLAG = -Wall -Wextra -Werror --std=c++98
 FILES = 	main.cpp \
 			AllServers.cpp \
 			Answer.cpp \
@@ -31,10 +31,10 @@ OBJ = $(FILES:.cpp=.o)
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	@clang++ $(FLAG) --std=c++98 $(OBJ) -o $(NAME)
+	@clang++ $(FLAG) $(OBJ) -o $(NAME)
 
 %.o: %.cpp
-	@clang++ -c $< -o $@ $(FLAG)
+	@clang++ -c $< -o $@ $(FLAG) -I.
 
 clean:
 	@rm -rf $(OBJ)

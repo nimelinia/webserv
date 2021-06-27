@@ -21,12 +21,10 @@ namespace ft{
 		ResponseHandler(Config &config, Message& msg, Answer &answer);
 
 		Uri						m_uri;
-//		std::list<Locations>&	m_locations;
 		Config&					m_config;
 		Message&				m_msg;
 		Answer&					m_answer;
 		const Locations*		m_location;
-//		bool					m_valid;
 
 		bool	generate_answer();
 		int		check_validity();
@@ -37,11 +35,10 @@ namespace ft{
 		void	generate_POST();
 		void	generate_DELETE();
 		void	wrong_method();
-//		bool	check_is_file(const std::string &path);
+		bool	check_is_file(const std::string &path);
 		bool	from_file_to_body(const std::string &path);
 		std::string detect_last_modified();
-		std::string detect_content_type();
+		void	detect_content_type();
 	};
 
 }
-

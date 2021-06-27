@@ -37,7 +37,6 @@ bool ft::Client::read_message()
 		else if (res.first == http::RequestParser::EError)
 		{
 			m_state = e_error;
-//			m_msg.m_bad_request = true;
 			m_msg.m_error_num = 400;
 		}
 	}
@@ -71,13 +70,15 @@ bool ft::Client::send_message()
 		m_msg.m_ready_responce = false;
 		m_msg.clean();
 		m_answer.clean();
+		m_parser.reset();
+		m_state = e_parse_header;
 	}
 	return (false);
 }
 
 void ft::Client::read_body(ssize_t readed)
 {
-	if (readed > m_content_length)
+	if (static_cast<size_t>(readed) > m_content_length)
 	{
 		m_msg.m_body.append(m_buff, m_parsed, m_content_length);
 		m_content_length = 0;

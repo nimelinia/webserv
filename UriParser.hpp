@@ -19,6 +19,7 @@ namespace ft {
 		std::string file_ext;
 		std::string extra_path;
 		std::string query;
+		std::string last_path;
 	};
 
 	struct FindLocation: public std::unary_function<Locations, bool>
