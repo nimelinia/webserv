@@ -163,11 +163,21 @@ bool ft::ResponseHandler::generate_PUT()
 
 bool ft::ResponseHandler::generate_DELETE()
 {
-    m_client.m_answer.m_status_code = 200;
-
-    m_client.m_answer.m_status_code = 202;
-
-    m_client.m_answer.m_status_code = 204;
+	if (!m_uri.extra_path.empty())
+		m_client.m_answer.m_status_code = 501;
+	else
+	{
+		std::string file_name = m_uri.root + m_uri.path + m_uri.file_name;
+		if (check_is_file(file_name))
+		{
+//			std::ifstream file(file_name); // возможно нужна проверка на открытость файла
+			if (std::remove(file_name.c_str()))
+				m_client.m_answer.m_status_code = 205;
+			else
+				m_client.m_answer.m_status_code = 204;
+		} else
+			m_client.m_answer.m_status_code = 404;
+	}
 	return true;
 }
 
