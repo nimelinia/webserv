@@ -7,7 +7,7 @@
 #include "MimeTypes.hpp"
 #include "StatusCodes.hpp"
 
-ft::ResponseHandler::ResponseHandler(Config &config, Client& client) :
+ft::ResponseHandler::ResponseHandler(Config& config, Client& client) :
 	m_config(config),
 	m_client(client),
 	m_location(NULL)

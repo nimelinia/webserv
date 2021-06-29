@@ -4,17 +4,17 @@
 
 #include "Server.hpp"
 
-ft::Server::Server(Config config, size_t port, std::string &host_address) :
-	m_config(config),
+ft::Server::Server(Host& host, size_t port, std::string &host_address) :
+	m_config(host.configs),
 	m_port(port),
 	m_host_address(host_address),
 	m_socket_fd(-1),
 	m_error_fatal(false)
 {
-	if (config.limit_body_size)
-		m_limit_body_size = config.limit_body_size;
-	else
-		m_limit_body_size = MAXBODYSIZE;
+//	if (config.limit_body_size)																								// перенести limit_body_size в другое место
+//		m_limit_body_size = config.limit_body_size;
+//	else
+//		m_limit_body_size = MAXBODYSIZE;
 }
 
 ft::Server::~Server()

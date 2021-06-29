@@ -22,7 +22,7 @@ namespace ft
 	class Server
 	{
 	public:
-		Server(Config config, size_t port, std::string &host_address);
+		Server(Host& host, size_t port, std::string &host_address);
 		virtual ~Server();
 
 		bool				do_work();
@@ -32,7 +32,7 @@ namespace ft
 
 //		size_t				get_m_limit_body_size() const;
 
-		Config				m_config;
+		std::list<Config>	m_config;
 		std::list<Client>	m_clients;
 	private:
 		size_t				m_port;

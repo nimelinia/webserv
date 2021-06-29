@@ -19,26 +19,27 @@ namespace ft
 	class ResponseHandler
 	{
 	public:
-		ResponseHandler(Config &config, Client& client);
+		ResponseHandler(Config& config, Client& client);
 
 		Uri						m_uri;
+//		std::list<Config>		m_configs;
 		Config&					m_config;
 		Client&                 m_client;
 		const Locations*		m_location;
 
-		bool	generate_answer();
-		int		check_validity();
-		bool 	generate_GET();
-		void	generate_body();
-		void	generate_status_body();
-		bool 	generate_HEAD();
-		bool	generate_POST();
-		bool	generate_PUT();
-		bool	generate_DELETE();
-		bool	check_is_file(const std::string &path);
-		bool	from_file_to_body(const std::string &path);
-		std::string detect_last_modified();
-		void	detect_content_type();
+		bool					generate_answer();
+		int						check_validity();
+		bool 					generate_GET();
+		void					generate_body();
+		void					generate_status_body();
+		bool 					generate_HEAD();
+		bool					generate_POST();
+		bool					generate_PUT();
+		bool					generate_DELETE();
+		bool					check_is_file(const std::string &path);
+		bool					from_file_to_body(const std::string &path);
+		std::string				detect_last_modified();
+		void					detect_content_type();
 	};
 
 }

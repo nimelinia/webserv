@@ -14,9 +14,9 @@ ft::AllServers::~AllServers()
 }
 
 
-void ft::AllServers::create_server(Config &config)
+void ft::AllServers::create_server(Host &host)
 {
-	ft::Server _server(config, config.port, config.hostaddress);
+	ft::Server _server(host, host.configs.front().port, host.configs.front().hostaddress);
 	m_servers.push_back(_server);
 }
 

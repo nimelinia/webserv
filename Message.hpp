@@ -31,6 +31,7 @@ namespace ft {
 		std::string 				m_body;
 		std::string					m_method;
 		std::string					m_uri;
+		std::string					host_name;
 		int 						m_ver_major;
 		int							m_ver_minor;
 		bool 						m_ready_responce;

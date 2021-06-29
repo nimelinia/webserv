@@ -6,14 +6,16 @@
 #include "Server.hpp"
 #include "http/RequestParser.h"
 #include "ResponseHandler.hpp"
-
+#include "log/Log.h"
 
 ft::Client::Client(int socketCl, Server *server) :
 	m_state(e_request_parse),
 	m_socket_cl(socketCl),
 	m_server(server),
-	m_answer(&server->m_config),
-	m_parser(server->m_config.limit_body_size)
+	m_answer(),
+//	m_answer(&server->m_config),
+//	m_parser(server->m_config.limit_body_size)																				// тут нужно поменять, т.к. этот лимит лежит внутри location и мы сначала должны распарсить uri, а потом уже определять размер
+	m_parsed()
 {
 	m_buff = new char[BUFFER_SIZE];
 }
@@ -22,33 +24,60 @@ bool ft::Client::read_message()
 {
 	ssize_t	ret;
 
-	ResponseHandler handler(m_server->m_config, *this);
 	ret = recv(m_socket_cl, m_buff, BUFFER_SIZE, 0);
 	if (ret == 0 || ret == -1)
 		return (true);
+//	ResponseHandler handler(m_server->m_config, *this);
 	if (m_state == e_request_parse)
 	{
         http::RequestParser::EResult res = m_parser.parse(m_msg, m_buff, ret);
+        if (res == http::RequestParser::EParse)
+			return false;
+		std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
+															  m_msg.m_headers.end(),
+															  http::FindHeader("host"));
+		if (it != m_msg.m_headers.end())
+			m_msg.host_name = it->value;
+		else
+			res = http::RequestParser::EError;
 		if (res == http::RequestParser::EOk)
-            m_state = e_request_ready;
+		{
+			LOGD << "URI: " << m_msg.m_uri;
+			LOGD << "Method: " << m_msg.m_method;
+			LOGD << "Headers:";
+			for (std::vector<http::Header>::iterator hit = m_msg.m_headers.begin(); hit != m_msg.m_headers.end(); ++hit)
+				LOGD << "\t" << hit->name << ": " << hit->value;
+			LOGD;
+			m_state = e_request_ready;
+		}
 		else if (res == http::RequestParser::EError)
 		{
-//			m_state = e_error;
-//			m_parser.reset();
-			m_answer.m_status_code = 400;
-			handler.generate_status_body();
-			m_state = e_response_ready;
+			m_answer.m_status_code = 400;																					// брать номер из msg
+			m_state = e_request_ready;
 		}
 	}
 	if (m_state == e_request_ready)
 	{
-//		m_parser.reset();
-//		ResponseHandler handler(m_server->m_config, *this);
-		if (handler.generate_answer())
+		const std::string host = m_msg.host_name.substr(0, m_msg.host_name.find_last_of(':'));
+		std::list<Config>::iterator it = m_server->m_config.begin();
+		for (; it != m_server->m_config.end(); ++it)
+		{
+			if (it->server_name == host)
+				break;
+		}
+		if (it == m_server->m_config.end())
+			it = m_server->m_config.begin();
+
+		ResponseHandler handler(*it, *this);
+		bool result = true;
+		if (!m_answer.m_status_code)
+			result = handler.generate_answer();
+		if (result)
 		{
 			handler.generate_status_body();
 			m_state = e_response_ready;
 		}
+
 	}
 	return (false);
 }

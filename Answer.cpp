@@ -9,7 +9,7 @@
 
 ft::Answer::Answer() :
 	m_status_code(0),
-	m_server("WebServer of dream-team/1.0"),
+//	m_server("WebServer of dream-team/1.0"),
 //	m_date(Help::get_date()), 																								// по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
 	m_body("")
 {
@@ -18,7 +18,7 @@ ft::Answer::Answer() :
 
 ft::Answer::Answer(Config *config) :
 		m_status_code(0),
-		m_server(config->server_name),
+//		m_server(config->server_name),
 //		m_date(Help::get_date()), 																							// по идее это лучше делать позже, в момент формирования ответа - сам объект создается в момент создания сокета
 		m_body("")
 {
