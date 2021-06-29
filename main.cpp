@@ -47,8 +47,8 @@ int main(int argc, char **argv) 																							// переписать, 
 		if (it->contains("server_name"))
 			config.server_name = it->value("server_name");
 		else
-			config.server_name = "WebServer of dream-team/1.0";
-		config.hostaddress = (char*)"127.0.0.1";
+			config.server_name = "localhost";
+//		config.hostaddress = (char*)"127.0.0.1";
 		std::list<std::string> listen_split = ft::util::str::Split(it->value("listen"), ':');
 		if (listen_split.empty() || listen_split.size() > 2)
 			std::cout << "error" << std::endl;

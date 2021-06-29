@@ -41,15 +41,13 @@ bool ft::ResponseHandler::generate_answer()
 	if (m_msg.m_method == "GET")
 		return (generate_GET());
 	else if (m_msg.m_method == "POST")
-		generate_POST();
+		return (generate_POST());
 	else if (m_msg.m_method == "DELETE")
-		generate_DELETE();
+		return (generate_DELETE());
 	else if (m_msg.m_method == "HEAD")
-		generate_HEAD();
+		return (generate_HEAD());
 	else if (m_msg.m_method == "PUT")
-		generate_PUT();
-//	else
-//		wrong_method();
+		return (generate_PUT());
 	return true;
 }
 
@@ -139,7 +137,6 @@ bool ft::ResponseHandler::generate_POST()
 
 bool ft::ResponseHandler::generate_PUT()
 {
-	// если создали файл, 201. если вписали в существующий - 200
 	if (!m_uri.extra_path.empty())
 		m_client.m_answer.m_status_code = 501;
 	else
@@ -178,12 +175,6 @@ bool ft::ResponseHandler::generate_DELETE()
 		} else
 			m_client.m_answer.m_status_code = 404;
 	}
-	return true;
-}
-
-bool ft::ResponseHandler::wrong_method()
-{
-    m_client.m_answer.m_status_code = 501;
 	return true;
 }
 

@@ -35,7 +35,6 @@ namespace ft
 		bool	generate_POST();
 		bool	generate_PUT();
 		bool	generate_DELETE();
-		bool	wrong_method();
 		bool	check_is_file(const std::string &path);
 		bool	from_file_to_body(const std::string &path);
 		std::string detect_last_modified();

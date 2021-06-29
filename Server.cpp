@@ -36,7 +36,7 @@ bool ft::Server::create_server()
 	}
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(m_port); 																							// преобразую в архитектуру сервера
-	addr.sin_addr.s_addr = inet_addr(m_host_address.c_str()); 																		// заносит четырехбайтное целое число, отображающее корректный
+	addr.sin_addr.s_addr = inet_addr(m_host_address.c_str()); 																// заносит четырехбайтное целое число, отображающее корректный
 																															// адрес, представленный в виде строки, в структуру.
 																															// возвращает адрес в сетевом порядке байтов
 
