@@ -28,29 +28,29 @@ namespace ft
 	{
 	public:
 
+		Answer();
+
 		explicit Answer(Config *config);
 
 		size_t					m_status_code;
-
 		const std::string		m_server;
+
 //		std::string				m_date;
 
 		std::list<http::Header>	m_headers;
-
 		bool					m_body_exist;
-		std::string				m_body;
 
+		std::string				m_body;
 		std::string				m_final_response;
+
+
 		size_t					m_size_response;
 
-
 		std::string				m_path_to_file;
+		void					clean();
 
-		void			clean();
-		void			create_final_response();
-
+		void					create_final_response();
 	private:
-		Answer();
 	};
 }
 

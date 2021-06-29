@@ -1,0 +1,24 @@
+GET http://localhost:8080/
+
+###
+
+PUT http://localhost:8080/pages/lala.txt
+Content-Length: 11
+
+Hello world
+
+###
+
+POST http://localhost:8080/pages
+Content-Type: text/plain
+
+###
+
+GET http://x.com
+Host: x.com1
+
+###
+POST http://localhost:8081/directory/youpi.bla
+
+###
+DELETE http://localhost:8081/delete_test/file_should_exist_after

@@ -28,11 +28,12 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 	while (!split.empty())
 	{
 		const std::string check = uri.root + uri.path + split.front();
-		lstat(check.c_str(), &path_stat);
+		if (stat(check.c_str(), &path_stat) == -1)
+			break;
 		if ((path_stat.st_mode & S_IFMT) == S_IFDIR)
 		{
 			uri.path += split.front() + "/";
-			uri.last_path = split.front() + "/";
+//			uri.last_path = split.front() + "/";
 			split.pop_front();
 		}
 		else if ((path_stat.st_mode & S_IFMT) == S_IFREG)
@@ -47,19 +48,44 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 		else
 			break;
 	}
-	if (uri.file_name.empty())
+
+	if (m_method == "GET")
 	{
-		if (m_location->autoindex)
-			return true;
-		if (m_location->index.empty())
-			return false;
+		if (uri.file_name.empty())
+		{
+			if (m_location->autoindex)
+				return true;
+			if (m_location->index.empty())
+				return false;
+//			for (std::list<std::string>::const_iterator cit = m_location->path_to_location.begin();
+//				 cit != m_location->path_to_location.end(); ++cit) {
+//				if (path == cit->substr(cit->find_first_of('/'))) {
+//					uri.file_name = m_location->index;
+//					break;
+//				}
+//			}
 		uri.file_name = m_location->index;
-		const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
-		if (dot_pos != std::string::npos)
-			uri.file_ext = uri.file_name.substr(dot_pos + 1);
+			const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
+			if (dot_pos != std::string::npos)
+				uri.file_ext = uri.file_name.substr(dot_pos + 1);
+		}
+		for (std::list<std::string>::iterator it = split.begin(); it != split.end(); ++it)
+			uri.extra_path += "/" + *it;
 	}
-	for (std::list<std::string>::iterator it = split.begin(); it != split.end(); ++it)
-		uri.extra_path += "/" + *it;
+	else
+	{
+		if (uri.file_name.empty())
+		{
+			std::list<std::string>::iterator endit = --split.end();
+			for (std::list<std::string>::iterator it = split.begin(); it != endit; ++it)
+				uri.extra_path += "/" + *it;
+			if (path[path.length() - 1] == '/')
+				uri.extra_path += "/" + *endit;
+			else
+				uri.file_name = *endit;
+		} else if (!split.empty())
+			return false;
+	}
 	return true;
 }
 
@@ -73,7 +99,7 @@ bool ft::UriParser::find_path_of_uri(std::string &cur_path, const std::string &p
 		if (cit != m_root_list.end())
 		{
 			uri.root = cit->root;
-			uri.path = search.substr(1);
+			//uri.path = search.substr(1);
 			m_location = &(*cit);
 			break;
 		}

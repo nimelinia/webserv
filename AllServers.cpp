@@ -14,9 +14,9 @@ ft::AllServers::~AllServers()
 }
 
 
-void ft::AllServers::create_server(Config &config)
+void ft::AllServers::create_server(Host &host)
 {
-	ft::Server _server(config, config.port, config.hostaddress);
+	ft::Server _server(host, host.configs.front().port, host.configs.front().hostaddress);
 	m_servers.push_back(_server);
 }
 
@@ -43,7 +43,7 @@ bool ft::AllServers::start_all_servers()
 			if (update_max_fd)
 				Select::get().set_max_fd(find_max_fd());
 		}
-		usleep(100);																									// так долго, чтобы тестить
+//		usleep(1000000);																									// так долго, чтобы тестить
 	}
 	return (true);
 }

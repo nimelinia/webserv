@@ -31,7 +31,7 @@ std::pair<T, bool> ft::util::str::FromString(const std::string& str)
     T value;
     std::istringstream iss(str);
     iss >> value;
-    return std::make_pair(value, iss.good());
+    return std::make_pair(value, iss.eof());
 }
 
 template<class T>

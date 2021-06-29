@@ -19,7 +19,7 @@ namespace ft {
 		std::string file_ext;
 		std::string extra_path;
 		std::string query;
-		std::string last_path;
+//		std::string non_exist_path;
 	};
 
 	struct FindLocation: public std::unary_function<Locations, bool>
@@ -42,9 +42,10 @@ namespace ft {
 	{
 	private:
 		const std::list<Locations>&	m_root_list; // это location
+		std::string 		m_method;
 		bool				find_path_of_uri(std::string &cur_path, const std::string &path, Uri& uri);
 	public:
-		UriParser(const std::list<Locations>& root_list): m_root_list(root_list), m_location(NULL) {}
+		UriParser(const std::list<Locations>& root_list, std::string& method): m_root_list(root_list), m_location(NULL), m_method(method) {}
 		const Locations* 					m_location;
 	public:
 		bool parse_uri(const std::string& uri_str, Uri& uri);
