@@ -92,12 +92,12 @@ bool ft::Server::do_work()
 
 		if (it->cgi_spawned())
             need_update = true;
-		else if (it->cgi_ready_read() && Select::get().can_write(it->m_cgi_process.read_fd()))
+		else if (it->cgi_ready_read() && Select::get().can_read(it->m_cgi_process.read_fd))
         {
             if (it->cgi_read())
                 need_update = true;
         }
-		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd()))
+		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd))
         {
             if (it->cgi_write())
                 need_update = true;

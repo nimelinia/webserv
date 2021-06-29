@@ -52,6 +52,7 @@ namespace ft {
 		char*				m_buff;
 		Message				m_msg;
 		Server*				m_server;
+		Config*             m_cur_config;
 		Answer				m_answer;
 		size_t				m_parsed;
 		size_t				m_content_length;

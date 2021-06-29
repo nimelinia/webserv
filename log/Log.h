@@ -20,8 +20,8 @@ namespace ft { namespace log
 #define LOGGER ft::log::Logger::get()
 #define LOGGER_(id) ft::log::Logger::get<id>()
 
-#define LOG_(id, level)  ft::log::Logger::get<id>() <<= ft::log::detail::Message(level, __FILE_NAME__, __PRETTY_FUNCTION__, __LINE__).ref()
-#define LOG(level)  ft::log::Logger::get() <<= ft::log::detail::Message(level, __FILE_NAME__, __PRETTY_FUNCTION__, __LINE__).ref()
+#define LOG_(id, level)  ft::log::Logger::get<id>() <<= ft::log::detail::Message(level, __FILE__, __PRETTY_FUNCTION__, __LINE__).ref()
+#define LOG(level)  ft::log::Logger::get() <<= ft::log::detail::Message(level, __FILE__, __PRETTY_FUNCTION__, __LINE__).ref()
 
 #define LOGF_(id)    LOG_(id, ft::log::EFatal)
 #define LOGE_(id)    LOG_(id, ft::log::EError)

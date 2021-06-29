@@ -6,12 +6,11 @@
 #define BUFFER_SIZE     1024
 
 ft::http::CgiProcess::CgiProcess()
-    : m_pid(-1)
+    :m_pid(-1)
+    , read_fd(-1), write_fd(-1)
     , m_method_type(EUnknown)
     , m_state(EError)
 {
-    m_cgi_fd[0] = -1;
-    m_cgi_fd[1] = -1;
 }
 
 ft::http::CgiProcess::EState ft::http::CgiProcess::state() const
@@ -21,7 +20,7 @@ ft::http::CgiProcess::EState ft::http::CgiProcess::state() const
 
 int ft::http::CgiProcess::max_fd() const
 {
-    return std::max(m_cgi_fd[0], m_cgi_fd[1]);
+    return std::max(read_fd, write_fd);
 }
 
 void ft::http::CgiProcess::clear()
@@ -32,33 +31,25 @@ void ft::http::CgiProcess::clear()
         ::waitpid(m_pid, NULL, 0);
         m_pid = -1;
     }
-    if (m_cgi_fd[0] != - 1)
+    if (read_fd != - 1)
     {
-        Select::get().clear_fd(m_cgi_fd[0]);
-        ::close(m_cgi_fd[0]);
-        m_cgi_fd[0] = -1;
+        Select::get().clear_fd(read_fd);
+        ::close(read_fd);
+        read_fd = -1;
     }
-    if (m_cgi_fd[1] != - 1)
+    if (write_fd != - 1)
     {
-        Select::get().clear_fd(m_cgi_fd[1]);
-        ::close(m_cgi_fd[1]);
-        m_cgi_fd[1] = -1;
+        Select::get().clear_fd(write_fd);
+        ::close(write_fd);
+        write_fd = -1;
     }
-}
-
-int ft::http::CgiProcess::write_fd() const
-{
-    return m_cgi_fd[1];
-}
-
-int ft::http::CgiProcess::read_fd() const
-{
-    return m_cgi_fd[0];
 }
 
 void ft::http::CgiProcess::end_read(size_t ret)
 {
-    m_cgi_fd[0] = -1;
+    ::close(read_fd);
+    Select::get().clear_fd(read_fd);
+    read_fd = -1;
     if (ret == -1)
     {
         LOGD_(CGI) << "read() error: " << strerror(errno);
@@ -68,9 +59,18 @@ void ft::http::CgiProcess::end_read(size_t ret)
         m_state = EIdle;
 }
 
-bool ft::http::CgiProcess::write()
+void ft::http::CgiProcess::end_write(size_t ret)
 {
-    return true;
+    ::close(write_fd);
+    Select::get().clear_fd(write_fd);
+    write_fd = -1;
+    if (ret == -1)
+    {
+        LOGD_(CGI) << "write() error: " << strerror(errno);
+        m_state = EError;
+    }
+    else
+        m_state = ERead;
 }
 
 bool ft::http::CgiProcess::update_state()
@@ -78,9 +78,6 @@ bool ft::http::CgiProcess::update_state()
     switch (m_method_type)
     {
         case EGet:
-            ::close(m_cgi_fd[1]);
-            Select::get().clear_fd(m_cgi_fd[1]);
-            m_cgi_fd[1] = -1;
             m_state = ERead;
             return true;
         case EPost:
@@ -90,9 +87,4 @@ bool ft::http::CgiProcess::update_state()
             m_state = EError;
     }
     return false;
-}
-
-const std::string& ft::http::CgiProcess::body() const
-{
-    return m_body;
 }

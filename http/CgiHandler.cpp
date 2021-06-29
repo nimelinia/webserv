@@ -16,29 +16,49 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     Answer& answer = m_client.m_answer;
     CgiProcess process;
 
-    if (pipe(process.m_cgi_fd) == -1)
+    if (m_client.m_msg.m_method == "GET")
+        process.m_method_type = CgiProcess::EGet;
+    else if (m_client.m_msg.m_method == "POST")
+        process.m_method_type = CgiProcess::EPost;
+
+    int read_fd[2];
+    int write_fd[2];
+    if (pipe(read_fd) == -1)
     {
-        LOGE_(CGI) << "pipe() failed";
+        LOGE_(CGI) << "read pipe() failed";
         return process;
     }
+    if (process.m_method_type == CgiProcess::EPost)
+    {
+        if (pipe(write_fd) == -1)
+        {
+            LOGE_(CGI) << "write pipe() failed";
+            return process;
+        }
+    }
 
-    std::string env_str[] = {
-        "SERVER_SOFTWARE=webserv",
-        std::string("SERVER_SOFTWARE=") + m_config.hostaddress,
-        "GATEWAY_INTERFACE=CGI/1.1",
-        "SERVER_PROTOCOL=HTTP/1.1",
-        std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port),
-        std::string("REQUEST_METHOD=") + m_client.m_msg.m_method,
-        "REDIRECT_STATUS=200",
-        _env_path_info(),
-        _env_path_translated(),
-        _env_script_name(),
-        _env_query_string(),
-        _env_script_filename()
-    };
-    const size_t env_size = sizeof(env_str) / sizeof(std::string);
-    std::string script_path= m_uri.root;
-    script_path += m_uri.path;
+    std::vector<std::string> env_str;
+    env_str.reserve(14);
+    env_str.push_back("SERVER_SOFTWARE=webserv");
+    env_str.push_back(std::string("SERVER_ADDRESS=") + m_config.hostaddress);
+    env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env_str.push_back(std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port));
+    env_str.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg.m_method);
+//    env_str.push_back(_env_path_info());
+//    env_str.push_back(_env_path_translated());
+//    env_str.push_back(_env_script_name());
+//    env_str.push_back(_env_query_string());
+    env_str.push_back(_env_script_filename());
+    env_str.push_back("REDIRECT_STATUS=200");
+    if (process.m_method_type == CgiProcess::EPost)
+    {
+        env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+        env_str.push_back(std::string("CONTENT_LENGTH=") + util::str::ToString(m_client.m_msg.m_body.size()));
+    }
+
+    const size_t env_size = env_str.size();
+    std::string script_path = m_uri.path;
     script_path += m_uri.file_name;
 
     const char* args[] = {
@@ -60,44 +80,44 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     }
     else if (process.m_pid == 0)
     {
-        if (dup2(process.m_cgi_fd[0], STDIN_FILENO) == -1)
-            exit(1);
-        if (dup2(process.m_cgi_fd[1], STDOUT_FILENO) == -1)
-            exit(1);
-        close(process.m_cgi_fd[0]);
-        close(process.m_cgi_fd[1]);
+        if (::chdir(m_uri.root.c_str()) == -1)
+            ::exit(1);
+
+        if (::dup2(read_fd[1], STDOUT_FILENO) == -1)
+            ::exit(1);
+        ::close(read_fd[0]);
+        ::close(read_fd[1]);
+        if (process.m_method_type == CgiProcess::EPost)
+        {
+            if (::dup2(write_fd[0], STDIN_FILENO) == -1)
+                ::exit(1);
+            ::close(write_fd[0]);
+            ::close(write_fd[1]);
+        }
+
         const char** env = new const char*[env_size + 1];
         env[env_size] = NULL;
 
-        env[0] = env_str[0].c_str();
-        env[1] = env_str[1].c_str();
-        env[2] = env_str[2].c_str();
+        for (size_t i = 0; i < env_size; ++i)
+            env[i] = env_str[i].c_str();
 
-        env[3] = env_str[3].c_str();
-        env[4] = env_str[4].c_str();
-        env[5] = env_str[5].c_str();
-        env[6] = env_str[6].c_str();
-        env[7] = env_str[7].c_str();
-        env[8] = env_str[8].c_str();
-        env[9] = env_str[9].c_str();
-        env[10] = env_str[10].c_str();
-        env[11] = env_str[11].c_str();
-
-        execve(args[0], const_cast<char**>(args), const_cast<char**>(env));
-        exit(1);
+        ::execve(args[0], const_cast<char**>(args), const_cast<char**>(env));
+        ::exit(1);
     }
 
     LOGI_(CGI) << "Cgi process spawned";
 
-    if (m_client.m_msg.m_method == "GET")
-        process.m_method_type = CgiProcess::EGet;
-    else if (m_client.m_msg.m_method == "POST")
-        process.m_method_type = CgiProcess::EPost;
+    ::close(read_fd[1]);
+    Select::get().set_fd(read_fd[0]);
+    process.read_fd = read_fd[0];
+    if (process.m_method_type == CgiProcess::EPost)
+    {
+        ::close(write_fd[0]);
+        Select::get().set_fd(write_fd[1]);
+        process.write_fd = write_fd[1];
+    }
+
     process.m_state = CgiProcess::ESpawn;
-
-    Select::get().set_fd(process.m_cgi_fd[0]);
-    Select::get().set_fd(process.m_cgi_fd[1]);
-
     return process;
 }
 
@@ -128,7 +148,8 @@ void ft::http::CgiHandler::parse_cgi_body()
 std::string ft::http::CgiHandler::_env_path_info() const
 {
     std::string str = "PATH_INFO=";
-    str += m_uri.extra_path;
+    str += m_uri.path;
+    str += m_uri.file_name;
     return str;
 }
 
@@ -154,7 +175,6 @@ std::string ft::http::CgiHandler::_env_script_name() const
 std::string ft::http::CgiHandler::_env_script_filename() const
 {
     std::string str = "SCRIPT_FILENAME=";
-    str += m_uri.root;
     str += m_uri.path;
     str += m_uri.file_name;
     return str;

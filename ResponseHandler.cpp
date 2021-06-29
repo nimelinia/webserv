@@ -83,6 +83,11 @@ bool ft::ResponseHandler::generate_GET()
 
 	if (!m_location->cgi.second.empty() && m_location->cgi.first == m_uri.file_ext)
 	{
+	    if (m_uri.file_name == m_location->index && !m_uri.extra_path.empty())
+        {
+            m_answer.m_status_code = 404;
+            return true;
+        }
 		http::CgiHandler handler(m_config, m_client, m_uri);
 		m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
 		if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
@@ -126,12 +131,21 @@ bool ft::ResponseHandler::generate_POST()
 	std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
 														  m_msg.m_headers.end(),
 														  http::FindHeader("content-type"));
-	if (it != m_msg.m_headers.end() && it->value == "application/x-www-form-urlencoded")
+	if (it != m_msg.m_headers.end() && it->value == "multipart/form-data")
 	{
-		return false;
+        m_client.m_answer.m_status_code = 501;
+        return true;
 	}
-	m_client.m_answer.m_status_code = 501;
-	return true;
+
+    http::CgiHandler handler(m_config, m_client, m_uri);
+    m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
+    if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
+    {
+        m_client.m_answer.m_status_code = 500;
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -149,7 +163,7 @@ bool ft::ResponseHandler::generate_PUT()
 			m_client.m_answer.m_status_code = 200;
 		} else
 			m_client.m_answer.m_status_code = 201;
-		std::ofstream ofs(file_name, mode);
+		std::ofstream ofs(file_name.c_str(), mode);
 		if (ofs.is_open())
 			ofs << m_client.m_msg.m_body;
 		else
@@ -238,7 +252,7 @@ bool ft::ResponseHandler::from_file_to_body(const std::string &path)
 
 	if (!check_is_file(path))
 		return false;
-	file.open(path);
+	file.open(path.c_str());
 	if (file.is_open())                                                                                                    //уточнить у Леши, нужно ли повторно чекать, что m_uri.file_name - это именно файл
 	{
 		oss << file.rdbuf();
@@ -264,7 +278,8 @@ std::string ft::ResponseHandler::detect_last_modified() {
 	std::string	file;
 	file = m_uri.root + m_uri.path + m_uri.file_name;
 	stat(file.c_str(), &buff);
-	return (Help::get_date(buff.st_ctimespec));
+	//return (Help::get_date(buff.st_ctimespec));
+	return (std::string());
 }
 
 void ft::ResponseHandler::detect_content_type()

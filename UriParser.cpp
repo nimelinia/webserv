@@ -74,7 +74,8 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 	}
 	else
 	{
-		if (uri.file_name.empty())
+	    // TODO: Check "/" uri, previous logic lead to segfault
+		if (uri.file_name.empty() && !split.empty())
 		{
 			std::list<std::string>::iterator endit = --split.end();
 			for (std::list<std::string>::iterator it = split.begin(); it != endit; ++it)

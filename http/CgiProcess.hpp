@@ -32,25 +32,24 @@ namespace ft { namespace http
             EPost
         };
 
+    public:
+        int read_fd;
+        int write_fd;
+
     private:
         pid_t m_pid;
-        int m_cgi_fd[2];
         EMethodType m_method_type;
         EState      m_state;
-        std::string m_body;
 
     public:
         CgiProcess();
 
         EState state() const;
         int max_fd() const;
-        int read_fd() const;
-        int write_fd() const;
-        const std::string& body() const;
         void clear();
         bool update_state();
         void end_read(size_t ret);
-        bool write();
+        void end_write(size_t ret);
     };
 } }
 

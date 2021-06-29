@@ -68,6 +68,7 @@ bool ft::Client::read_message()
 		if (it == m_server->m_config.end())
 			it = m_server->m_config.begin();
 
+        m_cur_config = &(*it);
 		ResponseHandler handler(*it, *this);
 		bool result = true;
 		if (!m_answer.m_status_code)
@@ -192,18 +193,15 @@ bool ft::Client::cgi_ready_write() const
 
 bool ft::Client::cgi_read()
 {
-    ssize_t ret = ::read(m_cgi_process.read_fd(), m_buff, BUFFER_SIZE);
+    ssize_t ret = ::read(m_cgi_process.read_fd, m_buff, BUFFER_SIZE);
     if (ret == 0 || ret == -1)
     {
-        ::close(m_cgi_process.read_fd());
-        Select::get().clear_fd(m_cgi_process.read_fd());
         m_cgi_process.end_read(ret);
-
         if (m_cgi_process.state() == http::CgiProcess::EError)
             m_answer.m_status_code = 500;
         else
         {
-            http::CgiHandler handler(m_server->m_config, *this, Uri());
+            http::CgiHandler handler(*m_cur_config, *this, Uri());
             handler.parse_cgi_body();
         }
         m_state = e_response_ready;
@@ -212,11 +210,30 @@ bool ft::Client::cgi_read()
     else
     {
         m_answer.m_body.append(m_buff, ret);
+        LOGD_(CGI) << "DATA: " << m_answer.m_body;
+        LOGD_(CGI);
         return false;
     }
 }
 
 bool ft::Client::cgi_write()
 {
-    return true;
+    ssize_t ret = ::write(m_cgi_process.write_fd, m_msg.m_body.c_str(), m_msg.m_body.size());
+    if (ret == -1)
+    {
+        m_cgi_process.end_write(-1);
+        if (m_cgi_process.state() == http::CgiProcess::EError)
+            m_answer.m_status_code = 500;
+        return true;
+    }
+    else
+    {
+        m_msg.m_body.erase(0, ret);
+        if (m_msg.m_body.empty())
+        {
+            m_cgi_process.end_write(0);
+            return true;
+        }
+        return false;
+    }
 }
