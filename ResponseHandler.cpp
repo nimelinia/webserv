@@ -20,13 +20,14 @@ bool ft::ResponseHandler::generate_answer()
     Message& m_msg = m_client.m_msg;
     Answer& m_answer = m_client.m_answer;
 
-	UriParser parser(m_config.locations, m_msg.m_method);
-	if (!parser.parse_uri(m_msg.m_uri_str, m_uri))
-	{
-		m_answer.m_status_code = 404;
-		return true;
-	}
-	m_location = parser.m_location;
+//	UriParser parser(m_config.locations, m_msg.m_method);
+//	if (!parser.parse_uri(m_msg.m_uri_str, m_uri))
+//	{
+//		m_answer.m_status_code = 404;
+//		return true;
+//	}
+	m_uri = m_msg.m_uri;
+	m_location = m_msg.m_uri.locations;
 	if (m_msg.m_error_num)																							// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
 	{
 		m_answer.m_status_code = m_msg.m_error_num;

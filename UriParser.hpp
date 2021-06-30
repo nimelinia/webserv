@@ -31,6 +31,7 @@ namespace ft {
 			path.clear();
 			file_name.clear();
 			file_ext.clear();
+			extra_path.clear();
 			query.clear();
 			locations = NULL;
 			config = NULL;
