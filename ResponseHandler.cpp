@@ -21,7 +21,7 @@ bool ft::ResponseHandler::generate_answer()
     Answer& m_answer = m_client.m_answer;
 
 	UriParser parser(m_config.locations, m_msg.m_method);
-	if (!parser.parse_uri(m_msg.m_uri, m_uri))
+	if (!parser.parse_uri(m_msg.m_uri_str, m_uri))
 	{
 		m_answer.m_status_code = 404;
 		return true;

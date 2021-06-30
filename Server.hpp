@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <vector>
-#include "webserv.hpp"
+#include <list>
 #include "Client.hpp"
 #include "Select.hpp"
 
@@ -32,7 +32,7 @@ namespace ft
 
 //		size_t				get_m_limit_body_size() const;
 
-		std::list<Config>	m_config;
+		std::list<Config>&	m_configs;
 		std::list<Client>	m_clients;
 	private:
 		size_t				m_port;

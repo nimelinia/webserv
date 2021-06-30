@@ -5,6 +5,7 @@
 #include "Answer.hpp"
 #include "http/RequestParser.h"
 #include "StatusCodes.hpp"
+#include "webserv.hpp"
 
 
 ft::Answer::Answer() :

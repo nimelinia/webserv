@@ -3,9 +3,10 @@
 //
 
 #include "Server.hpp"
+#include "webserv.hpp"
 
 ft::Server::Server(Host& host, size_t port, std::string &host_address) :
-	m_config(host.configs),
+	m_configs(host.configs),
 	m_port(port),
 	m_host_address(host_address),
 	m_socket_fd(-1),

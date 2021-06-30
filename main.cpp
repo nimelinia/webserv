@@ -24,9 +24,9 @@ int	check_count_arguments(int argc)
 	return (0);
 }
 
-void fill_host(ft::cfg::Section server, std::list<Host>& hosts)
+void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 {
-	Config	config;
+	ft::Config	config;
 /*
  * выясняем номер порта и хоста
  */
@@ -57,8 +57,8 @@ void fill_host(ft::cfg::Section server, std::list<Host>& hosts)
 	std::list<ft::cfg::Section> locations = server.sectionList("location");
 	for(std::list<ft::cfg::Section>::iterator lit = locations.begin(); lit != locations.end(); ++lit)
 	{
-		config.locations.push_back(Locations());
-		Locations &loc = config.locations.back();
+		config.locations.push_back(ft::Locations());
+		ft::Locations &loc = config.locations.back();
 		loc.path_to_location = lit->valueList();
 		if (lit->contains("root"))
 			loc.root = lit->value("root");
@@ -79,7 +79,7 @@ void fill_host(ft::cfg::Section server, std::list<Host>& hosts)
 			loc.limit_body_size = LIMIT_BODY_SIZE;
 	}
 
-	std::list<Host>::iterator it;
+	std::list<ft::Host>::iterator it;
 	for (it = hosts.begin(); it != hosts.end(); ++it)
 	{
 		if (it->configs.front().port == config.port
@@ -87,7 +87,7 @@ void fill_host(ft::cfg::Section server, std::list<Host>& hosts)
 			break;
 	}
 	if (it == hosts.end())
-		it = hosts.insert(hosts.end(), Host());
+		it = hosts.insert(hosts.end(), ft::Host());
 	it->configs.push_back(config);
 }
 
@@ -114,13 +114,13 @@ int main(int argc, char **argv) 																							// переписать, 
 	}
 
 	ft::AllServers servers;
-	std::list<Host> hosts;
+	std::list<ft::Host> hosts;
 	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
 	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it)
 	{
 		fill_host(*it, hosts);
 	}
-	for (std::list<Host>::iterator hit = hosts.begin(); hit != hosts.end(); ++hit)
+	for (std::list<ft::Host>::iterator hit = hosts.begin(); hit != hosts.end(); ++hit)
 		servers.create_server(*hit);
 	servers.start_all_servers();																							// нужно внутри сделать класс селект, который сделать синглтоном
 	return (0);

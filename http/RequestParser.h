@@ -6,6 +6,7 @@
 
 namespace ft {
 	class Message;
+	struct Config;
 	namespace http
 {
     struct Header
@@ -78,12 +79,12 @@ namespace ft {
 //        explicit RequestParser(size_t max_body_size);
 		explicit RequestParser();
 
-        EResult parse(Message& msg, const char* buf, size_t size);
+        EResult parse(std::list<Config> &configs, Message& msg, const char* buf, size_t size);
         void reset();
 
     private:
-        EResult _consume(Message& msg, char c);
-        ft::http::RequestParser::EResult _init_body_size(Message& msg);
+        EResult _consume(std::list<Config> &configs, Message& msg, char c);
+        ft::http::RequestParser::EResult _init_body_size(std::list<Config> &configs, Message& msg);
     };
 } }
 

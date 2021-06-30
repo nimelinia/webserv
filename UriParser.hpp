@@ -10,6 +10,10 @@
 #include "webserv.hpp"
 
 
+struct Config;
+struct Locations;
+
+
 namespace ft {
 	struct Uri
 	{
@@ -19,6 +23,18 @@ namespace ft {
 		std::string file_ext;
 		std::string extra_path;
 		std::string query;
+		const Locations*	locations;
+		Config*		config;
+		void clean()
+		{
+			root.clear();
+			path.clear();
+			file_name.clear();
+			file_ext.clear();
+			query.clear();
+			locations = NULL;
+			config = NULL;
+		}
 //		std::string non_exist_path;
 	};
 

@@ -22,7 +22,8 @@ void ft::Message::clean()
 	m_headers.clear();
 	m_body.clear();
 	m_method.clear();
-	m_uri.clear();
+	m_uri_str.clear();
+	m_uri.clean();
 	m_ver_minor = 0;
 	m_ver_major = 0;
 	m_ready_responce = false;

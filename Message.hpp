@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include "http/RequestParser.h"
+#include "UriParser.hpp"
 
 #define BUFFER_SIZE	1567415
 
@@ -30,7 +31,8 @@ namespace ft {
 		std::vector<http::Header>	m_headers;
 		std::string 				m_body;
 		std::string					m_method;
-		std::string					m_uri;
+		std::string					m_uri_str;
+		Uri							m_uri;
 		std::string					host_name;
 		int 						m_ver_major;
 		int							m_ver_minor;

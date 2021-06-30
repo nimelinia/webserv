@@ -7,6 +7,7 @@
 #include "http/RequestParser.h"
 #include "ResponseHandler.hpp"
 #include "log/Log.h"
+//#include "webserv.hpp"
 
 ft::Client::Client(int socketCl, Server *server) :
 	m_state(e_request_parse),
@@ -30,19 +31,19 @@ bool ft::Client::read_message()
 //	ResponseHandler handler(m_server->m_config, *this);
 	if (m_state == e_request_parse)
 	{
-        http::RequestParser::EResult res = m_parser.parse(m_msg, m_buff, ret);
+        http::RequestParser::EResult res = m_parser.parse(m_server->m_configs, m_msg, m_buff, ret);
         if (res == http::RequestParser::EParse)
 			return false;
-		std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
-															  m_msg.m_headers.end(),
-															  http::FindHeader("host"));
-		if (it != m_msg.m_headers.end())
-			m_msg.host_name = it->value;
-		else
-			res = http::RequestParser::EError;
+//		std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
+//															  m_msg.m_headers.end(),
+//															  http::FindHeader("host"));
+//		if (it != m_msg.m_headers.end())
+//			m_msg.host_name = it->value;
+//		else
+//			res = http::RequestParser::EError;
 		if (res == http::RequestParser::EOk)
 		{
-			LOGD << "URI: " << m_msg.m_uri;
+			LOGD << "URI: " << m_msg.m_uri_str;
 			LOGD << "Method: " << m_msg.m_method;
 			LOGD << "Headers:";
 			for (std::vector<http::Header>::iterator hit = m_msg.m_headers.begin(); hit != m_msg.m_headers.end(); ++hit)
@@ -52,23 +53,25 @@ bool ft::Client::read_message()
 		}
 		else if (res == http::RequestParser::EError)
 		{
-			m_answer.m_status_code = 400;																					// брать номер из msg
+//			m_answer.m_status_code = 400;																					// брать номер из msg
+			m_answer.m_status_code = m_msg.m_error_num;
 			m_state = e_request_ready;
 		}
 	}
 	if (m_state == e_request_ready)
 	{
-		const std::string host = m_msg.host_name.substr(0, m_msg.host_name.find_last_of(':'));
-		std::list<Config>::iterator it = m_server->m_config.begin();
-		for (; it != m_server->m_config.end(); ++it)
-		{
-			if (it->server_name == host)
-				break;
-		}
-		if (it == m_server->m_config.end())
-			it = m_server->m_config.begin();
+//		const std::string host = m_msg.host_name.substr(0, m_msg.host_name.find_last_of(':'));
+//		std::list<Config>::iterator it = m_server->m_configs.begin();
+//		for (; it != m_server->m_configs.end(); ++it)
+//		{
+//			if (it->server_name == host)
+//				break;
+//		}
+//		if (it == m_server->m_configs.end())
+//			it = m_server->m_configs.begin();
+//			it = m_server->m_configs.begin();
 
-		ResponseHandler handler(*it, *this);
+		ResponseHandler handler(*m_msg.m_uri.config, *this);
 		bool result = true;
 		if (!m_answer.m_status_code)
 			result = handler.generate_answer();

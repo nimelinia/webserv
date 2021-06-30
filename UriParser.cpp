@@ -3,6 +3,7 @@
 //
 
 #include "UriParser.hpp"
+#include "webserv.hpp"
 
 bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 {
