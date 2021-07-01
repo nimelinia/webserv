@@ -194,17 +194,28 @@ void ft::ResponseHandler::_generate_body()
 
 void ft::ResponseHandler::generate_status_body()
 {
+		/*
+		 * нужно искать не среди конфига, а прям в нужном локейшене error_pages (в строке 204)
+		 */
 	Answer& m_answer = m_client.m_answer;
 	Message& m_msg = m_client.m_msg;
 
-	std::map<size_t, std::string>::iterator it = m_config.default_error_pages.find(m_answer.m_status_code);
-	if (it != m_config.default_error_pages.end())
+	std::map<size_t, std::string>::const_iterator it = m_msg.m_uri.locations->error_pages.find(m_answer.m_status_code);
+	if (it != m_msg.m_uri.locations->error_pages.end())
 	{
 		const std::string::size_type dot = it->second.find_last_of('.');
 		if (dot != std::string::npos)
 			m_client.m_msg.m_uri.file_ext = it->second.substr(dot + 1);
 		_from_file_to_body(it->second);
 	}
+//	std::map<size_t, std::string>::iterator it = m_config.default_error_pages.find(m_answer.m_status_code);
+//	if (it != m_config.default_error_pages.end())
+//	{
+//		const std::string::size_type dot = it->second.find_last_of('.');
+//		if (dot != std::string::npos)
+//			m_client.m_msg.m_uri.file_ext = it->second.substr(dot + 1);
+//		_from_file_to_body(it->second);
+//	}
 	else if (m_answer.m_status_code != 200 /* && m_msg.method == "GET" */)
 	{
 		m_client.m_msg.m_uri.file_ext = "html";

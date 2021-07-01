@@ -48,6 +48,7 @@ namespace ft {
 		std::list<std::string>				allow;
 		std::string							index;
 		std::pair<std::string, std::string>	cgi;
+		std::map<size_t, std::string>		error_pages;
 		size_t								limit_body_size;
 		bool 								autoindex;
 	};
@@ -61,6 +62,8 @@ namespace ft {
 		size_t								port;
 		std::string 						hostaddress;
 		std::map<size_t, std::string>		default_error_pages;
+		std::string							default_root;
+		std::string							default_index;
 
 	};
 

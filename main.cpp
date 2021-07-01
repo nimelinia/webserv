@@ -24,6 +24,19 @@ int	check_count_arguments(int argc)
 	return (0);
 }
 
+bool find_root_location(std::list<ft::Locations>& location)
+{
+	for (std::list<ft::Locations>::iterator it = location.begin(); it != location.end(); ++it)
+	{
+		for (std::list<std::string>::iterator strit = it->path_to_location.begin(); strit != it->path_to_location.end(); ++strit)
+		{
+			if (*strit == "/")
+				return (true);
+		}
+	}
+	return false;
+}
+
 void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 {
 	ft::Config	config;
@@ -36,9 +49,12 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 /*
  * выясняем номер порта и хоста
  */
+	if (!server.contains("listen"))
+		throw std::runtime_error("there is no information about host/port");
 	std::list<std::string> listen_split = ft::util::str::Split(server.value("listen"), ':');
 	if (listen_split.empty() || listen_split.size() > 2)
-		std::cout << "error" << std::endl;
+//		std::cout << "error" << std::endl;
+		throw std::runtime_error("config error with port and/or hostaddress");
 	config.port = std::strtoul(listen_split.back().c_str(), 0, 0);
 	config.hostaddress = "0.0.0.0";
 	if (listen_split.size() == 2)
@@ -51,6 +67,10 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 		config.server_name = server.value("server_name");
 	else
 		config.server_name = config.hostaddress + ":" + ft::util::str::ToString(config.port);
+	if (server.contains("root"))
+		config.default_root = server.value("root");
+	if (server.contains("index"))
+		config.default_index = server.value("index");
 	std::list<ft::cfg::Section> error_pages = server.sectionList("error_page");
 	for (std::list<ft::cfg::Section>::iterator sit = error_pages.begin(); sit != error_pages.end(); ++sit)
 	{
@@ -80,10 +100,31 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 		loc.path_to_location = lit->valueList();
 		if (lit->contains("root"))
 			loc.root = lit->value("root");
-		if (lit->contains("limit_except"))
-			loc.allow = lit->valueList("limit_except");
+		else if (!config.default_root.empty())
+			loc.root = config.default_root;
+		else
+			throw std::runtime_error("No root directory in the config");													// если не может быть конфига без рута
 		if (lit->contains("index"))
 			loc.index = lit->value("index");
+		else if (!config.default_index.empty())
+			loc.index = config.default_index;
+		else
+			throw std::runtime_error("No default page in the config");														// нужно проверить, может ли быть конфиг без индекса
+		std::list<ft::cfg::Section> error_pages_loc = lit->sectionList("error_page");
+		for (std::list<ft::cfg::Section>::iterator eit = error_pages_loc.begin(); eit != error_pages_loc.end(); ++eit)
+		{
+			const size_t status_code = std::strtoul(eit->value().c_str(), 0, 0);
+			loc.error_pages.insert(std::make_pair(status_code, eit->value(1)));
+		}
+		for (std::map<size_t, std::string>::iterator mit = config.default_error_pages.begin(); \
+							mit != config.default_error_pages.end(); ++mit) 												// пробегаюсь по дефолтным, если не нахожу в location такого кода, то добавляю дефолтную
+		{
+			if (loc.error_pages.find(mit->first) == loc.error_pages.end())
+				loc.error_pages.insert(*mit);
+		}
+		if (lit->contains("limit_except")) {
+			loc.allow = lit->valueList("limit_except");
+		}
 		if (lit->contains("autoindex") && lit->value("autoindex") == "on")
 			loc.autoindex = true;
 		if (lit->contains("cgi"))
@@ -95,6 +136,23 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			loc.limit_body_size = std::strtoul(lit->value("limit_body_size").c_str(), 0, 0);
 		else
 			loc.limit_body_size = LIMIT_BODY_SIZE;
+	}
+
+	/*
+	 * проверяю, есть ли у меня location, если их вообще нет, или нет корневого, то создаю с параметрами из директивы server
+	 * если нет root и index и там, то кидаю ошибку
+	 */
+
+	if (config.locations.empty() || !find_root_location(config.locations))
+	{
+		if (config.default_root.empty() || config.default_index.empty())
+			throw std::runtime_error("No root directory or/and default page in the config");
+		config.locations.push_back(ft::Locations());
+		ft::Locations &loc = config.locations.back();
+		loc.root = config.default_root;
+		loc.index = config.default_index;
+		loc.error_pages = config.default_error_pages;
+		loc.path_to_location.front() = "/";
 	}
 
 	std::list<ft::Host>::iterator it;
