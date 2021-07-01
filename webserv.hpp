@@ -57,6 +57,7 @@ namespace ft {
 	{
 		std::string							server_name;
 		std::list<Locations>				locations;
+		std::pair<size_t, std::string>		redirection;
 		size_t								port;
 		std::string 						hostaddress;
 		std::map<size_t, std::string>		default_error_pages;

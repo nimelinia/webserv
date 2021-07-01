@@ -23,13 +23,13 @@ namespace ft
 	{
 	public:
 		AllServers();
-		virtual ~AllServers();
-		void	create_server(Host &hosts);
-		bool	start_all_servers();
-		int 	find_max_fd();
+		virtual 			~AllServers();
+		void				create_server(Host &hosts);
+		bool				start_all_servers();
+		int 				find_max_fd();
 
 	private:
-		std::list<Server>		m_servers;
+		std::list<Server>	m_servers;
 
 
 	};

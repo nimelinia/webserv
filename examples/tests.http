@@ -22,3 +22,6 @@ POST http://localhost:8081/directory/youpi.bla
 
 ###
 DELETE http://localhost:8081/delete_test/file_should_exist_after
+
+###
+GET http://localhost:9093/

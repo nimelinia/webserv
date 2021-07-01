@@ -27,6 +27,12 @@ int	check_count_arguments(int argc)
 void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 {
 	ft::Config	config;
+
+	/*
+	 * root, error_pages, index
+	 * сначала кладем в сервер, потом подставляем в locations, если там нет своих
+	 * если locations нет, генерим корневой location
+	 */
 /*
  * выясняем номер порта и хоста
  */
@@ -43,13 +49,25 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 
 	if (server.contains("server_name"))
 		config.server_name = server.value("server_name");
-//	else
-//		config.server_name = "localhost";
+	else
+		config.server_name = config.hostaddress + ":" + ft::util::str::ToString(config.port);
 	std::list<ft::cfg::Section> error_pages = server.sectionList("error_page");
 	for (std::list<ft::cfg::Section>::iterator sit = error_pages.begin(); sit != error_pages.end(); ++sit)
 	{
 		const size_t status_code = std::strtoul(sit->value().c_str(), 0, 0);
 		config.default_error_pages.insert(std::make_pair(status_code, sit->value(1)));
+	}
+	if (server.contains("redirect"))
+	{
+		std::list<std::string> redir = server.valueList("redirect");
+		if (redir.size() != 2)
+			throw std::runtime_error("config error with redirection");
+		std::pair<size_t, bool> check = ft::util::str::FromString<size_t>(redir.front());
+		if (!check.second)
+			throw std::runtime_error("config error with redirection");
+		config.redirection.first = check.first;
+		config.redirection.second = redir.back();
+
 	}
 /*
  * заполняем данные для каждого location
@@ -86,13 +104,17 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			&& it->configs.front().hostaddress == config.hostaddress)
 			break;
 	}
+	if (it != hosts.end() && it->configs.front().server_name == config.server_name)
+	{
+		throw std::runtime_error("There are some problem with the same virtual servers in your config!");
+	}
 	if (it == hosts.end())
 		it = hosts.insert(hosts.end(), ft::Host());
 	it->configs.push_back(config);
 }
 
 
-int main(int argc, char **argv) 																							// переписать, так как конфиг берем по пути, а не из аргументов
+int main(int argc, char **argv)
 {
 	::signal(SIGPIPE, SIG_IGN);
 
@@ -103,26 +125,29 @@ int main(int argc, char **argv) 																							// переписать, 
 	LOGGER.setMaxLevel(ft::log::EDebug);
 
 	if (check_count_arguments(argc))
-		return (errno);																										// тут нужно прописать код ошибки
+		return (errno);
+
 	ft::cfg::Config cfg;
+	std::list<ft::Host> hosts;
 	try {
 		cfg.load(argv[1]);
+		std::list<ft::cfg::Section> sections = cfg.sectionList("server");
+		for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it)
+			fill_host(*it, hosts);
 	} catch (const ft::cfg::ConfigException & e)
 	{
 		std::cout << "Failed to load config: " << e.what() << std::endl;
 		return 1;
+	} catch (const std::exception& e)
+	{
+		std::cout << "Error: " << e.what() << std::endl;
+		return 1;
 	}
 
 	ft::AllServers servers;
-	std::list<ft::Host> hosts;
-	std::list<ft::cfg::Section> sections = cfg.sectionList("server");
-	for (std::list<ft::cfg::Section>::iterator it = sections.begin(); it != sections.end(); ++it)
-	{
-		fill_host(*it, hosts);
-	}
 	for (std::list<ft::Host>::iterator hit = hosts.begin(); hit != hosts.end(); ++hit)
 		servers.create_server(*hit);
-	servers.start_all_servers();																							// нужно внутри сделать класс селект, который сделать синглтоном
+	servers.start_all_servers();
 	return (0);
 }
 

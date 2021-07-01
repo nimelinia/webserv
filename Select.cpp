@@ -33,7 +33,6 @@ bool ft::Select::update()
 	tv.tv_usec = 0;
 
 	int res;
-//	std::cout << "Select()" << std::endl;
 	if ((res = select(m_max_fd + 1, &m_read, &m_write, 0, &tv)) == -1)
 		throw std::runtime_error("select error: " + std::string(strerror(errno)));
 	return (res != 0);

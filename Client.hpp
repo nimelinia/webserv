@@ -23,7 +23,6 @@ namespace ft {
 			e_request_parse,
 			e_read_body,
 			e_request_ready,
-//			e_error,
 			e_response_ready,
 			e_sending
 		};
@@ -32,17 +31,16 @@ namespace ft {
 
 		bool				read_message();
 		bool				send_message();
-//		void				read_body(ssize_t ret);
-//		void				find_content_length();
 		void				close();
 		bool				ready_write() const;
+		bool				ready_read() const;
 		int 				max_fd() const;
 
-		bool cgi_spawned();
-		bool cgi_ready_read() const;
-		bool cgi_ready_write() const;
-		bool cgi_read();
-		bool cgi_write();
+		bool 				cgi_spawned();
+		bool 				cgi_ready_read() const;
+		bool 				cgi_ready_write() const;
+		bool 				cgi_read();
+		bool 				cgi_write();
 
 
 		Estate				m_state;

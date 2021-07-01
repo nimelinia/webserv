@@ -8,9 +8,10 @@ namespace ft { namespace util { namespace mime_types
         const char* type;
     };
     mime_type mapping[] = {
-        { "", "application/octet-stream" },
+//        { "", "application/octet-stream" },
         { "html", "text/html" },
         { "htm", "text/html" },
+		{ "txt", "text/plain" },
         { "css", "text/css" },
         { "jpeg", "image/jpeg" },
         { "png", "image/png" },

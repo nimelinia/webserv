@@ -36,7 +36,6 @@ namespace ft {
 			locations = NULL;
 			config = NULL;
 		}
-//		std::string non_exist_path;
 	};
 
 	struct FindLocation: public std::unary_function<Locations, bool>
@@ -62,7 +61,8 @@ namespace ft {
 		std::string 		m_method;
 		bool				find_path_of_uri(std::string &cur_path, const std::string &path, Uri& uri);
 	public:
-		UriParser(const std::list<Locations>& root_list, std::string& method): m_root_list(root_list), m_location(NULL), m_method(method) {}
+		UriParser(const std::list<Locations>& root_list, std::string& method): m_root_list(root_list), \
+															m_location(NULL), m_method(method) {}
 		const Locations* 					m_location;
 	public:
 		bool parse_uri(const std::string& uri_str, Uri& uri);
