@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <vector>
-#include "webserv.hpp"
+#include <list>
 #include "Client.hpp"
 #include "Select.hpp"
 
@@ -30,17 +30,13 @@ namespace ft
 		int					get_max_fd() const;
 		bool 				create_new_connection();
 
-//		size_t				get_m_limit_body_size() const;
-
-		std::list<Config>	m_config;
+		std::list<Config>&	m_configs;
 		std::list<Client>	m_clients;
 	private:
 		size_t				m_port;
 		std::string 		m_host_address;
-//		size_t				m_id;
 		int					m_socket_fd;
 		bool				m_error_fatal;
-		size_t				m_limit_body_size;
 		int 				m_max_fd;
 		struct sockaddr 	m_addr_client;
 

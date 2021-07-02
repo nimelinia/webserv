@@ -22,8 +22,8 @@ namespace ft {
 		enum Estate {
 			e_request_parse,
 			e_request_ready,
-			e_response_ready = 100,
-			e_sending = 200
+			e_response_ready,
+			e_sending
 		};
 	public:
 		Client(int socketCl, Server* server);
@@ -31,14 +31,12 @@ namespace ft {
 
         void init_buffer();
 
-        bool				read_message();
+		bool				read_message();
 		bool				send_message();
-		bool				send_cgi_message();
-//		void				read_body(ssize_t ret);
-//		void				find_content_length();
+        bool				send_cgi_message();
 		void				close();
-		bool				ready_read() const;
 		bool				ready_write() const;
+		bool				ready_read() const;
 		int 				max_fd() const;
 
 		bool cgi_spawned();
@@ -56,7 +54,6 @@ namespace ft {
 		char*				m_buff;
 		Message				m_msg;
 		Server*				m_server;
-		Config*             m_cur_config;
 		Answer				m_answer;
 		size_t				m_parsed;
 		size_t				m_content_length;

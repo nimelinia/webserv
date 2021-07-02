@@ -1,7 +1,6 @@
 #include "RequestParser.h"
 #include "Message.hpp"
 #include "util/String.h"
-#include "log/Log.h"
 
 #define CR '\r'
 #define LR '\n'
@@ -19,18 +18,18 @@ ft::http::RequestParser::RequestParser()
 {
 }
 
-ft::http::RequestParser::EResult ft::http::RequestParser::parse(Message& msg, const char* buf, size_t size)
+ft::http::RequestParser::EResult ft::http::RequestParser::parse(std::list<Config> &configs, Message& msg, const char* buf, size_t size)
 {
    for (size_t i = 0; i < size; ++i)
    {
-       EResult res = _consume(msg, buf[i]);
+       EResult res = _consume(configs, msg, buf[i]);
        if (res != EParse)
            return res;
    }
    return EParse;
 }
 
-ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg, char c)
+ft::http::RequestParser::EResult ft::http::RequestParser::_consume(std::list<Config> &configs, Message& msg, char c)
 {
     switch (m_state)
     {
@@ -66,7 +65,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
                 return EError;
             else
             {
-                msg.m_uri.push_back(c);
+                msg.m_uri_str.push_back(c);
                 return EParse;
             }
         case EVer_H:
@@ -206,7 +205,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(Message& msg,
                 return EParse;
             }
         case ENewLine2:
-            return (c == LR) ? _init_body_size(msg) : EError;
+            return (c == LR) ? _init_body_size(configs, msg) : EError;
         case EBodyFull:
             msg.m_body.push_back(c);
             return --m_content_length == 0 ? EOk : EParse;
@@ -339,25 +338,63 @@ void ft::http::RequestParser::reset()
     m_state = EStart;
 }
 
-ft::http::RequestParser::EResult ft::http::RequestParser::_init_body_size(Message& msg)
+ft::http::RequestParser::EResult ft::http::RequestParser::_init_body_size(std::list<Config> &configs, Message& msg)
 {
-    std::vector<http::Header>::iterator it = std::find_if(msg.m_headers.begin(),
+	std::vector<http::Header>::iterator it = std::find_if(msg.m_headers.begin(),
+														  msg.m_headers.end(),
+														  http::FindHeader("host"));
+	if (it != msg.m_headers.end())
+		msg.host_name = it->value;
+	else
+	{
+		msg.m_error_num = 400;
+		return EError;
+	}
+	const std::string host = msg.host_name.substr(0, msg.host_name.find_last_of(':'));
+	std::list<Config>::iterator cit = configs.begin();
+	for (; cit != configs.end(); ++cit)
+	{
+		if (cit->server_name == host)
+			break;
+	}
+	if (cit == configs.end())
+		cit = configs.begin();
+	msg.m_uri.config = &(*cit);
+
+	UriParser parser(msg.m_uri.config->locations, msg.m_method);
+	if (!parser.parse_uri(msg.m_uri_str, msg.m_uri))
+	{
+		msg.m_error_num = 404;
+		return EError;
+	}
+	msg.m_uri.locations = parser.m_location;
+
+	std::vector<http::Header>::iterator hit = std::find_if(msg.m_headers.begin(),
             msg.m_headers.end(),
             http::FindHeader("content-length"));
-    if (it != msg.m_headers.end())
+    if (hit != msg.m_headers.end())
     {
-        std::pair<size_t, bool> res = util::str::FromString<size_t>(it->value);
+        std::pair<size_t, bool> res = util::str::FromString<size_t>(hit->value);
         if (!res.second)
-            return EError;
+		{
+			msg.m_error_num = 400;
+        	return EError;
+		}
+
         m_content_length = res.first;
+        if (m_content_length > msg.m_uri.locations->limit_body_size)
+		{
+        	msg.m_error_num = 413;
+			return EError;
+		}
         m_state = EBodyFull;
         return m_content_length == 0 ? EOk : EParse;
     }
-    it = std::find_if(msg.m_headers.begin(), msg.m_headers.end(),
+    hit = std::find_if(msg.m_headers.begin(), msg.m_headers.end(),
             http::FindHeader("transfer-encoding"));
-    if (it != msg.m_headers.end())
+    if (hit != msg.m_headers.end())
     {
-        if (it->value != "chunked")
+        if (hit->value != "chunked")
             return EError;
         m_state = EBodyChunked_SizeStart;
         return EParse;

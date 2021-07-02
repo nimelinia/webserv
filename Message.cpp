@@ -5,7 +5,6 @@
 #include "Message.hpp"
 
 ft::Message::Message() :
-//	m_bad_request(false),
 	m_error_num(0),
 	m_method(""),
 	m_ver_major(0),
@@ -17,12 +16,12 @@ ft::Message::Message() :
 
 void ft::Message::clean()
 {
-//	m_bad_request = false;
 	m_error_num = 0;
 	m_headers.clear();
 	m_body.clear();
 	m_method.clear();
-	m_uri.clear();
+	m_uri_str.clear();
+	m_uri.clean();
 	m_ver_minor = 0;
 	m_ver_major = 0;
 	m_ready_responce = false;

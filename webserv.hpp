@@ -40,35 +40,38 @@
 //#include "AllServers.hpp"
 
 //#define SERV_COUNT 100
+namespace ft {
+	struct Locations
+	{
+		std::list<std::string>				path_to_location;
+		std::string							root;
+		std::list<std::string>				allow;
+		std::string							index;
+		std::pair<std::string, std::string>	cgi;
+		std::map<size_t, std::string>		error_pages;
+		size_t								limit_body_size;
+		bool 								autoindex;
+	};
 
-struct Locations
-{
-	std::list<std::string>				path_to_location;
-	std::string							root;
-	std::list<std::string>				allow;
-	std::string							index;
-	std::pair<std::string, std::string>	cgi;
-	size_t								limit_body_size;
-	bool 								autoindex;
-};
 
+	struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
+	{
+		std::string							server_name;
+		std::list<Locations>				locations;
+		std::pair<size_t, std::string>		redirection;
+		size_t								port;
+		std::string 						hostaddress;
+		std::map<size_t, std::string>		default_error_pages;
+		std::string							default_root;
+		std::string							default_index;
 
-struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
-{
-	std::string							server_name;
-//	bool 								server_default;
-	std::list<Locations>				locations;
-	size_t								port;
-	std::string 						hostaddress;
-	std::map<size_t, std::string>		default_error_pages;
+	};
 
-};
+	struct Host
+	{
+		std::list<Config>					configs;
+	};
+}
 
-struct Host
-{
-//	size_t 								port;
-//	std::string 						hostaddress;
-	std::list<Config>					configs;
-};
 
 //#endif //WEBSERV_HPP

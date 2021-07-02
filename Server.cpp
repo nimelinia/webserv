@@ -3,19 +3,15 @@
 //
 
 #include "Server.hpp"
-#include "log/Log.h"
+#include "webserv.hpp"
 
 ft::Server::Server(Host& host, size_t port, std::string &host_address) :
-	m_config(host.configs),
+	m_configs(host.configs),
 	m_port(port),
 	m_host_address(host_address),
 	m_socket_fd(-1),
 	m_error_fatal(false)
 {
-//	if (config.limit_body_size)																								// перенести limit_body_size в другое место
-//		m_limit_body_size = config.limit_body_size;
-//	else
-//		m_limit_body_size = MAXBODYSIZE;
 }
 
 ft::Server::~Server()
@@ -70,9 +66,14 @@ bool ft::Server::do_work()
 	std::list<Client>::iterator it = m_clients.begin();
 	while (it != m_clients.end())
 	{
-		if (Select::get().can_read(it->m_socket_cl) && it->ready_read())
+		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
 		{
-			if (it->read_message())
+            bool res;
+            if (it->m_cgi_process.state() == http::CgiProcess::ESpawn)
+                res = it->send_cgi_message();
+            else
+                res = it->send_message();
+            if (res)
 			{
 				it->close();
 				m_clients.erase(it++);
@@ -80,14 +81,9 @@ bool ft::Server::do_work()
 				continue;
 			}
 		}
-		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
+		if (Select::get().can_read(it->m_socket_cl) && it->ready_read())
 		{
-		    bool res;
-		    if (it->m_cgi_process.state() == http::CgiProcess::ESpawn)
-		        res = it->send_cgi_message();
-		    else
-		        res = it->send_message();
-			if (res)
+			if (it->read_message())
 			{
 				it->close();
 				m_clients.erase(it++);
@@ -136,9 +132,9 @@ bool ft::Server::create_new_connection()
 
 	else
 	{
-//		std::cout << "Появилось новое подключение" << std::endl;
+		std::cout << "Появилось новое подключение" << std::endl;
 		Select::get().set_fd(connect_fd);
-		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
+		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																				// ставлю сокет в неблокирующий режим.
 		Client	new_client(connect_fd, this);
 		m_clients.push_back(new_client);
 		m_clients.back().init_buffer();

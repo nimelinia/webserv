@@ -3,6 +3,7 @@
 //
 
 #include "UriParser.hpp"
+#include "webserv.hpp"
 
 bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 {
@@ -33,7 +34,6 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 		if ((path_stat.st_mode & S_IFMT) == S_IFDIR)
 		{
 			uri.path += split.front() + "/";
-//			uri.last_path = split.front() + "/";
 			split.pop_front();
 		}
 		else if ((path_stat.st_mode & S_IFMT) == S_IFREG)
@@ -57,13 +57,6 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 				return true;
 			if (m_location->index.empty())
 				return false;
-//			for (std::list<std::string>::const_iterator cit = m_location->path_to_location.begin();
-//				 cit != m_location->path_to_location.end(); ++cit) {
-//				if (path == cit->substr(cit->find_first_of('/'))) {
-//					uri.file_name = m_location->index;
-//					break;
-//				}
-//			}
 		uri.file_name = m_location->index;
 			const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
 			if (dot_pos != std::string::npos)
@@ -116,7 +109,6 @@ bool ft::UriParser::find_path_of_uri(std::string &cur_path, const std::string &p
 		if (cit != m_root_list.end())
 		{
 			uri.root = cit->root;
-			//uri.path = search.substr(1);
 			m_location = &(*cit);
 			break;
 		}
