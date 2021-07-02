@@ -35,6 +35,10 @@ namespace ft { namespace http
     public:
         int read_fd;
         int write_fd;
+        FILE* read_file;
+        long file_size;
+        ssize_t bytes_written;
+        size_t bytes_read;
 
     private:
         pid_t m_pid;
@@ -50,6 +54,7 @@ namespace ft { namespace http
         bool update_state();
         void end_read(size_t ret);
         void end_write(size_t ret);
+        bool is_done() const;
     };
 } }
 

@@ -15,9 +15,14 @@ ft::Client::Client(int socketCl, Server *server) :
 	m_answer(),
 //	m_answer(&server->m_config),
 //	m_parser(server->m_config.limit_body_size)																				// тут нужно поменять, т.к. этот лимит лежит внутри location и мы сначала должны распарсить uri, а потом уже определять размер
-	m_parsed()
+	m_parsed(),
+	m_buff(NULL)
 {
-	m_buff = new char[BUFFER_SIZE];
+}
+
+ft::Client::~Client()
+{
+    delete[] m_buff;
 }
 
 bool ft::Client::read_message()
@@ -27,7 +32,6 @@ bool ft::Client::read_message()
 	ret = recv(m_socket_cl, m_buff, BUFFER_SIZE, 0);
 	if (ret == 0 || ret == -1)
 		return (true);
-//	ResponseHandler handler(m_server->m_config, *this);
 	if (m_state == e_request_parse)
 	{
         http::RequestParser::EResult res = m_parser.parse(m_msg, m_buff, ret);
@@ -52,6 +56,7 @@ bool ft::Client::read_message()
 		}
 		else if (res == http::RequestParser::EError)
 		{
+		    LOGE << "Error parsing header";
 			m_answer.m_status_code = 400;																					// брать номер из msg
 			m_state = e_request_ready;
 		}
@@ -159,6 +164,11 @@ void ft::Client::close()
 //	}
 //}
 
+bool ft::Client::ready_read() const
+{
+    return (m_state == e_request_parse);
+}
+
 bool ft::Client::ready_write() const
 {
 	return (m_state == e_response_ready || m_state == e_sending);
@@ -183,12 +193,12 @@ bool ft::Client::cgi_spawned()
 
 bool ft::Client::cgi_ready_read() const
 {
-    return m_cgi_process.state() == http::CgiProcess::ERead;
+    return m_cgi_process.read_fd != -1;
 }
 
 bool ft::Client::cgi_ready_write() const
 {
-    return m_cgi_process.state() == http::CgiProcess::EWrite;
+    return m_cgi_process.write_fd != -1;
 }
 
 bool ft::Client::cgi_read()
@@ -210,20 +220,18 @@ bool ft::Client::cgi_read()
     else
     {
         m_answer.m_body.append(m_buff, ret);
-        LOGD_(CGI) << "DATA: " << m_answer.m_body;
-        LOGD_(CGI);
         return false;
     }
 }
 
 bool ft::Client::cgi_write()
 {
-    ssize_t ret = ::write(m_cgi_process.write_fd, m_msg.m_body.c_str(), m_msg.m_body.size());
+    ssize_t ret = ::write(m_cgi_process.write_fd, m_msg.m_body.c_str(), std::min((size_t)10000, m_msg.m_body.size()));
     if (ret == -1)
     {
         m_cgi_process.end_write(-1);
-        if (m_cgi_process.state() == http::CgiProcess::EError)
-            m_answer.m_status_code = 500;
+        m_answer.m_status_code = 500;
+        m_state = e_response_ready;
         return true;
     }
     else
@@ -236,4 +244,78 @@ bool ft::Client::cgi_write()
         }
         return false;
     }
+}
+void ft::Client::init_buffer()
+{
+    m_buff = new char[BUFFER_SIZE];
+}
+void ft::Client::check_cgi()
+{
+    if (m_cgi_process.is_done())
+    {
+        m_state = e_response_ready;
+//        LOGI_(CGI) << "Cgi process finished";
+    }
+}
+
+bool ft::Client::send_cgi_message()
+{
+    if (m_state == e_response_ready)
+    {
+        http::CgiHandler handler(*m_cur_config, *this, Uri());
+        if (!handler.parse_cgi_body())
+            m_answer.m_status_code = 500;
+        else
+        {
+            long cur_pos = std::ftell(m_cgi_process.read_file);
+            if (std::fseek(m_cgi_process.read_file, 0, SEEK_END) == -1)
+                m_answer.m_status_code = 500;
+            else
+            {
+                m_cgi_process.file_size = std::ftell(m_cgi_process.read_file) - cur_pos;
+                if (std::fseek(m_cgi_process.read_file, cur_pos, SEEK_SET) == -1)
+                    m_answer.m_status_code = 500;
+                m_answer.m_headers.push_back((http::Header) {"Content-Length",
+                                                             util::str::ToString(m_cgi_process.file_size)});
+            }
+        }
+        if (m_answer.m_status_code == 0)
+            m_answer.m_status_code = 200;
+        m_answer.create_final_response();
+        m_state = e_sending;
+    }
+    ssize_t	ret;
+    if (!m_answer.m_final_response.empty())
+        ret = send(m_socket_cl, m_answer.m_final_response.c_str(),  m_answer.m_final_response.size(), 0);
+    else
+    {
+        if (m_cgi_process.bytes_written == 0)
+        {
+            m_cgi_process.bytes_read = std::fread(m_buff, 1, BUFFER_SIZE, m_cgi_process.read_file);
+            if (std::ferror(m_cgi_process.read_file))
+                return true;
+        }
+        ret = ::send(m_socket_cl, m_buff + m_cgi_process.bytes_written,  m_cgi_process.bytes_read - m_cgi_process.bytes_written, 0);
+        if (ret > 0)
+            m_cgi_process.bytes_written += ret;
+        if (m_cgi_process.bytes_written == m_cgi_process.bytes_read)
+            m_cgi_process.bytes_written = 0;
+    }
+    if (ret == -1) {
+        return (true);
+    }
+    else if (ret == 0)
+        m_cgi_process.clear();
+    if (!m_answer.m_final_response.empty())
+        m_answer.m_final_response.erase(0, ret);
+    if (m_cgi_process.state() == http::CgiProcess::EIdle)																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
+    {
+        m_msg.m_ready_responce = false;
+        m_parser.reset();
+        m_msg.clean();
+        m_answer.clean();
+        m_cgi_process.clear();
+        m_state = e_request_parse;
+    }
+    return false;
 }

@@ -1,6 +1,7 @@
 #include "RequestParser.h"
 #include "Message.hpp"
 #include "util/String.h"
+#include "log/Log.h"
 
 #define CR '\r'
 #define LR '\n'

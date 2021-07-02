@@ -3,13 +3,15 @@
 #include "util/String.h"
 #include "log/Log.h"
 
-#define BUFFER_SIZE     1024
 
 ft::http::CgiProcess::CgiProcess()
-    :m_pid(-1)
+    : m_pid(-1)
     , read_fd(-1), write_fd(-1)
     , m_method_type(EUnknown)
     , m_state(EError)
+    , read_file(NULL)
+    , bytes_read(0)
+    , bytes_written(0)
 {
 }
 
@@ -42,6 +44,12 @@ void ft::http::CgiProcess::clear()
         Select::get().clear_fd(write_fd);
         ::close(write_fd);
         write_fd = -1;
+    }
+    m_state = EIdle;
+    if (read_file)
+    {
+        std::fclose(read_file);
+        read_file = NULL;
     }
 }
 
@@ -87,4 +95,9 @@ bool ft::http::CgiProcess::update_state()
             m_state = EError;
     }
     return false;
+}
+
+bool ft::http::CgiProcess::is_done() const
+{
+    return m_pid != -1 && ::waitpid(m_pid, NULL, WNOHANG) > 0;
 }

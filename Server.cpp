@@ -3,6 +3,7 @@
 //
 
 #include "Server.hpp"
+#include "log/Log.h"
 
 ft::Server::Server(Host& host, size_t port, std::string &host_address) :
 	m_config(host.configs),
@@ -69,7 +70,7 @@ bool ft::Server::do_work()
 	std::list<Client>::iterator it = m_clients.begin();
 	while (it != m_clients.end())
 	{
-		if (Select::get().can_read(it->m_socket_cl))
+		if (Select::get().can_read(it->m_socket_cl) && it->ready_read())
 		{
 			if (it->read_message())
 			{
@@ -81,7 +82,12 @@ bool ft::Server::do_work()
 		}
 		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
 		{
-			if (it->send_message())
+		    bool res;
+		    if (it->m_cgi_process.state() == http::CgiProcess::ESpawn)
+		        res = it->send_cgi_message();
+		    else
+		        res = it->send_message();
+			if (res)
 			{
 				it->close();
 				m_clients.erase(it++);
@@ -89,19 +95,19 @@ bool ft::Server::do_work()
 				continue;
 			}
 		}
-
-		if (it->cgi_spawned())
-            need_update = true;
-		else if (it->cgi_ready_read() && Select::get().can_read(it->m_cgi_process.read_fd))
-        {
-            if (it->cgi_read())
-                need_update = true;
-        }
-		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd))
-        {
-            if (it->cgi_write())
-                need_update = true;
-        }
+        it->check_cgi();
+//		if (it->cgi_spawned())
+//            need_update = true;
+//		else if (it->cgi_ready_read() && Select::get().can_read(it->m_cgi_process.read_fd))
+//        {
+//            if (it->cgi_read())
+//                need_update = true;
+//        }
+//		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd))
+//        {
+//            if (it->cgi_write())
+//                need_update = true;
+//        }
 		++it;
 	}
 	if (Select::get().can_read(m_socket_fd))
@@ -130,11 +136,12 @@ bool ft::Server::create_new_connection()
 
 	else
 	{
-		std::cout << "Появилось новое подключение" << std::endl;
+//		std::cout << "Появилось новое подключение" << std::endl;
 		Select::get().set_fd(connect_fd);
 		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																	// ставлю сокет в неблокирующий режим.
 		Client	new_client(connect_fd, this);
 		m_clients.push_back(new_client);
+		m_clients.back().init_buffer();
 		return (true);
 	}
 }

@@ -72,6 +72,22 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 		for (std::list<std::string>::iterator it = split.begin(); it != split.end(); ++it)
 			uri.extra_path += "/" + *it;
 	}
+	else if (m_method == "POST")
+    {
+        if (uri.file_name.empty())
+        {
+            if (m_location->autoindex)
+                return true;
+            if (!m_location->index.empty())
+                uri.file_name = m_location->index;;
+            const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
+            if (dot_pos != std::string::npos)
+                uri.file_ext = uri.file_name.substr(dot_pos + 1);
+        }
+        for (std::list<std::string>::iterator it = split.begin(); it != split.end(); ++it)
+            uri.extra_path += "/" + *it;
+        return true;
+    }
 	else
 	{
 	    // TODO: Check "/" uri, previous logic lead to segfault

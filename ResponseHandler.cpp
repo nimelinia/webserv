@@ -81,21 +81,36 @@ bool ft::ResponseHandler::generate_GET()
 {
 	Answer& m_answer = m_client.m_answer;
 
-	if (!m_location->cgi.second.empty() && m_location->cgi.first == m_uri.file_ext)
+	if (!m_location->cgi.second.empty())
 	{
-	    if (m_uri.file_name == m_location->index && !m_uri.extra_path.empty())
+	    if (m_uri.file_name == m_location->index)
         {
-            m_answer.m_status_code = 404;
-            return true;
+            if (!m_uri.extra_path.empty())
+            {
+                const std::string::size_type dot_pos = m_uri.extra_path.find_last_of('.');
+                const std::string::size_type slash_pos = m_uri.extra_path.find_last_of('/');
+                if (dot_pos != std::string::npos)
+                    m_uri.file_ext = m_uri.extra_path.substr(dot_pos + 1);
+                if (dot_pos != std::string::npos && slash_pos != std::string::npos)
+                {
+                    m_uri.file_name = m_uri.extra_path.substr(slash_pos + 1);
+                    m_uri.path += m_uri.extra_path.substr(0, slash_pos);
+                }
+                else
+                    m_uri.path += m_uri.extra_path;
+            }
         }
-		http::CgiHandler handler(m_config, m_client, m_uri);
-		m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
-		if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
-		{
-			m_answer.m_status_code = 500;
-			return true;
-		}
-		return false;
+	    if (m_location->cgi.first == m_uri.file_ext)
+        {
+            http::CgiHandler handler(m_config, m_client, m_uri);
+            m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
+            if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
+            {
+                m_answer.m_status_code = 500;
+                return true;
+            }
+            return false;
+        }
 	}
 	m_answer.m_status_code = 200;
 	if (m_uri.extra_path.empty())
@@ -128,24 +143,57 @@ bool ft::ResponseHandler::generate_POST()
 //
 ////    m_client.m_answer.m_status_code = 201;
 	Message& m_msg = m_client.m_msg;
+    Answer& m_answer = m_client.m_answer;
 	std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
 														  m_msg.m_headers.end(),
 														  http::FindHeader("content-type"));
 	if (it != m_msg.m_headers.end() && it->value == "multipart/form-data")
 	{
-        m_client.m_answer.m_status_code = 501;
+        m_answer.m_status_code = 501;
         return true;
 	}
 
-    http::CgiHandler handler(m_config, m_client, m_uri);
-    m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
-    if (m_client.m_cgi_process.state() == http::CgiProcess::EError)
+    if (m_location->path_to_location.front() == "/post_body/")
     {
-        m_client.m_answer.m_status_code = 500;
-        return true;
+        if (m_msg.m_body.size() > 100)
+        {
+            m_client.m_answer.m_status_code = 413;
+            return true;
+        }
     }
 
-    return false;
+    if (!m_location->index.empty() && m_uri.file_name == m_location->index)
+    {
+        if (!m_uri.extra_path.empty())
+        {
+            const std::string::size_type dot_pos = m_uri.extra_path.find_last_of('.');
+            const std::string::size_type slash_pos = m_uri.extra_path.find_last_of('/');
+            if (dot_pos != std::string::npos)
+                m_uri.file_ext = m_uri.extra_path.substr(dot_pos + 1);
+            if (dot_pos != std::string::npos && slash_pos != std::string::npos)
+            {
+                m_uri.file_name = m_uri.extra_path.substr(slash_pos + 1);
+                m_uri.path += m_uri.extra_path.substr(0, slash_pos);
+            }
+            else
+                m_uri.path += m_uri.extra_path;
+        }
+    }
+
+    if (m_location->cgi.first == m_uri.file_ext || m_uri.file_ext.empty())
+    {
+        http::CgiHandler handler(m_config, m_client, m_uri);
+        m_client.m_cgi_process = handler.spawn_cgi_process(*m_location);
+        if (m_client.m_cgi_process.state() != http::CgiProcess::EError)
+            return false;
+        else
+            m_client.m_answer.m_status_code = 500;
+    }
+
+
+    m_client.m_answer.m_status_code = 500;
+
+    return true;
 }
 
 

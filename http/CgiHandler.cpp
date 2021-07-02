@@ -3,6 +3,10 @@
 #include "CgiHandler.hpp"
 #include "util/String.h"
 #include "log/Log.h"
+#include <stdio.h>
+
+#define CR '\r'
+#define LR '\n'
 
 ft::http::CgiHandler::CgiHandler(const Config& cfg, Client& client, const Uri& uri)
     : m_config(cfg)
@@ -14,6 +18,7 @@ ft::http::CgiHandler::CgiHandler(const Config& cfg, Client& client, const Uri& u
 ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& loc)
 {
     Answer& answer = m_client.m_answer;
+    Message& msg = m_client.m_msg;
     CgiProcess process;
 
     if (m_client.m_msg.m_method == "GET")
@@ -21,43 +26,68 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     else if (m_client.m_msg.m_method == "POST")
         process.m_method_type = CgiProcess::EPost;
 
-    int read_fd[2];
-    int write_fd[2];
-    if (pipe(read_fd) == -1)
-    {
-        LOGE_(CGI) << "read pipe() failed";
-        return process;
-    }
+//    int read_fd[2];
+    int read_fd;
+    FILE* tmp_file;
+    FILE* read_file;
+    int write_fd;
+//    int write_fd[2];
+//    if (pipe(read_fd) == -1)
+//    {
+//        LOGE_(CGI) << "read pipe() failed";
+//        return process;
+//    }
+    read_file = std::tmpfile();
+    read_fd = ::fileno(read_file);
+    tmp_file = std::tmpfile();
+    write_fd = ::fileno(tmp_file);
     if (process.m_method_type == CgiProcess::EPost)
     {
-        if (pipe(write_fd) == -1)
+        std::fwrite(msg.m_body.c_str(), sizeof(char), msg.m_body.size(), tmp_file);
+        std::rewind(tmp_file);
+//        if (pipe(write_fd) == -1)
+//        {
+//            LOGE_(CGI) << "write pipe() failed";
+//            return process;
+//        }
+    }
+
+    m_path_info = loc.cgi.second;
+
+    std::vector<std::string> env_arr;
+    env_arr.reserve(14);
+    env_arr.push_back("SERVER_SOFTWARE=webserv");
+    env_arr.push_back(std::string("SERVER_ADDRESS=") + m_config.hostaddress);
+    env_arr.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env_arr.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env_arr.push_back(std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port));
+    env_arr.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg.m_method);
+    env_arr.push_back(_env_path_info());
+//    env_arr.push_back(_env_path_translated());
+//    env_arr.push_back(_env_script_name());
+//    env_arr.push_back(_env_query_string());
+    env_arr.push_back(_env_script_filename());
+    env_arr.push_back("REDIRECT_STATUS=200");
+
+    for (std::vector<http::Header>::iterator it = msg.m_headers.begin(); it != msg.m_headers.end(); ++it)
+    {
+        std::string env_header;
+        if (it->name != "content_length" && it->name != "content_type")
+            env_header = "HTTP_";
+        for (size_t i = 0; i < it->name.size(); ++i)
         {
-            LOGE_(CGI) << "write pipe() failed";
-            return process;
+            if (it->name[i] == '-')
+                env_header.push_back('_');
+            else
+                env_header.push_back(static_cast<char>(std::toupper(it->name[i])));
         }
+        env_header.push_back('=');
+        env_header += it->value;
+
+        env_arr.push_back(env_header);
     }
 
-    std::vector<std::string> env_str;
-    env_str.reserve(14);
-    env_str.push_back("SERVER_SOFTWARE=webserv");
-    env_str.push_back(std::string("SERVER_ADDRESS=") + m_config.hostaddress);
-    env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    env_str.push_back(std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port));
-    env_str.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg.m_method);
-//    env_str.push_back(_env_path_info());
-//    env_str.push_back(_env_path_translated());
-//    env_str.push_back(_env_script_name());
-//    env_str.push_back(_env_query_string());
-    env_str.push_back(_env_script_filename());
-    env_str.push_back("REDIRECT_STATUS=200");
-    if (process.m_method_type == CgiProcess::EPost)
-    {
-        env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-        env_str.push_back(std::string("CONTENT_LENGTH=") + util::str::ToString(m_client.m_msg.m_body.size()));
-    }
-
-    const size_t env_size = env_str.size();
+    const size_t env_size = env_arr.size();
     std::string script_path = m_uri.path;
     script_path += m_uri.file_name;
 
@@ -67,10 +97,10 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
             NULL
     };
 
-    LOGD_(CGI) << "Cgi arguments: " << args[0] << " " << args[1];
-    LOGD_(CGI) << "Cgi environment: ";
-    for (size_t i = 0; i < env_size; ++i)
-        LOGD_(CGI) << "\t" << env_str[i];
+//    LOGD_(CGI) << "Cgi arguments: " << args[0] << " " << args[1];
+//    LOGD_(CGI) << "Cgi environment: ";
+//    for (size_t i = 0; i < env_size; ++i)
+//        LOGD_(CGI) << "\t" << env_arr[i];
 
     process.m_pid = fork();
     if (process.m_pid == -1)
@@ -82,74 +112,165 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     {
         if (::chdir(m_uri.root.c_str()) == -1)
             ::exit(1);
-
-        if (::dup2(read_fd[1], STDOUT_FILENO) == -1)
+//        if (::dup2(read_fd[1], STDOUT_FILENO) == -1)
+        if (::dup2(read_fd, STDOUT_FILENO) == -1)
             ::exit(1);
-        ::close(read_fd[0]);
-        ::close(read_fd[1]);
-        if (process.m_method_type == CgiProcess::EPost)
-        {
-            if (::dup2(write_fd[0], STDIN_FILENO) == -1)
-                ::exit(1);
-            ::close(write_fd[0]);
-            ::close(write_fd[1]);
-        }
+        ::close(read_fd);
+//        ::close(read_fd[1]);
+//        ::close(read_fd[1]);
+        if (::dup2(write_fd, STDIN_FILENO) == -1)
+            ::exit(1);
+        ::close(write_fd);
+//        if (process.m_method_type == CgiProcess::EPost)
+//        {
+////            if (::dup2(write_fd[0], STDIN_FILENO) == -1)
+//            if (::dup2(write_fd, STDIN_FILENO) == -1)
+//                ::exit(1);
+//            ::close(write_fd);
+////            ::close(write_fd[0]);
+////            ::close(write_fd[1]);
+//        }
+//        else
+//            ::close(STDIN_FILENO);
 
         const char** env = new const char*[env_size + 1];
         env[env_size] = NULL;
 
         for (size_t i = 0; i < env_size; ++i)
-            env[i] = env_str[i].c_str();
+            env[i] = env_arr[i].c_str();
 
         ::execve(args[0], const_cast<char**>(args), const_cast<char**>(env));
         ::exit(1);
     }
 
-    LOGI_(CGI) << "Cgi process spawned";
+//    LOGI_(CGI) << "Cgi process spawned";
 
-    ::close(read_fd[1]);
-    Select::get().set_fd(read_fd[0]);
-    process.read_fd = read_fd[0];
-    if (process.m_method_type == CgiProcess::EPost)
-    {
-        ::close(write_fd[0]);
-        Select::get().set_fd(write_fd[1]);
-        process.write_fd = write_fd[1];
-    }
+//    ::close(read_fd[1]);
+//    Select::get().set_fd(read_fd[0]);
+//    process.read_fd = read_fd[0];
+    process.read_file = read_file;
+    std::fclose(tmp_file);
+//    if (process.m_method_type == CgiProcess::EPost)
+//    {
+//        std::fclose(tmp_file);
+////        ::close(write_fd[0]);
+////        Select::get().set_fd(write_fd[1]);
+////        process.write_fd = write_fd[1];
+//    }
 
     process.m_state = CgiProcess::ESpawn;
     return process;
 }
 
-void ft::http::CgiHandler::parse_cgi_body()
+bool ft::http::CgiHandler::parse_cgi_body()
 {
     Answer& answer = m_client.m_answer;
-    const std::string& body = answer.m_body;
-    std::string::size_type header_end = body.find("\r\n\r\n");
-    if (header_end == std::string::npos)
-        answer.m_status_code = 200;
-    else
+
+    char c;
+    EParseState state = EHeaderStart;
+    std::rewind(m_client.m_cgi_process.read_file);
+    while (std::fread(&c, 1, 1, m_client.m_cgi_process.read_file) > 0)
     {
-        std::string::size_type line_start = 0;
-        while (line_start < header_end)
+        switch (state)
         {
-            std::string::size_type line_end = body.find("\r\n", line_start);
-            std::string::size_type delim = body.find(": ", line_start);
-            answer.m_headers.push_back((http::Header){
-                    body.substr(line_start, delim - line_start),
-                    body.substr(delim + 2, line_end - delim - 2)});
-            line_start = line_end + 2;
+            case EHeaderStart:
+                if (c == CR)
+                {
+                    if (answer.m_headers.empty())
+                        return false;
+                    state = ENewLine2;
+                    continue;
+                }
+                else if (!std::isalpha(c))
+                    return false;
+                else
+                {
+                    answer.m_headers.push_back(Header());
+                    answer.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
+                    state = EHeaderName;
+                    continue;
+                }
+            case EHeaderName:
+                if (c == ':')
+                {
+                    state = EHeaderSpace;
+                    continue;
+                }
+                else if (std::isalpha(c) || c == '-')
+                {
+                    answer.m_headers.back().name.push_back(static_cast<char>(std::tolower(c)));
+                    continue;
+                }
+                else
+                    return false;
+            case EHeaderSpace:
+                if (c == ' ')
+                {
+                    state = EHeaderValue;
+                    continue;
+                }
+                else
+                    return false;
+            case EHeaderValue:
+                if (c == CR)
+                {
+                    state = ENewLine1;
+                    continue;
+                }
+                else if (std::iscntrl(c))
+                    return false;
+                else
+                {
+                    answer.m_headers.back().value.push_back(static_cast<char>(std::tolower(c)));
+                    continue;
+                }
+            case ENewLine1:
+                if (c == LR)
+                {
+                    state = EHeaderStart;
+                    continue;
+                }
+                else
+                    return false;
+            case ENewLine2:
+                if (c == LR)
+                {
+                    _parse_headers();
+                    return true;
+                }
+                else
+                    return false;
+            default:
+                return false;
         }
-        answer.m_body = body.substr(header_end + 4);
-        answer.m_status_code = 200;
     }
+    return false;
+//    const std::string& body = answer.m_body;
+//    std::string::size_type header_end = body.find("\r\n\r\n");
+//    if (header_end == std::string::npos)
+//        answer.m_status_code = 200;
+//    else
+//    {
+//        std::string::size_type line_start = 0;
+//        while (line_start < header_end)
+//        {
+//            std::string::size_type line_end = body.find("\r\n", line_start);
+//            std::string::size_type delim = body.find(": ", line_start);
+//            answer.m_headers.push_back((http::Header){
+//                    body.substr(line_start, delim - line_start),
+//                    body.substr(delim + 2, line_end - delim - 2)});
+//            line_start = line_end + 2;
+//        }
+//        answer.m_body = body.substr(header_end + 4);
+//        answer.m_status_code = 200;
+//    }
+//    LOGI_(CGI) << "Cgi process finished";
 }
 
 std::string ft::http::CgiHandler::_env_path_info() const
 {
     std::string str = "PATH_INFO=";
-    str += m_uri.path;
-    str += m_uri.file_name;
+    str += m_path_info;
     return str;
 }
 
@@ -185,4 +306,19 @@ std::string ft::http::CgiHandler::_env_query_string() const
     std::string str = "QUERY_STRING=";
     str += m_uri.query;
     return str;
+}
+
+void ft::http::CgiHandler::_parse_headers()
+{
+    Answer& answer = m_client.m_answer;
+    std::list<http::Header>::iterator it = std::find_if(answer.m_headers.begin(), answer.m_headers.end(),
+            http::FindHeader("status"));
+
+    if (it != answer.m_headers.end())
+    {
+        answer.m_status_code = std::strtoul(it->value.c_str(), NULL, 10);
+        if (answer.m_status_code == 0)
+            answer.m_status_code = 500;
+        answer.m_headers.erase(it);
+    }
 }

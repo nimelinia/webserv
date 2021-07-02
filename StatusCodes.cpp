@@ -30,8 +30,10 @@ namespace ft {namespace http { namespace status_string
             "HTTP/1.1 406 Not Acceptable\r\n";
     const char* timeout =
             "HTTP/1.1 408 Request Timeout\r\n";
+    const char* too_large =
+            "HTTP/1.1 413 Payload Too Large\r\n";
     const char* internal_server_error =
-            "HTTP/1.0 500 Internal Server Error\r\n";
+            "HTTP/1.1 500 Internal Server Error\r\n";
     const char* not_implemented =
             "HTTP/1.1 501 Not Implemented\r\n";
     const char* service_unavailable =
@@ -72,6 +74,8 @@ const char * ft::http::status_to_string(size_t status)
             return status_string::not_acceptable;
         case 408:
             return status_string::timeout;
+        case 413:
+            return status_string::too_large;
         case 501:
             return status_string::not_implemented;
         case 503:
@@ -151,6 +155,11 @@ namespace ft {namespace http { namespace status_body
             "<head><title>Request Timeout</title></head>"
             "<body><h1>408 Request Timeout</h1></body>"
             "</html>";
+    const char* too_large =
+            "<html>"
+            "<head><title>Payload Too Large</title></head>"
+            "<body><h1>413 Payload Too Large</h1></body>"
+            "</html>";
     const char* internal_server_error =
             "<html>"
             "<head><title>Internal Server Error</title></head>"
@@ -205,6 +214,8 @@ const char* ft::http::default_status_body(size_t status)
             return status_body::not_acceptable;
         case 408:
             return status_body::timeout;
+        case 413:
+            return status_body::too_large;
         case 501:
             return status_body::not_implemented;
         case 503:

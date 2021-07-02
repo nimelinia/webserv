@@ -21,6 +21,17 @@ std::string ft::log::TextWithLevelFormatter(const detail::Message & msg)
     return res;
 }
 
+std::string ft::log::TextWithTimeFormatter(const detail::Message & msg)
+{
+    char buf[21];
+    struct tm * timeinfo = localtime(&msg.time());
+    ::strftime(buf, 80, "%F %T ", timeinfo);
+
+    std::string res;
+    res += msg.text();
+    return std::string(buf) + res;
+}
+
 std::string ft::log::SourceFormatter(const detail::Message & msg)
 {
     std::string res;

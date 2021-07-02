@@ -21,20 +21,23 @@ namespace ft {
 	private:
 		enum Estate {
 			e_request_parse,
-			e_read_body,
 			e_request_ready,
-//			e_error,
-			e_response_ready,
-			e_sending
+			e_response_ready = 100,
+			e_sending = 200
 		};
 	public:
 		Client(int socketCl, Server* server);
+        virtual ~Client();
 
-		bool				read_message();
+        void init_buffer();
+
+        bool				read_message();
 		bool				send_message();
+		bool				send_cgi_message();
 //		void				read_body(ssize_t ret);
 //		void				find_content_length();
 		void				close();
+		bool				ready_read() const;
 		bool				ready_write() const;
 		int 				max_fd() const;
 
@@ -43,6 +46,7 @@ namespace ft {
 		bool cgi_ready_write() const;
 		bool cgi_read();
 		bool cgi_write();
+		void check_cgi();
 
 
 		Estate				m_state;
