@@ -1,6 +1,7 @@
 #include "RequestParser.h"
 #include "Message.hpp"
 #include "util/String.h"
+#include "log/Log.h"
 
 #define CR '\r'
 #define LR '\n'
@@ -256,15 +257,21 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_consume(std::list<Con
             else
                 return EError;
         case EBodyChunked_Data:
-            if (m_content_length > 0)
-            {
-                m_content_length -= 1;
-                msg.m_body.push_back(c);
-                return EParse;
-            }
-            else if (c == CR)
+            if (c == CR)
             {
                 m_state = EBodyChunked_NewLine2;
+                return EParse;
+            }
+            else if (m_max_body_size == 0)
+            {
+                msg.m_error_num = 413;
+                return EError;
+            }
+            else if (m_content_length > 0)
+            {
+                m_content_length -= 1;
+                m_max_body_size -= 1;
+                msg.m_body.push_back(c);
                 return EParse;
             }
             else
@@ -397,6 +404,7 @@ ft::http::RequestParser::EResult ft::http::RequestParser::_init_body_size(std::l
         if (hit->value != "chunked")
             return EError;
         m_state = EBodyChunked_SizeStart;
+        m_max_body_size = msg.m_uri.locations->limit_body_size;
         return EParse;
     }
     return EOk;

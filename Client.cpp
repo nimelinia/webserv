@@ -47,7 +47,8 @@ bool ft::Client::read_message()
 		}
 		else if (res == http::RequestParser::EError)
 		{
-            LOGE << "Error parsing header";
+		    if (!m_msg.m_error_num)
+                LOGE << "Error parsing header";
 			m_answer.m_status_code = m_msg.m_error_num;
 			m_state = e_request_ready;
 		}
@@ -89,12 +90,14 @@ bool ft::Client::send_message()
 	m_answer.m_final_response.erase(0, ret);
 	if (m_answer.m_final_response.empty())																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
 	{
+	    const bool close_on_error = m_answer.m_status_code >= 400;
 		m_msg.m_ready_responce = false;
 		m_parser.reset();
 		m_msg.clean();
 		m_answer.clean();
 		m_cgi_process.clear();
 		m_state = e_request_parse;
+		return close_on_error;
 	}
 	return (false);
 }

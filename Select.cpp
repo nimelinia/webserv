@@ -4,9 +4,6 @@
 
 #include "Select.hpp"
 #include <sys/select.h>
-#include <strings.h>
-
-#define FD_COPY(x, y)   bcopy(x, y, sizeof((*x)))
 
 ft::Select::Select() : m_max_fd(2)
 {

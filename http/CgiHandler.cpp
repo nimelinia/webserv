@@ -65,7 +65,7 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     env_arr.push_back(_env_path_info());
 //    env_arr.push_back(_env_path_translated());
 //    env_arr.push_back(_env_script_name());
-//    env_arr.push_back(_env_query_string());
+    env_arr.push_back(_env_query_string());
     env_arr.push_back(_env_script_filename());
     env_arr.push_back("REDIRECT_STATUS=200");
 
@@ -97,10 +97,10 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
             NULL
     };
 
-//    LOGD_(CGI) << "Cgi arguments: " << args[0] << " " << args[1];
-//    LOGD_(CGI) << "Cgi environment: ";
-//    for (size_t i = 0; i < env_size; ++i)
-//        LOGD_(CGI) << "\t" << env_arr[i];
+    LOGD_(CGI) << "Cgi arguments: " << args[0] << " " << args[1];
+    LOGD_(CGI) << "Cgi environment: ";
+    for (size_t i = 0; i < env_size; ++i)
+        LOGD_(CGI) << "\t" << env_arr[i];
 
     process.m_pid = fork();
     if (process.m_pid == -1)

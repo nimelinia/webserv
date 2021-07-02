@@ -6,6 +6,7 @@
 #include "Client.hpp"
 #include "MimeTypes.hpp"
 #include "StatusCodes.hpp"
+#include "log/Log.h"
 
 ft::ResponseHandler::ResponseHandler(Config& config, Client& client) :
 	m_config(config),
@@ -143,15 +144,6 @@ bool ft::ResponseHandler::_generate_POST()
         return true;
 	}
 
-    if (m_location->path_to_location.front() == "/post_body/")
-    {
-        if (m_msg.m_body.size() > 100)
-        {
-            m_client.m_answer.m_status_code = 413;
-            return true;
-        }
-    }
-
     if (!m_location->index.empty() && m_uri.file_name == m_location->index)
     {
         if (!m_uri.extra_path.empty())
@@ -200,6 +192,7 @@ bool ft::ResponseHandler::_generate_PUT()
 			m_client.m_answer.m_status_code = 200;
 		} else
 			m_client.m_answer.m_status_code = 201;
+		LOGD << "PUT " << file_name;
 		std::ofstream ofs(file_name.c_str(), mode);
 		if (ofs.is_open())
 		{
@@ -324,8 +317,7 @@ std::string ft::ResponseHandler::_detect_last_modified() {
 	std::string	file;
 	file = m_client.m_msg.m_uri.root + m_client.m_msg.m_uri.path + m_client.m_msg.m_uri.file_name;
 	stat(file.c_str(), &buff);
-	//return (Help::get_date(buff.st_ctimespec));
-	return (std::string());
+	return (Help::get_date(buff.st_ctimespec));
 }
 
 bool ft::ResponseHandler::_detect_content_type()
