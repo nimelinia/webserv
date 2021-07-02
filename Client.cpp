@@ -133,60 +133,6 @@ bool ft::Client::cgi_spawned()
     return false;
 }
 
-bool ft::Client::cgi_ready_read() const
-{
-    return m_cgi_process.read_fd != -1;
-}
-
-bool ft::Client::cgi_ready_write() const
-{
-    return m_cgi_process.write_fd != -1;
-}
-
-bool ft::Client::cgi_read()
-{
-    ssize_t ret = ::read(m_cgi_process.read_fd, m_buff, BUFFER_SIZE);
-    if (ret == 0 || ret == -1)
-    {
-        m_cgi_process.end_read(ret);
-        if (m_cgi_process.state() == http::CgiProcess::EError)
-            m_answer.m_status_code = 500;
-        else
-        {
-            http::CgiHandler handler(*m_cur_config, *this, Uri());
-            handler.parse_cgi_body();
-        }
-        m_state = e_response_ready;
-        return true;
-    }
-    else
-    {
-        m_answer.m_body.append(m_buff, ret);
-        return false;
-    }
-}
-
-bool ft::Client::cgi_write()
-{
-    ssize_t ret = ::write(m_cgi_process.write_fd, m_msg.m_body.c_str(), std::min((size_t)10000, m_msg.m_body.size()));
-    if (ret == -1)
-    {
-        m_cgi_process.end_write(-1);
-        m_answer.m_status_code = 500;
-        m_state = e_response_ready;
-        return true;
-    }
-    else
-    {
-        m_msg.m_body.erase(0, ret);
-        if (m_msg.m_body.empty())
-        {
-            m_cgi_process.end_write(0);
-            return true;
-        }
-        return false;
-    }
-}
 void ft::Client::init_buffer()
 {
     m_buff = new char[BUFFER_SIZE];
@@ -196,7 +142,7 @@ void ft::Client::check_cgi()
     if (m_cgi_process.is_done())
     {
         m_state = e_response_ready;
-//        LOGI_(CGI) << "Cgi process finished";
+        LOGI_(CGI) << "Cgi process finished";
     }
 }
 
@@ -204,7 +150,7 @@ bool ft::Client::send_cgi_message()
 {
     if (m_state == e_response_ready)
     {
-        http::CgiHandler handler(*m_cur_config, *this, Uri());
+        http::CgiHandler handler(*m_msg.m_uri.config, *this, Uri());
         if (!handler.parse_cgi_body())
             m_answer.m_status_code = 500;
         else

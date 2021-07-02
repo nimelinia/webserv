@@ -40,10 +40,6 @@ namespace ft {
 		int 				max_fd() const;
 
 		bool cgi_spawned();
-		bool cgi_ready_read() const;
-		bool cgi_ready_write() const;
-		bool cgi_read();
-		bool cgi_write();
 		void check_cgi();
 
 

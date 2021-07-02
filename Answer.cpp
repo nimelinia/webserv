@@ -6,6 +6,7 @@
 #include "http/RequestParser.h"
 #include "StatusCodes.hpp"
 #include "webserv.hpp"
+#include "log/Log.h"
 
 
 ft::Answer::Answer()
@@ -33,6 +34,9 @@ void ft::Answer::create_final_response()
 
 	for (std::list<http::Header>::iterator it = m_headers.begin(); it != m_headers.end(); ++it)
 		m_final_response += it->name + ": " + it->value + "\r\n";
+
+	LOGD << m_final_response;
+
 	m_final_response += "\r\n";
 	if (m_body_exist)
 		m_final_response += m_body;

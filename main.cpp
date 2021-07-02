@@ -108,8 +108,8 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			loc.index = lit->value("index");
 		else if (!config.default_index.empty())
 			loc.index = config.default_index;
-		else
-			throw std::runtime_error("No default page in the config");														// нужно проверить, может ли быть конфиг без индекса
+//		else
+//			throw std::runtime_error("No default page in the config");														// нужно проверить, может ли быть конфиг без индекса
 		std::list<ft::cfg::Section> error_pages_loc = lit->sectionList("error_page");
 		for (std::list<ft::cfg::Section>::iterator eit = error_pages_loc.begin(); eit != error_pages_loc.end(); ++eit)
 		{

@@ -75,6 +75,8 @@ size_t ft::ResponseHandler::_check_validity()
 bool ft::ResponseHandler::_generate_GET()
 {
 	Answer& m_answer = m_client.m_answer;
+    const Locations* m_location = m_client.m_msg.m_uri.locations;
+    Uri& m_uri = m_client.m_msg.m_uri;
 
 	if (!m_location->cgi.second.empty())
 	{
@@ -129,6 +131,9 @@ bool ft::ResponseHandler::_generate_POST()
 {
 	Message& m_msg = m_client.m_msg;
     Answer& m_answer = m_client.m_answer;
+    const Locations* m_location = m_client.m_msg.m_uri.locations;
+    Uri& m_uri = m_client.m_msg.m_uri;
+
 	std::vector<http::Header>::iterator it = std::find_if(m_msg.m_headers.begin(),
 														  m_msg.m_headers.end(),
 														  http::FindHeader("content-type"));
@@ -325,16 +330,16 @@ std::string ft::ResponseHandler::_detect_last_modified() {
 
 bool ft::ResponseHandler::_detect_content_type()
 {
-	Answer& m_answer = m_client.m_answer;
-
-	std::string content_type;
-	content_type = ft::util::extension_to_mime_type(m_client.m_msg.m_uri.file_ext);
-	if (!content_type.empty())
-	{
-		m_answer.m_headers.push_back((http::Header){"Content-Type", content_type});
-		return (true);
-	}
-	m_answer.m_status_code = 415;
-	return (false);
+//	Answer& m_answer = m_client.m_answer;
+//
+//	std::string content_type;
+//	content_type = ft::util::extension_to_mime_type(m_client.m_msg.m_uri.file_ext);
+//	if (!content_type.empty())
+//	{
+//		m_answer.m_headers.push_back((http::Header){"Content-Type", content_type});
+//		return (true);
+//	}
+//	m_answer.m_status_code = 415;
+	return (true);
 }
 
