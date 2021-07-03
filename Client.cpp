@@ -118,6 +118,7 @@ bool ft::Client::send_message()
 
 void ft::Client::close()
 {
+    ::shutdown(m_socket_cl, SHUT_RDWR);
 	::close(m_socket_cl);																						// закрываю сокет
 	Select::get().clear_fd(m_socket_cl);
 }
