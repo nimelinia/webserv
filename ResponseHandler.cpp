@@ -257,6 +257,7 @@ void ft::ResponseHandler::generate_status_body()
 		 */
 	Answer& m_answer = m_client.m_answer;
 	Message& m_msg = m_client.m_msg;
+	bool	page_exist = false;
 
 	std::map<size_t, std::string>::const_iterator it = m_msg.m_uri.locations->error_pages.find(m_answer.m_status_code);
 	if (it != m_msg.m_uri.locations->error_pages.end())
@@ -264,17 +265,9 @@ void ft::ResponseHandler::generate_status_body()
 		const std::string::size_type dot = it->second.find_last_of('.');
 		if (dot != std::string::npos)
 			m_client.m_msg.m_uri.file_ext = it->second.substr(dot + 1);
-		_from_file_to_body(it->second);
+		page_exist = _from_file_to_body(it->second);
 	}
-//	std::map<size_t, std::string>::iterator it = m_config.default_error_pages.find(m_answer.m_status_code);
-//	if (it != m_config.default_error_pages.end())
-//	{
-//		const std::string::size_type dot = it->second.find_last_of('.');
-//		if (dot != std::string::npos)
-//			m_client.m_msg.m_uri.file_ext = it->second.substr(dot + 1);
-//		_from_file_to_body(it->second);
-//	}
-	else if (m_answer.m_status_code != 200 /* && m_msg.method == "GET" */)
+	if (m_answer.m_status_code != 200 && !page_exist/* && m_msg.method == "GET" */)
 	{
 		m_client.m_msg.m_uri.file_ext = "html";
 		m_answer.m_body += http::default_status_body(m_answer.m_status_code);
@@ -317,7 +310,7 @@ std::string ft::ResponseHandler::_detect_last_modified() {
 	std::string	file;
 	file = m_client.m_msg.m_uri.root + m_client.m_msg.m_uri.path + m_client.m_msg.m_uri.file_name;
 	stat(file.c_str(), &buff);
-	return (Help::get_date(buff.st_ctimespec));
+	return (util::date::get_date(buff.st_ctimespec));
 }
 
 bool ft::ResponseHandler::_detect_content_type()

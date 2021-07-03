@@ -3,7 +3,6 @@
 //#include "Server.hpp"
 //#include "Message.hpp"
 #include "AllServers.hpp"
-#include "Help.hpp"
 #include "config/Config.h"
 #include "util/String.h"
 #include "log/Log.h"
@@ -87,8 +86,16 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			throw std::runtime_error("config error with redirection");
 		config.redirection.first = check.first;
 		config.redirection.second = redir.back();
-
 	}
+	if (server.contains("autoindex") && server.value("autoindex") == "on")
+		config.default_autoindex = true;
+	if (server.contains("limit_except")) {
+		config.default_allow = server.valueList("limit_except");
+	}
+	if (server.contains("limit_body_size"))
+		config.default_limit_body_size = std::strtoul(server.value("limit_body_size").c_str(), 0, 0);
+	else
+		config.default_limit_body_size = LIMIT_BODY_SIZE;
 /*
  * заполняем данные для каждого location
  */
@@ -124,9 +131,12 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 		}
 		if (lit->contains("limit_except")) {
 			loc.allow = lit->valueList("limit_except");
-		}
-		if (lit->contains("autoindex") && lit->value("autoindex") == "on")
+		} else if (!config.default_allow.empty())
+			loc.allow = config.default_allow;
+		if ((lit->contains("autoindex") && lit->value("autoindex") == "on") || config.default_autoindex)
 			loc.autoindex = true;
+		if (lit->contains("autoindex") && lit->value("autoindex") == "off")
+			loc.autoindex = false;
 		if (lit->contains("cgi"))
 		{
 			loc.cgi.first = lit->value("cgi", 0);
@@ -135,7 +145,7 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 		if (lit->contains("limit_body_size"))
 			loc.limit_body_size = std::strtoul(lit->value("limit_body_size").c_str(), 0, 0);
 		else
-			loc.limit_body_size = LIMIT_BODY_SIZE;
+			loc.limit_body_size = config.default_limit_body_size;
 	}
 
 	/*
@@ -176,11 +186,11 @@ int main(int argc, char **argv)
 {
 	::signal(SIGPIPE, SIG_IGN);
 
-    LOGGER_(CGI).addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
-    LOGGER_(CGI).setMaxLevel(ft::log::EDebug);
-
-	LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
-	LOGGER.setMaxLevel(ft::log::EDebug);
+//    LOGGER_(CGI).addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
+//    LOGGER_(CGI).setMaxLevel(ft::log::EDebug);
+//
+//	LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
+//	LOGGER.setMaxLevel(ft::log::EDebug);
 
 	if (check_count_arguments(argc))
 		return (errno);

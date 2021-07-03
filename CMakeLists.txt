@@ -13,7 +13,6 @@ add_executable(webserv
 		Select.cpp
 		AllServers.cpp
 		http/RequestParser.cpp
-		Help.cpp
 		config/exceptions/ConfigException.cpp
 		config/exceptions/ParseException.cpp
 		config/exceptions/PathException.cpp

@@ -90,7 +90,7 @@ bool ft::Client::send_message()
 	m_answer.m_final_response.erase(0, ret);
 	if (m_answer.m_final_response.empty())																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
 	{
-	    const bool close_on_error = m_answer.m_status_code >= 400;
+	    const bool close_on_error = (m_answer.m_status_code == 400 || m_answer.m_status_code == 413);
 		m_msg.m_ready_responce = false;
 		m_parser.reset();
 		m_msg.clean();
