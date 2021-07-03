@@ -68,12 +68,7 @@ bool ft::Server::do_work()
 	{
 		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
 		{
-            bool res;
-            if (it->m_cgi_process.state() == http::CgiProcess::ESpawn)
-                res = it->send_cgi_message();
-            else
-                res = it->send_message();
-            if (res)
+            if (it->send_message())
 			{
 				it->close();
 				m_clients.erase(it++);

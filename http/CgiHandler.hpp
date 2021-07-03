@@ -44,6 +44,7 @@ namespace ft { namespace http
         std::string _env_script_filename() const;
         std::string _env_query_string() const;
         void _parse_headers();
+        bool _set_content_length();
     };
 } }
 

@@ -33,13 +33,11 @@ namespace ft {
 
 		bool				read_message();
 		bool				send_message();
-        bool				send_cgi_message();
 		void				close();
 		bool				ready_write() const;
 		bool				ready_read() const;
 		int 				max_fd() const;
 
-		bool cgi_spawned();
 		void check_cgi();
 
 
@@ -56,7 +54,8 @@ namespace ft {
 		bool				m_delete_me;
 //	bool	sending;
 //	bool	receiving;
-
+    private:
+	    ssize_t _send_cgi_body();
 	};
 }
 
