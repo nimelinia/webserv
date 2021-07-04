@@ -64,6 +64,9 @@ namespace ft {
 		std::map<size_t, std::string>		default_error_pages;
 		std::string							default_root;
 		std::string							default_index;
+		bool 								default_autoindex;
+		size_t								default_limit_body_size;
+		std::list<std::string>				default_allow;
 
 	};
 

@@ -53,11 +53,18 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 	{
 		if (uri.file_name.empty())
 		{
-			if (m_location->autoindex)
-				return true;
+//			if (m_location->autoindex)
+//				return true;
+//			if (m_location->index.empty())
+//				return false;
 			if (m_location->index.empty())
-				return false;
-		uri.file_name = m_location->index;
+			{
+				if (!m_location->autoindex)
+					return (false);
+				else
+					return (true);
+			}
+			uri.file_name = m_location->index;
 			const std::string::size_type dot_pos = uri.file_name.find_last_of('.');
 			if (dot_pos != std::string::npos)
 				uri.file_ext = uri.file_name.substr(dot_pos + 1);
@@ -109,7 +116,8 @@ bool ft::UriParser::find_path_of_uri(std::string &cur_path, const std::string &p
 		if (cit != m_root_list.end())
 		{
 			uri.root = cit->root;
-			m_location = &(*cit);
+			m_location = &(*cit);																							// по сути можно убрать и сразу сохранять в uri.location, но дальше нужно переписать везде и обращаться не к m_location, а к uri.locations
+			uri.locations = m_location;
 			break;
 		}
 	} while ((last_slash = path.find_last_of('/', last_slash - 1)) != std::string::npos);

@@ -46,9 +46,9 @@ namespace ft {
 		http::CgiProcess	m_cgi_process;
 		int					m_socket_cl;
 		char*				m_buff;
-		Message				m_msg;
+		Message*			m_msg;
 		Server*				m_server;
-		Answer				m_answer;
+		Answer*				m_answer;
 		size_t				m_parsed;
 		size_t				m_content_length;
 		bool				m_delete_me;

@@ -129,10 +129,6 @@ bool ft::Server::create_new_connection()
 	{
 		std::cout << "Появилось новое подключение" << std::endl;
 		Select::get().set_fd(connect_fd);
-        struct linger sl;
-        sl.l_onoff = 1;
-        sl.l_linger = 0;
-        setsockopt(connect_fd, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl));
 		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																				// ставлю сокет в неблокирующий режим.
 		Client	new_client(connect_fd, this);
 		m_clients.push_back(new_client);

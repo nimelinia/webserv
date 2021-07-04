@@ -30,7 +30,7 @@ void ft::Answer::create_final_response()
 
 	m_final_response = http::status_to_string(m_status_code);
 	m_final_response += "Server: " + m_server + "\r\n";
-	m_final_response += "Date: " + Help::get_date() + "\r\n";
+	m_final_response += "Date: " + util::date::get_date() + "\r\n";
 
 	for (std::list<http::Header>::iterator it = m_headers.begin(); it != m_headers.end(); ++it)
 		m_final_response += it->name + ": " + it->value + "\r\n";

@@ -7,7 +7,6 @@
 #include <iostream>
 #include <dirent.h>
 #include "Message.hpp"
-#include "Help.hpp"
 
 //#include "Client.hpp"
 

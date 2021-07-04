@@ -17,13 +17,13 @@ ft::http::CgiHandler::CgiHandler(const Config& cfg, Client& client, const Uri& u
 
 ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& loc)
 {
-    Answer& answer = m_client.m_answer;
-    Message& msg = m_client.m_msg;
+    Answer& answer = *m_client.m_answer;
+    Message& msg = *m_client.m_msg;
     CgiProcess process;
 
-    if (m_client.m_msg.m_method == "GET")
+    if (m_client.m_msg->m_method == "GET")
         process.m_method_type = CgiProcess::EGet;
-    else if (m_client.m_msg.m_method == "POST")
+    else if (m_client.m_msg->m_method == "POST")
         process.m_method_type = CgiProcess::EPost;
 
 //    int read_fd[2];
@@ -61,7 +61,7 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     env_arr.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env_arr.push_back("SERVER_PROTOCOL=HTTP/1.1");
     env_arr.push_back(std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port));
-    env_arr.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg.m_method);
+    env_arr.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg->m_method);
     env_arr.push_back(_env_path_info());
 //    env_arr.push_back(_env_path_translated());
 //    env_arr.push_back(_env_script_name());
@@ -164,7 +164,7 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
 
 bool ft::http::CgiHandler::parse_cgi_body()
 {
-    Answer& answer = m_client.m_answer;
+    Answer& answer = *m_client.m_answer;
 
     char c;
     EParseState state = EHeaderStart;
@@ -290,7 +290,7 @@ std::string ft::http::CgiHandler::_env_query_string() const
 
 void ft::http::CgiHandler::_parse_headers()
 {
-    Answer& answer = m_client.m_answer;
+    Answer& answer = *m_client.m_answer;
     std::list<http::Header>::iterator it = std::find_if(answer.m_headers.begin(), answer.m_headers.end(),
             http::FindHeader("status"));
 

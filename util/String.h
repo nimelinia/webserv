@@ -15,7 +15,13 @@ namespace ft { namespace util { namespace str
 
     template<class T>
     T DecodeHex(char c);
-} } }
+} namespace date
+		{
+			std::string get_date();
+			std::string get_date(struct timespec time);
+		}
+}
+}
 
 template<class T>
 std::string ft::util::str::ToString(T value)
