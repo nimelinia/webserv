@@ -191,6 +191,7 @@ int main(int argc, char **argv)
 
 //	LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
 //	LOGGER.setMaxLevel(ft::log::EDebug);
+
     ft::log::FileHandler* handler = new ft::log::FileHandler(ft::log::TextOnlyFormatter);
     handler->open("webserv.log");
 	LOGGER.addHandler(handler);

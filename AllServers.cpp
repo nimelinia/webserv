@@ -3,6 +3,7 @@
 //
 
 #include "AllServers.hpp"
+#include "log/Log.h"
 
 ft::AllServers::AllServers()
 {
@@ -43,6 +44,9 @@ bool ft::AllServers::start_all_servers()
 			if (update_max_fd)
 				Select::get().set_max_fd(find_max_fd());
 		}
+		else
+		    LOGD << "Waiting for new connection";
+        usleep(10);
 	}
 	return (true);
 }
