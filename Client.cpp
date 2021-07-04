@@ -80,7 +80,7 @@ bool ft::Client::send_message()
     if (m_state == e_response_ready) {
         if (m_cgi_process.state() == http::CgiProcess::ESpawn)
         {
-            http::CgiHandler handler(*m_msg->m_uri.config, *this, m_msg.m_uri);
+            http::CgiHandler handler(m_server->m_configs.front(), *this, m_msg->m_uri);
             if (!handler.parse_cgi_body())
                 m_answer->m_status_code = 500;
             if (m_answer->m_status_code == 0)
@@ -89,7 +89,13 @@ bool ft::Client::send_message()
         else
 		    m_answer->m_headers.push_back((http::Header) {"Content-Length",
 													 util::str::ToString(m_answer->m_body.size())});
-		m_answer->create_final_response();
+
+        struct sockaddr_in peer;
+        socklen_t peer_len  = sizeof(peer);
+        ::getpeername(m_socket_cl, (struct sockaddr*)&peer, &peer_len);
+        LOGD << "Client " << ::inet_ntoa(peer.sin_addr) << ":" << peer.sin_port;
+
+        m_answer->create_final_response();
 		m_state = e_sending;
 	}
 	ssize_t	ret;
@@ -156,6 +162,8 @@ void ft::Client::check_cgi()
     if (m_cgi_process.is_done())
     {
         m_state = e_response_ready;
+        delete m_msg;
+        m_msg = NULL;
         LOGI_(CGI) << "Cgi process finished";
     }
 }
@@ -166,14 +174,19 @@ ssize_t ft::Client::_send_cgi_body()
     {
         m_cgi_process.bytes_read = std::fread(m_buff, 1, BUFFER_SIZE, m_cgi_process.read_file);
         if (std::ferror(m_cgi_process.read_file))
-            return true;
+            return -1;
     }
-    ssize_t ret = ::send(m_socket_cl, m_buff + m_cgi_process.bytes_written,  m_cgi_process.bytes_read - m_cgi_process.bytes_written, 0);
+    ssize_t ret = 0;
+    if (m_cgi_process.bytes_read > 0)
+        ret = ::send(m_socket_cl, m_buff + m_cgi_process.bytes_written,  m_cgi_process.bytes_read - m_cgi_process.bytes_written, 0);
     if (ret > 0)
         m_cgi_process.bytes_written += ret;
     if (m_cgi_process.bytes_written == m_cgi_process.bytes_read)
         m_cgi_process.bytes_written = 0;
-    if (ret == 0)
+    if (ret == 0 && std::feof(m_cgi_process.read_file))
+    {
         m_cgi_process.clear();
+        return 1;
+    }
     return ret;
 }

@@ -304,7 +304,7 @@ void ft::http::CgiHandler::_parse_headers()
 }
 bool ft::http::CgiHandler::_set_content_length()
 {
-    Answer& answer = m_client.m_answer;
+    Answer& answer = *m_client.m_answer;
     CgiProcess& process = m_client.m_cgi_process;
 
     long cur_pos = std::ftell(process.read_file);
