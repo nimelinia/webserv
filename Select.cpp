@@ -30,7 +30,7 @@ bool ft::Select::update()
 	FD_COPY(&m_clients, &m_read);
 	FD_COPY(&m_clients, &m_write);
 	struct timeval tv;
-	tv.tv_sec = 0;
+	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 
 	int res;

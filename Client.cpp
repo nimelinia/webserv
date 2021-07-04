@@ -38,6 +38,10 @@ bool ft::Client::read_message()
         http::RequestParser::EResult res = m_parser.parse(m_server->m_configs, *m_msg, m_buff, ret);
         if (res == http::RequestParser::EParse)
 			return false;
+		struct sockaddr_in peer;
+		socklen_t peer_len  = sizeof(peer);
+		::getpeername(m_socket_cl, (struct sockaddr*)&peer, &peer_len);
+		LOGD << "read Client " << ::inet_ntoa(peer.sin_addr) << ":" << peer.sin_port;
 		if (res == http::RequestParser::EOk)
 		{
 			LOGD << "URI: " << m_msg->m_uri_str;
@@ -55,6 +59,15 @@ bool ft::Client::read_message()
                 LOGE << "Error parsing header";
 			m_answer->m_status_code = m_msg->m_error_num;
 			m_state = e_request_ready;
+		}
+		std::vector<http::Header>::iterator hit = std::find_if(m_msg->m_headers.begin(),
+															   m_msg->m_headers.end(),
+															   http::FindHeader("connection"));
+		m_delete_me = false;
+		if (hit != m_msg->m_headers.end() && hit->value == "close")
+		{
+			m_delete_me = true;
+			m_answer->m_headers.push_back((http::Header) {"Connection", "close"});
 		}
 	}
 	if (m_state == e_request_ready)
@@ -114,17 +127,13 @@ bool ft::Client::send_message()
 	if (m_answer->m_final_response.empty() && m_cgi_process.state() != http::CgiProcess::ESpawn)																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
 	{
 	    const bool close_on_error = (m_answer->m_status_code == 400 || m_answer->m_status_code == 413);
-//		delete m_msg;
 	    m_msg = new Message();
-//	    m_msg.m_ready_responce = false;
 		m_parser.reset();
-//		m_msg.clean();
-//		m_answer.clean();
 		delete m_answer;
 		m_answer = new Answer();
 		m_cgi_process.clear();
 		m_state = e_request_parse;
-		return close_on_error;
+		return close_on_error || m_delete_me;
 	}
 	return (false);
 }
