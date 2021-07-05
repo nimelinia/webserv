@@ -12,7 +12,7 @@ ft::Server::Server(Host& host, size_t port, std::string &host_address) :
 	m_host_address(host_address),
 	m_socket_fd(-1),
 	m_error_fatal(false),
-	m_timeout(45)
+	m_timeout(42)
 {
 }
 
