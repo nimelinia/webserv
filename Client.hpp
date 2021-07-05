@@ -52,6 +52,7 @@ namespace ft {
 		size_t				m_parsed;
 		size_t				m_content_length;
 		bool				m_delete_me;
+		time_t 				m_last_action_time;
 //	bool	sending;
 //	bool	receiving;
     private:

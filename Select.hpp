@@ -21,7 +21,7 @@ public:
 
 			Select();
 
-private:
+public:
 	fd_set	m_clients;
 	fd_set	m_read;
 	fd_set	m_write;

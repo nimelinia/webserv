@@ -47,10 +47,12 @@ namespace ft {
 		std::string							root;
 		std::list<std::string>				allow;
 		std::string							index;
+		std::pair<size_t, std::string>		redirection;
 		std::pair<std::string, std::string>	cgi;
 		std::map<size_t, std::string>		error_pages;
 		size_t								limit_body_size;
 		bool 								autoindex;
+		std::string							uploaded_folder;
 	};
 
 

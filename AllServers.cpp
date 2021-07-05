@@ -45,8 +45,8 @@ bool ft::AllServers::start_all_servers()
 				Select::get().set_max_fd(find_max_fd());
 		}
 		else
-		    LOGD << "Waiting for new connection";
-        usleep(10);
+		    LOGD << "Waiting. Max descriptor: " << Select::get().m_max_fd;
+        usleep(1000);
 	}
 	return (true);
 }

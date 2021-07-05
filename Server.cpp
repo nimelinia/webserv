@@ -11,7 +11,8 @@ ft::Server::Server(Host& host, size_t port, std::string &host_address) :
 	m_port(port),
 	m_host_address(host_address),
 	m_socket_fd(-1),
-	m_error_fatal(false)
+	m_error_fatal(false),
+	m_timeout(45)
 {
 }
 
@@ -67,6 +68,7 @@ bool ft::Server::do_work()
 	std::list<Client>::iterator it = m_clients.begin();
 	while (it != m_clients.end())
 	{
+		it->check_cgi();
 		if (Select::get().can_write(it->m_socket_cl) && it->ready_write())
 		{
             if (it->send_message())
@@ -74,6 +76,7 @@ bool ft::Server::do_work()
 				it->close();
 				m_clients.erase(it++);
 				need_update = true;
+				LOGD << "Total connections: " << m_clients.size();
 				continue;
 			}
 		}
@@ -84,10 +87,19 @@ bool ft::Server::do_work()
 				it->close();
 				m_clients.erase(it++);
 				need_update = true;
+				LOGD << "Total connections: " << m_clients.size();
 				continue;
 			}
 		}
-        it->check_cgi();
+		if ((time_t)std::difftime(std::time(NULL), it->m_last_action_time) > m_timeout)
+		{
+			it->close();
+			m_clients.erase(it++);
+			need_update = true;
+			LOGD << "Connection timeout";
+			LOGD << "Total connections: " << m_clients.size();
+			continue;
+		}
 		++it;
 	}
 	if (Select::get().can_read(m_socket_fd))
@@ -126,6 +138,9 @@ bool ft::Server::create_new_connection()
 		Client	new_client(connect_fd, this);
 		m_clients.push_back(new_client);
 		m_clients.back().init_buffer();
+
+		LOGD << "Total connections: " << m_clients.size();
+
 		return (true);
 	}
 }

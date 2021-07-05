@@ -54,7 +54,7 @@ namespace ft { namespace http
         bool update_state();
         void end_read(size_t ret);
         void end_write(size_t ret);
-        bool is_done() const;
+        bool is_done();
     };
 } }
 

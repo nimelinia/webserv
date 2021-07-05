@@ -39,6 +39,7 @@ namespace ft
 		bool				m_error_fatal;
 		int 				m_max_fd;
 		struct sockaddr 	m_addr_client;
+		time_t				m_timeout;
 
 		Server();
 

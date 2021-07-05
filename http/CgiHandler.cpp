@@ -41,6 +41,7 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     read_fd = ::fileno(read_file);
     tmp_file = std::tmpfile();
     write_fd = ::fileno(tmp_file);
+    LOGD << "CGI | read fd: " << read_fd << " write fd: " << write_fd;
     if (process.m_method_type == CgiProcess::EPost)
     {
         std::fwrite(msg.m_body.c_str(), sizeof(char), msg.m_body.size(), tmp_file);

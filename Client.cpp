@@ -15,7 +15,8 @@ ft::Client::Client(int socketCl, Server *server) :
 	m_server(server),
 	m_answer(NULL),		// тут нужно поменять, т.к. этот лимит лежит внутри location и мы сначала должны распарсить uri, а потом уже определять размер
 	m_parsed(),
-	m_buff(NULL)
+	m_buff(NULL),
+	m_last_action_time(std::time(NULL))
 {
 }
 
@@ -28,6 +29,8 @@ ft::Client::~Client()
 
 bool ft::Client::read_message()
 {
+	m_last_action_time = std::time(NULL);
+
 	ssize_t	ret;
 
 	ret = recv(m_socket_cl, m_buff, BUFFER_SIZE, 0);
@@ -46,12 +49,12 @@ bool ft::Client::read_message()
 
 		if (res == http::RequestParser::EOk)
 		{
-			LOGD << "URI: " << m_msg->m_uri_str;
-			LOGD << "Method: " << m_msg->m_method;
-			LOGD << "Headers:";
-			for (std::vector<http::Header>::iterator hit = m_msg->m_headers.begin(); hit != m_msg->m_headers.end(); ++hit)
-				LOGD << "\t" << hit->name << ": " << hit->value;
-			LOGD;
+//			LOGD << "URI: " << m_msg->m_uri_str;
+//			LOGD << "Method: " << m_msg->m_method;
+//			LOGD << "Headers:";
+//			for (std::vector<http::Header>::iterator hit = m_msg->m_headers.begin(); hit != m_msg->m_headers.end(); ++hit)
+//				LOGD << "\t" << hit->name << ": " << hit->value;
+//			LOGD;
 			m_answer->m_server = m_msg->m_uri.config->server_name;
 			m_state = e_request_ready;
 		}
@@ -120,6 +123,7 @@ bool ft::Client::send_message()
 	else if (ret == 0)
 		return (false);
 	// если не доотправлено, то в следующий раз по флажку пойдет отправлять
+	m_last_action_time = std::time(NULL);
 	if (!m_answer->m_final_response.empty())
 	    m_answer->m_final_response.erase(0, ret);
 	if (m_answer->m_final_response.empty() && m_cgi_process.state() != http::CgiProcess::ESpawn)																				// если не доотправлено, то в следующий раз по флажку пойдет отправлять
@@ -135,7 +139,8 @@ bool ft::Client::send_message()
 		m_answer = new Answer();
 		m_cgi_process.clear();
 		m_state = e_request_parse;
-		return close_on_error || m_delete_me;
+		if  (close_on_error || m_delete_me)
+			::shutdown(m_socket_cl, SHUT_RDWR);
 	}
 	return (false);
 }
@@ -143,6 +148,11 @@ bool ft::Client::send_message()
 
 void ft::Client::close()
 {
+	struct sockaddr_in peer;
+	socklen_t peer_len  = sizeof(peer);
+	::getpeername(m_socket_cl, (struct sockaddr*)&peer, &peer_len);
+	LOGD << "Connection closed (" << ::inet_ntoa(peer.sin_addr) << ":"
+		 << peer.sin_port << ")";
 	::close(m_socket_cl);																						// закрываю сокет
 	Select::get().clear_fd(m_socket_cl);
 }

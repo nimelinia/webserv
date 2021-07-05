@@ -65,10 +65,10 @@ size_t ft::ResponseHandler::_check_validity()
 			return (405);
 		}
 	}
-	if (m_client.m_msg->m_uri.config->redirection.first != 0)
+	if (m_client.m_msg->m_uri.locations->redirection.first != 0)
 	{
-		m_client.m_answer->m_headers.push_back((http::Header){"Location", m_client.m_msg->m_uri.config->redirection.second});
-		return (m_client.m_msg->m_uri.config->redirection.first);
+		m_client.m_answer->m_headers.push_back((http::Header){"Location", m_client.m_msg->m_uri.locations->redirection.second});
+		return (m_client.m_msg->m_uri.locations->redirection.first);
 	}
 	return 0;
 }
@@ -184,7 +184,7 @@ bool ft::ResponseHandler::_generate_PUT()
 		m_client.m_answer->m_status_code = 501;
 	else
 	{
-		std::string file_name = m_client.m_msg->m_uri.root + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.file_name;
+		std::string file_name = m_client.m_msg->m_uri.root + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.locations->uploaded_folder + "/" + m_client.m_msg->m_uri.file_name;
 		std::ios_base::openmode mode = std::ios_base::out;
 		if (_check_is_file(file_name))
 		{
@@ -198,7 +198,7 @@ bool ft::ResponseHandler::_generate_PUT()
 		{
 			ofs << m_client.m_msg->m_body;
 			m_client.m_answer->m_headers.push_back((http::Header){"Content-Location", \
-						m_client.m_msg->m_uri.locations->path_to_location.front() + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.file_name});
+						m_client.m_msg->m_uri.locations->path_to_location.front() + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.locations->uploaded_folder + "/" + m_client.m_msg->m_uri.file_name});
 		}
 		else
 			m_client.m_answer->m_status_code = 403;
@@ -314,7 +314,7 @@ std::string ft::ResponseHandler::_detect_last_modified() {
 	std::string	file;
 	file = m_client.m_msg->m_uri.root + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.file_name;
 	stat(file.c_str(), &buff);
-	return (util::date::get_date(buff.st_ctimespec));
+	return (util::date::get_date(buff.st_mtimespec));
 }
 
 bool ft::ResponseHandler::_detect_content_type()

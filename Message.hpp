@@ -8,7 +8,8 @@
 #include "http/RequestParser.h"
 #include "UriParser.hpp"
 
-#define BUFFER_SIZE	2100000
+//#define BUFFER_SIZE	2100000
+#define BUFFER_SIZE	1024000
 //#define BUFFER_SIZE	1567415
 
 namespace ft {

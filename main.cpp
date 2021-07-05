@@ -148,6 +148,21 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			loc.limit_body_size = std::strtoul(lit->value("limit_body_size").c_str(), 0, 0);
 		else
 			loc.limit_body_size = config.default_limit_body_size;
+
+		if (lit->contains("redirect"))
+		{
+			std::list<std::string> redir_1 = lit->valueList("redirect");
+			if (redir_1.size() != 2)
+				throw std::runtime_error("config error with redirection");
+			std::pair<size_t, bool> check_1 = ft::util::str::FromString<size_t>(redir_1.front());
+			if (!check_1.second)
+				throw std::runtime_error("config error with redirection");
+			loc.redirection.first = check_1.first;
+			config.redirection.second = redir_1.back();
+		} else if (!config.redirection.second.empty())
+			loc.redirection = config.redirection;
+		if (lit->contains("upload_folder"))
+			loc.uploaded_folder = lit->value("upload_folder");
 	}
 
 	/*
