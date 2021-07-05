@@ -1,7 +1,7 @@
-#include "Select.hpp"
+#include "server/Select.hpp"
 #include "CgiProcess.hpp"
-#include "util/String.h"
-#include "log/Log.h"
+#include "util/String.hpp"
+#include "log/Log.hpp"
 
 
 ft::http::CgiProcess::CgiProcess()
@@ -81,23 +81,12 @@ void ft::http::CgiProcess::end_write(size_t ret)
         m_state = ERead;
 }
 
-bool ft::http::CgiProcess::update_state()
+bool ft::http::CgiProcess::is_done()
 {
-    switch (m_method_type)
-    {
-        case EGet:
-            m_state = ERead;
-            return true;
-        case EPost:
-            m_state = EWrite;
-            return true;
-        case EUnknown:
-            m_state = EError;
-    }
+	if (m_pid != -1 && ::waitpid(m_pid, NULL, WNOHANG) > 0)
+	{
+		m_pid = -1;
+		return true;
+	}
     return false;
-}
-
-bool ft::http::CgiProcess::is_done() const
-{
-    return m_pid != -1 && ::waitpid(m_pid, NULL, WNOHANG) > 0;
 }

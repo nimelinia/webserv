@@ -1,7 +1,7 @@
-#include "Section.h"
-#include "exceptions/PathException.h"
-#include "exceptions/ValueException.h"
-#include "../util/String.h"
+#include "Section.hpp"
+#include "exceptions/PathException.hpp"
+#include "exceptions/ValueException.hpp"
+#include "../util/String.hpp"
 
 ft::cfg::Section::Section(const ft::cfg::detail::Node& node)
     : m_Node(node)

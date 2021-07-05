@@ -1,6 +1,6 @@
-#include "File.h"
+#include "File.hpp"
 
-#include "../AllowedStd.h"
+#include "../AllowedStd.hpp"
 
 ft::util::File::File()
 {

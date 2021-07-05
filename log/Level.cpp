@@ -1,5 +1,5 @@
-#include "Level.h"
-#include "../AllowedStd.h"
+#include "Level.hpp"
+#include "../AllowedStd.hpp"
 
 ft::log::ELevel ft::log::LevelFormString(const char* s)
 {

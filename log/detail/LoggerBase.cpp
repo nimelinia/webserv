@@ -1,4 +1,4 @@
-#include "LoggerBase.h"
+#include "LoggerBase.hpp"
 #include "Message.h"
 
 ft::log::detail::LoggerBase::LoggerBase()

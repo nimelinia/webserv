@@ -1,4 +1,4 @@
-#include "ConfigException.h"
+#include "ConfigException.hpp"
 
 ft::cfg::ConfigException::ConfigException(const std::string & what)
     : std::runtime_error(what)

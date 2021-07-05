@@ -1,4 +1,4 @@
-#include "FileHandler.h"
+#include "FileHandler.hpp"
 
 ft::log::FileHandler::FileHandler(FormatFunc func)
     : AHandler(func)

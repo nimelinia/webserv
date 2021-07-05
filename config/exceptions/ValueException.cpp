@@ -1,4 +1,4 @@
-#include "ValueException.h"
+#include "ValueException.hpp"
 
 ft::cfg::ValueException::ValueException(const std::string & what)
     :ConfigException(what)

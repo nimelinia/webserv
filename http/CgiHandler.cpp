@@ -1,8 +1,8 @@
-#include "Select.hpp"
+#include "server/Select.hpp"
 #include "Client.hpp"
 #include "CgiHandler.hpp"
-#include "util/String.h"
-#include "log/Log.h"
+#include "util/String.hpp"
+#include "log/Log.hpp"
 #include <stdio.h>
 
 #define CR '\r'
@@ -41,6 +41,7 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     read_fd = ::fileno(read_file);
     tmp_file = std::tmpfile();
     write_fd = ::fileno(tmp_file);
+    LOGD << "CGI | read fd: " << read_fd << " write fd: " << write_fd;
     if (process.m_method_type == CgiProcess::EPost)
     {
         std::fwrite(msg.m_body.c_str(), sizeof(char), msg.m_body.size(), tmp_file);
@@ -236,7 +237,7 @@ bool ft::http::CgiHandler::parse_cgi_body()
                 if (c == LR)
                 {
                     _parse_headers();
-                    return true;
+                    return _set_content_length();
                 }
                 else
                     return false;
@@ -245,26 +246,6 @@ bool ft::http::CgiHandler::parse_cgi_body()
         }
     }
     return false;
-//    const std::string& body = answer.m_body;
-//    std::string::size_type header_end = body.find("\r\n\r\n");
-//    if (header_end == std::string::npos)
-//        answer.m_status_code = 200;
-//    else
-//    {
-//        std::string::size_type line_start = 0;
-//        while (line_start < header_end)
-//        {
-//            std::string::size_type line_end = body.find("\r\n", line_start);
-//            std::string::size_type delim = body.find(": ", line_start);
-//            answer.m_headers.push_back((http::Header){
-//                    body.substr(line_start, delim - line_start),
-//                    body.substr(delim + 2, line_end - delim - 2)});
-//            line_start = line_end + 2;
-//        }
-//        answer.m_body = body.substr(header_end + 4);
-//        answer.m_status_code = 200;
-//    }
-//    LOGI_(CGI) << "Cgi process finished";
 }
 
 std::string ft::http::CgiHandler::_env_path_info() const
@@ -320,5 +301,23 @@ void ft::http::CgiHandler::_parse_headers()
         if (answer.m_status_code == 0)
             answer.m_status_code = 500;
         answer.m_headers.erase(it);
+    }
+}
+bool ft::http::CgiHandler::_set_content_length()
+{
+    Answer& answer = *m_client.m_answer;
+    CgiProcess& process = m_client.m_cgi_process;
+
+    long cur_pos = std::ftell(process.read_file);
+    if (std::fseek(process.read_file, 0, SEEK_END) == -1)
+        return false;
+    else
+    {
+        process.file_size = std::ftell(process.read_file) - cur_pos;
+        if (std::fseek(process.read_file, cur_pos, SEEK_SET) == -1)
+            return false;
+        answer.m_headers.push_back((http::Header) {"Content-Length",
+                                                     util::str::ToString(process.file_size)});
+        return true;
     }
 }

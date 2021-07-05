@@ -1,8 +1,8 @@
 #ifndef LOG_MESSAGE_H
 #define LOG_MESSAGE_H
 
-#include "../../AllowedStd.h"
-#include "../Level.h"
+#include "../../AllowedStd.hpp"
+#include "../Level.hpp"
 
 namespace ft { namespace log { namespace detail
 {

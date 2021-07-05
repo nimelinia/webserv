@@ -1,4 +1,4 @@
-#include "ColorConsoleHandler.h"
+#include "ColorConsoleHandler.hpp"
 
 ft::log::ColorConsoleHandler::ColorConsoleHandler(FormatFunc func)
     : AHandler(func)

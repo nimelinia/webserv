@@ -1,4 +1,4 @@
-#include "ConsoleHandler.h"
+#include "ConsoleHandler.hpp"
 
 ft::log::ConsoleHandler::ConsoleHandler(ft::log::FormatFunc func)
         :AHandler(func)

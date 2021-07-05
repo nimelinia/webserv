@@ -1,4 +1,4 @@
-#include "PathException.h"
+#include "PathException.hpp"
 ft::cfg::PathException::PathException(const std::string& msg, const std::string& path)
     : ConfigException(Format(msg, path))
     , m_Message(msg), m_Path(path)

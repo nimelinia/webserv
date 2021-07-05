@@ -5,14 +5,14 @@ set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_executable(webserv
 		main.cpp
-		Client.cpp
-		Message.cpp
-		Message.hpp
-		Answer.cpp
-		Server.cpp
-		Select.cpp
-		AllServers.cpp
-		http/RequestParser.cpp
+		http/Client.cpp
+		http/Message.cpp
+		http/Message.hpp
+		http/Answer.cpp
+		server/Server.cpp
+		server/Select.cpp
+		server/AllServers.cpp
+		http/parsers/RequestParser.cpp
 		config/exceptions/ConfigException.cpp
 		config/exceptions/ParseException.cpp
 		config/exceptions/PathException.cpp
@@ -21,9 +21,12 @@ add_executable(webserv
 		config/Section.cpp
 		config/Config.cpp
 		util/String.cpp
-		util/File.cpp ResponseHandler.cpp ResponseHandler.hpp UriParser.cpp
-		StatusCodes.cpp
-		MimeTypes.cpp
+		util/File.cpp
+		http/ResponseHandler.cpp
+		http/ResponseHandler.hpp
+		http/parsers/UriParser.cpp
+		http/StatusCodes.cpp
+		http/MimeTypes.cpp
 		http/CgiHandler.cpp
 		http/CgiProcess.cpp
 		log/Level.cpp
@@ -33,4 +36,4 @@ add_executable(webserv
 		log/handlers/ColorConsoleHandler.cpp
 		log/handlers/ConsoleHandler.cpp
 		log/handlers/FileHandler.cpp
-		)
+		config/config_analizator.hpp)
