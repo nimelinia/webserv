@@ -301,7 +301,7 @@ bool ft::ResponseHandler::_from_file_to_body(const std::string &path)
 
 bool ft::ResponseHandler::_check_is_file(const std::string &path)
 {
-	struct stat	buff;
+	struct stat	buff = {};
 
 	stat(path.c_str(), &buff);
 	if ((buff.st_mode & S_IFMT) == S_IFREG)

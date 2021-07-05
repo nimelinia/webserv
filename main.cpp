@@ -89,6 +89,8 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 	}
 	if (server.contains("autoindex") && server.value("autoindex") == "on")
 		config.default_autoindex = true;
+	else
+	    config.default_autoindex = false;
 	if (server.contains("limit_except")) {
 		config.default_allow = server.valueList("limit_except");
 	}
@@ -189,12 +191,10 @@ int main(int argc, char **argv)
 //    LOGGER_(CGI).addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
 //    LOGGER_(CGI).setMaxLevel(ft::log::EDebug);
 
-//	LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
-//	LOGGER.setMaxLevel(ft::log::EDebug);
-
     ft::log::FileHandler* handler = new ft::log::FileHandler(ft::log::TextOnlyFormatter);
     handler->open("webserv.log");
-	LOGGER.addHandler(handler);
+    LOGGER.addHandler(handler);
+//    LOGGER.addHandler(new ft::log::ColorConsoleHandler(ft::log::TextOnlyFormatter));
 	LOGGER.setMaxLevel(ft::log::EDebug);
 
 	if (check_count_arguments(argc))

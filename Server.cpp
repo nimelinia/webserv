@@ -4,6 +4,7 @@
 
 #include "Server.hpp"
 #include "webserv.hpp"
+#include "log/Log.h"
 
 ft::Server::Server(Host& host, size_t port, std::string &host_address) :
 	m_configs(host.configs),
@@ -87,18 +88,6 @@ bool ft::Server::do_work()
 			}
 		}
         it->check_cgi();
-//		if (it->cgi_spawned())
-//            need_update = true;
-//		else if (it->cgi_ready_read() && Select::get().can_read(it->m_cgi_process.read_fd))
-//        {
-//            if (it->cgi_read())
-//                need_update = true;
-//        }
-//		else if (it->cgi_ready_write() && Select::get().can_write(it->m_cgi_process.write_fd))
-//        {
-//            if (it->cgi_write())
-//                need_update = true;
-//        }
 		++it;
 	}
 	if (Select::get().can_read(m_socket_fd))
@@ -127,7 +116,11 @@ bool ft::Server::create_new_connection()
 
 	else
 	{
-		std::cout << "Появилось новое подключение" << std::endl;
+        struct sockaddr_in peer;
+        socklen_t peer_len  = sizeof(peer);
+        ::getpeername(connect_fd, (struct sockaddr*)&peer, &peer_len);
+        LOGD << "New connection (" << ::inet_ntoa(peer.sin_addr) << ":"
+                << peer.sin_port << ")";
 		Select::get().set_fd(connect_fd);
 		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																				// ставлю сокет в неблокирующий режим.
 		Client	new_client(connect_fd, this);

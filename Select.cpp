@@ -27,8 +27,8 @@ bool ft::Select::can_write(int socket) const
 
 bool ft::Select::update()
 {
-	FD_COPY(&m_clients, &m_read);
-	FD_COPY(&m_clients, &m_write);
+    std::memcpy(&m_read, &m_clients, sizeof(m_clients));
+    std::memcpy(&m_write, &m_clients, sizeof(m_clients));
 	struct timeval tv;
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
