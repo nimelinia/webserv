@@ -45,17 +45,17 @@ bool ft::Client::read_message()
         struct sockaddr_in peer;
         socklen_t peer_len  = sizeof(peer);
         ::getpeername(m_socket_cl, (struct sockaddr*)&peer, &peer_len);
-        LOGD << "READ Client " << ::inet_ntoa(peer.sin_addr) << ":" << peer.sin_port;
+        LOGD << "Client (request) " << ::inet_ntoa(peer.sin_addr) << ":" << peer.sin_port;
 
 		if (res == http::RequestParser::EOk)
 		{
-//			LOGD << "URI: " << m_msg->m_uri_str;
-//			LOGD << "Method: " << m_msg->m_method;
-//			LOGD << "Headers:";
-//			for (std::vector<http::Header>::iterator hit = m_msg->m_headers.begin(); hit != m_msg->m_headers.end(); ++hit)
-//				LOGD << "\t" << hit->name << ": " << hit->value;
-//			LOGD;
-//			m_answer->m_server = m_msg->m_uri.config->server_name;
+			LOGD << "URI: " << m_msg->m_uri_str;
+			LOGD << "Method: " << m_msg->m_method;
+			LOGD << "Headers:";
+			for (std::vector<http::Header>::iterator hit = m_msg->m_headers.begin(); hit != m_msg->m_headers.end(); ++hit)
+				LOGD << "\t" << hit->name << ": " << hit->value;
+			LOGD;
+            m_answer->m_server = m_msg->m_uri.config->server_name;
 			m_state = e_request_ready;
 		}
 		else if (res == http::RequestParser::EError)

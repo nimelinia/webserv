@@ -25,54 +25,54 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     else if (m_client.m_msg->m_method == "POST")
         process.m_method_type = CgiProcess::EPost;
 
-//    int read_fd[2];
     int read_fd;
     FILE* tmp_file;
     FILE* read_file;
     int write_fd;
-//    int write_fd[2];
-//    if (pipe(read_fd) == -1)
-//    {
-//        LOGE_(CGI) << "read pipe() failed";
-//        return process;
-//    }
+
     read_file = std::tmpfile();
     read_fd = ::fileno(read_file);
     tmp_file = std::tmpfile();
     write_fd = ::fileno(tmp_file);
-    LOGD << "CGI | read fd: " << read_fd << " write fd: " << write_fd;
+
     if (process.m_method_type == CgiProcess::EPost)
     {
         std::fwrite(msg.m_body.c_str(), sizeof(char), msg.m_body.size(), tmp_file);
         std::rewind(tmp_file);
-//        if (pipe(write_fd) == -1)
-//        {
-//            LOGE_(CGI) << "write pipe() failed";
-//            return process;
-//        }
     }
 
     m_path_info = loc.cgi.second;
 
+    struct sockaddr_in peer;
+    socklen_t peer_len  = sizeof(peer);
+    ::getpeername(m_client.m_socket_cl, (struct sockaddr*)&peer, &peer_len);
+
     std::vector<std::string> env_arr;
-    env_arr.reserve(14);
+    env_arr.reserve(16);
     env_arr.push_back("SERVER_SOFTWARE=webserv");
+    env_arr.push_back(std::string("SERVER_NAME=") + m_client.m_answer->m_server);
     env_arr.push_back(std::string("SERVER_ADDRESS=") + m_config.hostaddress);
+    env_arr.push_back(std::string("SERVER_PORT=") + util::str::ToString(m_config.port));
     env_arr.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env_arr.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    env_arr.push_back(std::string("SERVER_PORT=") + ft::util::str::ToString(m_config.port));
+    env_arr.push_back(std::string("REMOTE_ADDR=") + std::string(::inet_ntoa(peer.sin_addr)));
+    env_arr.push_back(std::string("REMOTE_PORT=") + util::str::ToString(peer.sin_port));
+    env_arr.push_back(std::string("REQUEST_URI=") + m_client.m_msg->m_uri_str);
     env_arr.push_back(std::string("REQUEST_METHOD=") + m_client.m_msg->m_method);
     env_arr.push_back(_env_path_info());
-//    env_arr.push_back(_env_path_translated());
-//    env_arr.push_back(_env_script_name());
+    env_arr.push_back(_env_path_translated());
+    env_arr.push_back(_env_script_name());
     env_arr.push_back(_env_query_string());
     env_arr.push_back(_env_script_filename());
     env_arr.push_back("REDIRECT_STATUS=200");
 
     for (std::vector<http::Header>::iterator it = msg.m_headers.begin(); it != msg.m_headers.end(); ++it)
     {
+        if (it->name == "connection")
+            continue;
+
         std::string env_header;
-        if (it->name != "content_length" && it->name != "content_type")
+        if (it->name != "content-length" && it->name != "content-type")
             env_header = "HTTP_";
         for (size_t i = 0; i < it->name.size(); ++i)
         {
@@ -112,26 +112,14 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
     {
         if (::chdir(m_uri.root.c_str()) == -1)
             ::exit(1);
-//        if (::dup2(read_fd[1], STDOUT_FILENO) == -1)
+
         if (::dup2(read_fd, STDOUT_FILENO) == -1)
             ::exit(1);
         ::close(read_fd);
-//        ::close(read_fd[1]);
-//        ::close(read_fd[1]);
+
         if (::dup2(write_fd, STDIN_FILENO) == -1)
             ::exit(1);
         ::close(write_fd);
-//        if (process.m_method_type == CgiProcess::EPost)
-//        {
-////            if (::dup2(write_fd[0], STDIN_FILENO) == -1)
-//            if (::dup2(write_fd, STDIN_FILENO) == -1)
-//                ::exit(1);
-//            ::close(write_fd);
-////            ::close(write_fd[0]);
-////            ::close(write_fd[1]);
-//        }
-//        else
-//            ::close(STDIN_FILENO);
 
         const char** env = new const char*[env_size + 1];
         env[env_size] = NULL;
@@ -145,18 +133,8 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
 
 //    LOGI_(CGI) << "Cgi process spawned";
 
-//    ::close(read_fd[1]);
-//    Select::get().set_fd(read_fd[0]);
-//    process.read_fd = read_fd[0];
     process.read_file = read_file;
     std::fclose(tmp_file);
-//    if (process.m_method_type == CgiProcess::EPost)
-//    {
-//        std::fclose(tmp_file);
-////        ::close(write_fd[0]);
-////        Select::get().set_fd(write_fd[1]);
-////        process.write_fd = write_fd[1];
-//    }
 
     process.m_state = CgiProcess::ESpawn;
     return process;
@@ -250,18 +228,14 @@ bool ft::http::CgiHandler::parse_cgi_body()
 std::string ft::http::CgiHandler::_env_path_info() const
 {
     std::string str = "PATH_INFO=";
-    str += m_path_info;
+    str += m_client.m_msg->m_uri_str;
     return str;
 }
 
 std::string ft::http::CgiHandler::_env_path_translated() const
 {
     std::string str = "PATH_TRANSLATED=";
-    if (!m_uri.extra_path.empty())
-    {
-        str += m_uri.root;
-        str += m_uri.extra_path;
-    }
+    str += m_client.m_msg->m_uri_str;
     return str;
 }
 
