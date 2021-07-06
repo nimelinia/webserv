@@ -1,4 +1,4 @@
-#include "Message.h"
+#include "Message.hpp"
 #include "../../util/String.hpp"
 
 ft::log::detail::Message::Message(ft::log::ELevel lvl, const char* file, const char* func, size_t line)

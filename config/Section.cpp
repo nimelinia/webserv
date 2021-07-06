@@ -67,7 +67,7 @@ std::list<ft::cfg::Section> ft::cfg::Section::sectionList(const std::string & pa
     if (pathList.empty())
         throw PathException("Path is empty", path);
 
-	std::list<Section> lst;
+    std::list<Section> lst;
     const detail::NodeRange range = _getRange(pathList.begin(), pathList.end(), m_Node.children.equal_range(pathList.front()));
     if (range.first != range.second)
 	{

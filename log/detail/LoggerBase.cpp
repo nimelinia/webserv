@@ -1,5 +1,5 @@
 #include "LoggerBase.hpp"
-#include "Message.h"
+#include "Message.hpp"
 
 ft::log::detail::LoggerBase::LoggerBase()
     : m_MaxLevel(ENone)

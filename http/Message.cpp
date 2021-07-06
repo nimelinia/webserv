@@ -4,13 +4,13 @@
 
 #include "Message.hpp"
 
-ft::Message::Message() :
-	m_error_num(0),
-	m_method(""),
-	m_ver_major(0),
-	m_ver_minor(0),
-	m_ready_responce(false)
-	, m_headers()
+ft::Message::Message()
+    : m_error_num(0)
+    , m_headers()
+    , m_method()
+    , m_ver_major(0)
+    , m_ver_minor(0)
+    , m_ready_responce(false)
 {
 }
 

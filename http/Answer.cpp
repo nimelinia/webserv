@@ -11,8 +11,8 @@
 
 ft::Answer::Answer()
 	: m_status_code(0)
-	, m_body()
 	, m_body_exist(false)
+	, m_body()
 {
 }
 

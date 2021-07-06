@@ -9,15 +9,14 @@
 #define LR '\n'
 
 ft::http::CgiHandler::CgiHandler(const Config& cfg, Client& client, const Uri& uri)
-    : m_config(cfg)
-    , m_client(client)
+    : m_client(client)
+    , m_config(cfg)
     , m_uri(uri)
 {
 }
 
 ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& loc)
 {
-    Answer& answer = *m_client.m_answer;
     Message& msg = *m_client.m_msg;
     CgiProcess process;
 

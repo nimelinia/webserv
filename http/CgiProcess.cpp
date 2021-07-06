@@ -5,24 +5,18 @@
 
 
 ft::http::CgiProcess::CgiProcess()
-    : m_pid(-1)
-    , read_fd(-1), write_fd(-1)
+    : read_file(NULL)
+    , bytes_written(0)
+    , bytes_read(0)
+    , m_pid(-1)
     , m_method_type(EUnknown)
     , m_state(EError)
-    , read_file(NULL)
-    , bytes_read(0)
-    , bytes_written(0)
 {
 }
 
 ft::http::CgiProcess::EState ft::http::CgiProcess::state() const
 {
     return m_state;
-}
-
-int ft::http::CgiProcess::max_fd() const
-{
-    return std::max(read_fd, write_fd);
 }
 
 void ft::http::CgiProcess::clear()
@@ -33,52 +27,12 @@ void ft::http::CgiProcess::clear()
         ::waitpid(m_pid, NULL, 0);
         m_pid = -1;
     }
-    if (read_fd != - 1)
-    {
-        Select::get().clear_fd(read_fd);
-        ::close(read_fd);
-        read_fd = -1;
-    }
-    if (write_fd != - 1)
-    {
-        Select::get().clear_fd(write_fd);
-        ::close(write_fd);
-        write_fd = -1;
-    }
     m_state = EIdle;
     if (read_file)
     {
         std::fclose(read_file);
         read_file = NULL;
     }
-}
-
-void ft::http::CgiProcess::end_read(size_t ret)
-{
-    ::close(read_fd);
-    Select::get().clear_fd(read_fd);
-    read_fd = -1;
-    if (ret == -1)
-    {
-        LOGD_(CGI) << "read() error: " << strerror(errno);
-        m_state = EError;
-    }
-    else
-        m_state = EIdle;
-}
-
-void ft::http::CgiProcess::end_write(size_t ret)
-{
-    ::close(write_fd);
-    Select::get().clear_fd(write_fd);
-    write_fd = -1;
-    if (ret == -1)
-    {
-        LOGD_(CGI) << "write() error: " << strerror(errno);
-        m_state = EError;
-    }
-    else
-        m_state = ERead;
 }
 
 bool ft::http::CgiProcess::is_done()

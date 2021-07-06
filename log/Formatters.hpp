@@ -2,7 +2,7 @@
 #define LOG_FORMATTERS_H
 
 #include "../AllowedStd.hpp"
-#include "detail/Message.h"
+#include "detail/Message.hpp"
 
 namespace ft { namespace log
 {

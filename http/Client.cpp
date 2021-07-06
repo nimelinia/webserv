@@ -8,15 +8,15 @@
 #include "http/ResponseHandler.hpp"
 #include "log/Log.hpp"
 
-ft::Client::Client(int socketCl, Server *server) :
-	m_state(e_request_parse),
-	m_socket_cl(socketCl),
-	m_msg(NULL),
-	m_server(server),
-	m_answer(NULL),
-	m_parsed(),
-	m_buff(NULL),
-	m_last_action_time(std::time(NULL))
+ft::Client::Client(int socketCl, Server *server)
+    : m_state(e_request_parse)
+    , m_socket_cl(socketCl)
+    , m_buff(NULL)
+    , m_msg(NULL)
+    , m_server(server)
+    , m_answer(NULL)
+    , m_parsed()
+    , m_last_action_time(std::time(NULL))
 {
 }
 
@@ -165,7 +165,7 @@ bool ft::Client::ready_write() const
 
 int ft::Client::max_fd() const
 {
-    return std::max(m_socket_cl, m_cgi_process.max_fd());
+    return m_socket_cl;
 }
 
 void ft::Client::init_buffer()

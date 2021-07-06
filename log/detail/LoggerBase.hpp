@@ -4,7 +4,7 @@
 #include "../../AllowedStd.hpp"
 #include "../../util/NonCopyable.hpp"
 #include "../Level.hpp"
-#include "Message.h"
+#include "Message.hpp"
 #include "../handlers/AHandler.hpp"
 
 namespace ft { namespace log { namespace detail
