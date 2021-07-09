@@ -131,7 +131,6 @@ ft::http::CgiProcess ft::http::CgiHandler::spawn_cgi_process(const Locations& lo
         ::exit(1);
     }
 
-//    LOGI_(CGI) << "Cgi process spawned";
 
     process.read_file = read_file;
     std::fclose(tmp_file);

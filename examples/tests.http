@@ -1,19 +1,22 @@
 GET http://localhost:8080/
 
 ###
-
-PUT http://localhost:8080/pages/lala.txt
+PUT http://localhost:8080/lala.txt
 Content-Length: 11
 
 Hello world
 
 ###
+GET http://localhost:8080/upload/lala.txt
 
+###
+DELETE http://localhost:8080/upload/lala.txt
+
+###
 POST http://localhost:8080/pages
 Content-Type: text/plain
 
 ###
-
 GET http://x.com
 Host: x.com1
 
@@ -24,7 +27,35 @@ POST http://localhost:8081/directory/youpi.bla
 DELETE http://localhost:8081/delete_test/file_should_exist_after
 
 ###
-GET http://localhost:9093/
+DELETE http://localhost:8081/delete_test/multiple_same
 
 ###
-DELETE http://localhost:8081/delete_test/multiple_same
+OPTIONS http://localhost:8080/
+
+###
+POST http://localhost:8080/php/
+Content-Type: text/plain
+
+###
+POST http://localhost:8080/php/hello.php
+Content-Type: text/plain
+
+###
+PUT http://localhost:9090/limit_test/numbers.txt
+Content-Type: text/plain
+Content-Length: 101
+
+12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901
+
+###
+PUT http://localhost:9090/limit_test/numbers.txt
+Content-Type: text/plain
+Content-Length: 99
+
+123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+
+###
+DELETE http://localhost:9090/limit_test/numbers.txt
+
+###
+DELETE http://localhost:9090/upload/index.html

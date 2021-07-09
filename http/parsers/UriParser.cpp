@@ -14,14 +14,14 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 	if (query_pos != std::string::npos)
 	{
 		uri.query = path.substr(query_pos + 1);
-		if (uri.query.empty())																								// то есть если у нас cgi запрос без query, то он не валиден?
+		if (uri.query.empty())
 			return false;
 		cur_path = path.substr(0, query_pos);
 	}
 	else
 		cur_path = path;
 	if (cur_path[cur_path.size() - 1] != '/')
-		cur_path.append("/");																							// если в пути нет слеша на конце, добавляем его
+		cur_path.append("/");
 	if (!find_path_of_uri(cur_path, path, uri))
 		return false;
 	std::list<std::string> split = util::str::Split(cur_path, '/');
@@ -53,10 +53,6 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
 	{
 		if (uri.file_name.empty())
 		{
-//			if (m_location->autoindex)
-//				return true;
-//			if (m_location->index.empty())
-//				return false;
 			if (m_location->index.empty())
 			{
 				if (!m_location->autoindex)
@@ -90,7 +86,6 @@ bool ft::UriParser::parse_uri(const std::string& path, Uri& uri)
     }
 	else
 	{
-	    // TODO: Check "/" uri, previous logic lead to segfault
 		if (uri.file_name.empty() && !split.empty())
 		{
 			std::list<std::string>::iterator endit = --split.end();
@@ -116,7 +111,7 @@ bool ft::UriParser::find_path_of_uri(std::string &cur_path, const std::string &p
 		if (cit != m_root_list.end())
 		{
 			uri.root = cit->root;
-			m_location = &(*cit);																							// по сути можно убрать и сразу сохранять в uri.location, но дальше нужно переписать везде и обращаться не к m_location, а к uri.locations
+			m_location = &(*cit);
 			uri.locations = m_location;
 			break;
 		}

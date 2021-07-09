@@ -17,11 +17,7 @@ namespace ft {
 	public:
 		Message();
 
-		void clean();
-
-		void set_m_ready_response(bool ready_response);
-
-		int							m_error_num;																			// код ошибки, которую отправить клиенту
+		int							m_error_num;
 		std::vector<http::Header>	m_headers;
 		std::string 				m_body;
 		std::string					m_method;
@@ -30,6 +26,5 @@ namespace ft {
 		std::string					host_name;
 		int 						m_ver_major;
 		int							m_ver_minor;
-		bool 						m_ready_responce;
 	};
 }

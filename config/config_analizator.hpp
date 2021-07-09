@@ -101,8 +101,6 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			loc.index = lit->value("index");
 		else if (!config.default_index.empty())
 			loc.index = config.default_index;
-//		else
-//			throw std::runtime_error("No default page in the config");														// нужно проверить, может ли быть конфиг без индекса
 		std::list<ft::cfg::Section> error_pages_loc = lit->sectionList("error_page");
 		for (std::list<ft::cfg::Section>::iterator eit = error_pages_loc.begin(); eit != error_pages_loc.end(); ++eit)
 		{
@@ -110,7 +108,7 @@ void fill_host(ft::cfg::Section server, std::list<ft::Host>& hosts)
 			loc.error_pages.insert(std::make_pair(status_code, eit->value(1)));
 		}
 		for (std::map<size_t, std::string>::iterator mit = config.default_error_pages.begin(); \
-							mit != config.default_error_pages.end(); ++mit) 												// пробегаюсь по дефолтным, если не нахожу в location такого кода, то добавляю дефолтную
+							mit != config.default_error_pages.end(); ++mit)
 		{
 			if (loc.error_pages.find(mit->first) == loc.error_pages.end())
 				loc.error_pages.insert(*mit);

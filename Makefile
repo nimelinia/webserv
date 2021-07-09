@@ -70,7 +70,7 @@ SOURCE =    config/exceptions/ConfigException.cpp \
             util/File.cpp
 
 
-NAME = webserv_dream_team
+NAME = webserv
 OBJDIR = _obj
 OBJ = $(SOURCE:%.cpp=$(OBJDIR)/%.o)
 

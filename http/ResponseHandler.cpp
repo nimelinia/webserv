@@ -19,7 +19,7 @@ bool ft::ResponseHandler::generate_answer()
     Message& m_msg = *m_client.m_msg;
     Answer& m_answer = *m_client.m_answer;
 
-	if (m_msg.m_error_num)																									// в стандарте указано, что если неспособность обработать запрос - временная, нужно отправить retry_after
+	if (m_msg.m_error_num)
 	{
 		m_answer.m_status_code = m_msg.m_error_num;
 		return true;
@@ -70,6 +70,8 @@ size_t ft::ResponseHandler::_check_validity()
 		m_client.m_answer->m_headers.push_back((http::Header){"Location", m_client.m_msg->m_uri.locations->redirection.second});
 		return (m_client.m_msg->m_uri.locations->redirection.first);
 	}
+	if (m_client.m_msg->m_uri.extra_path == "/makemecoffee")
+		return (418);
 	return 0;
 }
 
@@ -143,8 +145,9 @@ bool ft::ResponseHandler::_generate_POST()
         m_answer.m_status_code = 501;
         return true;
 	}
-
-    if (!m_location->index.empty() && m_uri.file_name == m_location->index)
+	if (it != m_msg.m_headers.end() && it->value == "plain/text")
+		return (_generate_PUT());
+	if (!m_location->index.empty() && m_uri.file_name == m_location->index)
     {
         if (!m_uri.extra_path.empty())
         {
@@ -234,27 +237,28 @@ void ft::ResponseHandler::_generate_body()
 	struct dirent *ent;
 
 	const std::string full_path = m_client.m_msg->m_uri.root + m_client.m_msg->m_uri.path + m_client.m_msg->m_uri.file_name;
-	if (m_client.m_msg->m_uri.locations->autoindex && (dir = opendir(full_path.c_str())) != NULL)
+	if (!_from_file_to_body(full_path))
 	{
-		oss << BEFORE_BODY;
-		while ((ent = readdir(dir)) != NULL)
-			oss << "<a href='/" << m_client.m_msg->m_uri.locations->path_to_location.front().substr(1) + m_client.m_msg->m_uri.path\
-						+ ent->d_name << "'>" << ent->d_name << "</a><br>";
-		closedir (dir);
-		oss << AFTER_BODY;
-		m_answer.m_body = oss.str();
-		m_client.m_msg->m_uri.file_ext = "html";
+		std::string path = m_client.m_msg->m_uri.root + m_client.m_msg->m_uri.path;
+		if (m_client.m_msg->m_uri.locations->autoindex && (dir = opendir(path.c_str())) != NULL)
+		{
+			oss << BEFORE_BODY;
+			while ((ent = readdir(dir)) != NULL)
+				oss << "<a href='/"
+					<< m_client.m_msg->m_uri.locations->path_to_location.front().substr(1) + m_client.m_msg->m_uri.path\
+ 					+ ent->d_name << "'>" << ent->d_name << "</a><br>";
+			closedir(dir);
+			oss << AFTER_BODY;
+			m_answer.m_body = oss.str();
+			m_client.m_msg->m_uri.file_ext = "html";
+		}
+		else
+			m_answer.m_status_code = 404;
 	}
-	else if (!_from_file_to_body(full_path))
-		m_answer.m_status_code = 404;
-
 }
 
 void ft::ResponseHandler::generate_status_body()
 {
-		/*
-		 * нужно искать не среди конфига, а прям в нужном локейшене error_pages (в строке 204)
-		 */
 	Answer& m_answer = *m_client.m_answer;
 	Message& m_msg = *m_client.m_msg;
 	bool	page_exist = false;
@@ -267,13 +271,12 @@ void ft::ResponseHandler::generate_status_body()
 			m_client.m_msg->m_uri.file_ext = it->second.substr(dot + 1);
 		page_exist = _from_file_to_body(it->second);
 	}
-	if (m_answer.m_status_code != 200 && !page_exist/* && m_msg.method == "GET" */)
+	if (m_answer.m_status_code != 200 && !page_exist)
 	{
 		m_client.m_msg->m_uri.file_ext = "html";
 		m_answer.m_body += http::default_status_body(m_answer.m_status_code);
 	}
-	if (!_detect_content_type())
-		generate_status_body();
+	_detect_content_type();
 	if (m_msg.m_method == "HEAD")
 		m_answer.m_body_exist = false;
 	else
@@ -289,7 +292,7 @@ bool ft::ResponseHandler::_from_file_to_body(const std::string &path)
 	if (!_check_is_file(path))
 		return false;
 	file.open(path.c_str());
-	if (file.is_open())                                                                                                    //уточнить у Леши, нужно ли повторно чекать, что m_uri.file_name - это именно файл
+	if (file.is_open())
 	{
 		oss << file.rdbuf();
 		m_answer.m_body = oss.str();
@@ -319,16 +322,15 @@ std::string ft::ResponseHandler::_detect_last_modified() {
 
 bool ft::ResponseHandler::_detect_content_type()
 {
-//	Answer& m_answer = m_client.m_answer;
-//
-//	std::string content_type;
-//	content_type = ft::util::extension_to_mime_type(m_client.m_msg.m_uri.file_ext);
-//	if (!content_type.empty())
-//	{
-//		m_answer.m_headers.push_back((http::Header){"Content-Type", content_type});
-//		return (true);
-//	}
-//	m_answer.m_status_code = 415;
+	Answer *m_answer = m_client.m_answer;
+
+	std::string content_type;
+	content_type = ft::util::extension_to_mime_type(m_client.m_msg->m_uri.file_ext);
+	if (!content_type.empty())
+	{
+		m_answer->m_headers.push_back((http::Header){"Content-Type", content_type});
+		return (true);
+	}
 	return (true);
 }
 

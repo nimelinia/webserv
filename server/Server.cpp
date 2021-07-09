@@ -18,7 +18,9 @@ ft::Server::Server(Host& host, size_t port, std::string &host_address) :
 
 ft::Server::~Server()
 {
-
+	for(std::list<Client>::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
+		::close(it->m_socket_cl);
+	::close(m_socket_fd);
 }
 
 bool ft::Server::create_server()
@@ -134,7 +136,7 @@ bool ft::Server::create_new_connection()
         LOGD << "New connection (" << ::inet_ntoa(peer.sin_addr) << ":"
                 << peer.sin_port << ")";
 		Select::get().set_fd(connect_fd);
-		fcntl(connect_fd, F_SETFL, O_NONBLOCK);																				// ставлю сокет в неблокирующий режим.
+		fcntl(connect_fd, F_SETFL, O_NONBLOCK);
 		Client	new_client(connect_fd, this);
 		m_clients.push_back(new_client);
 		m_clients.back().init_buffer();
@@ -144,6 +146,5 @@ bool ft::Server::create_new_connection()
 		return (true);
 	}
 }
-
 
 

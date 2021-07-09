@@ -161,7 +161,7 @@ namespace ft {namespace http { namespace status_body
             "</html>";
     const char* too_large =
     		"<html>"
-			"<head><title>Request Timeout</title></head>"
+			"<head><title>Payload Too Large</title></head>"
 			"<body><h1>413 Payload Too Large</h1></body>"
 			"</html>";
     const char* unsupported_media_type =

@@ -149,7 +149,7 @@ void ft::Client::close()
 	::getpeername(m_socket_cl, (struct sockaddr*)&peer, &peer_len);
 	LOGD << "Connection closed (" << ::inet_ntoa(peer.sin_addr) << ":"
 		 << peer.sin_port << ")";
-	::close(m_socket_cl);																						// закрываю сокет
+	::close(m_socket_cl);
 	Select::get().clear_fd(m_socket_cl);
 }
 

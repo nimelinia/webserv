@@ -57,7 +57,7 @@ namespace ft {
 	class UriParser
 	{
 	private:
-		const std::list<Locations>&	m_root_list; // это location
+		const std::list<Locations>&	m_root_list;
 		std::string 		m_method;
 		bool				find_path_of_uri(std::string &cur_path, const std::string &path, Uri& uri);
 	public:

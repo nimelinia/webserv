@@ -6,12 +6,6 @@
 #define CR '\r'
 #define LR '\n'
 
-//ft::http::RequestParser::RequestParser(size_t max_body_size)
-//    : m_state(EStart)
-//    , m_max_body_size(max_body_size)
-//    , m_content_length(0)
-//{
-//}
 
 ft::http::RequestParser::RequestParser()
 		: m_state(EStart)

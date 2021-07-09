@@ -76,7 +76,6 @@ namespace ft {
         size_t m_max_body_size;
 
     public:
-//        explicit RequestParser(size_t max_body_size);
 		explicit RequestParser();
 
         EResult parse(std::list<Config> &configs, Message& msg, const char* buf, size_t size);

@@ -4,16 +4,11 @@
 
 #pragma once
 
-//#ifndef SERVER_HPP
-//#define SERVER_HPP
-
 #include <iostream>
 #include <vector>
 #include <list>
 #include "http/Client.hpp"
 #include "Select.hpp"
-
-#define	MAXBODYSIZE		10240;
 
 struct Config;
 
@@ -29,6 +24,7 @@ namespace ft
 		bool				create_server();
 		int					get_max_fd() const;
 		bool 				create_new_connection();
+
 
 		std::list<Config>&	m_configs;
 		std::list<Client>	m_clients;
@@ -46,4 +42,3 @@ namespace ft
 	};
 }
 
-//#endif //SERVER_HPP

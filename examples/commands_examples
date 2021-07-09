@@ -1,0 +1,18 @@
+./webserv examples/for_tester.config
+time ./tester http://127.0.0.1:8081
+siege -b http://127.0.0.1:8081
+
+
+./webserv examples/configuration.config
+curl --resolve localhost:9090:127.0.0.1 http://localhost:9090
+curl --resolve test:9090:127.0.0.1 http://test:9090
+
+curl -H 'Host: test' http://127.0.0.1:9090
+
+curl -X POST -H "Content-Type: plain/text" --data "body" http://localhost:9090/limit_test/
+curl -X POST -H "Content-Type: plain/text" --data "bodynsadjkcnjkadscnkjndsacjkndsajkcndsjkancjkdsncjkdnsajcndjsancjkdsnacjkndsjakcnjksdancjknasdjcndsjacnjdksancjksadnc" http://localhost:9090/post_body
+
+./webserv examples/simple.config
+
+./webserv examples/browser.config
+

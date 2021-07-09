@@ -4,9 +4,6 @@
 
 #pragma once
 
-//#ifndef WEBSERV_HPP
-//#define WEBSERV_HPP
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -32,14 +29,7 @@
 #include <ctime>
 #include <sys/select.h>
 #include <sys/types.h>
-//#include "Client.hpp"
-//#include "Message.hpp"
-//#include "Answer.hpp"
-//#include "Select.hpp"
-//#include "Server.hpp"
-//#include "AllServers.hpp"
 
-//#define SERV_COUNT 100
 namespace ft {
 	struct Locations
 	{
@@ -56,7 +46,7 @@ namespace ft {
 	};
 
 
-	struct Config // нужно наполнить структуры необходимыми данными из конфиг-файла
+	struct Config
 	{
 		std::string							server_name;
 		std::list<Locations>				locations;
@@ -78,5 +68,3 @@ namespace ft {
 	};
 }
 
-
-//#endif //WEBSERV_HPP

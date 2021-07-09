@@ -11,7 +11,6 @@ ft::AllServers::AllServers()
 
 ft::AllServers::~AllServers()
 {
-	// закрыть все серваки
 }
 
 
